@@ -1,0 +1,119 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.17;
+
+import {Lib_RLPReader} from "@eth-optimism/contracts/libraries/rlp/Lib_RLPReader.sol";
+
+import {Lib_SecureMerkleTrie} from "@eth-optimism/contracts/libraries/trie/Lib_SecureMerkleTrie.sol";
+
+import {BytesLib} from "solidity-bytes-utils/contracts/BytesLib.sol";
+
+struct StateProof {
+    bytes stateTrieWitness;         // Witness proving the `storageRoot` against a state root.
+    bytes[] storageProofs;          // An array of proofs of individual storage elements 
+}
+
+library EVMProofHelper {
+    using BytesLib for bytes;
+
+    uint256 constant private MAGIC_SLOT = 0xd3b7df68fbfff5d2ac8f3603e97698b8e10d49e5cc92d1c72514f593c17b2229;
+
+    /**
+     * @notice Get the storage root for the provided merkle proof
+     * @param stateRoot The state root the witness was generated against
+     * @param target The address we are fetching a storage root for
+     * @param witness A witness proving the value of the storage root for `target`.
+     * @return The storage root retrieved from the provided state root
+     */
+    function getStorageRoot(bytes32 stateRoot, address target, bytes memory witness) private pure returns (bytes32) {
+        (bool exists, bytes memory encodedResolverAccount) = Lib_SecureMerkleTrie.get(
+            abi.encodePacked(target),
+            witness,
+            stateRoot
+        );
+        require(exists, "Account is not part of the provided state root");
+        Lib_RLPReader.RLPItem[] memory accountState = Lib_RLPReader.readList(encodedResolverAccount);
+        return bytes32(Lib_RLPReader.readBytes(accountState[2]));
+    }
+
+    /**
+     * @notice Prove whether the provided storage slot is part of the storageRoot
+     * @param storageRoot the storage root for the account that contains the storage slot
+     * @param slot The storage key we are fetching the value of
+     * @param witness the StorageProof struct containing the necessary proof data
+     * @return The retrieved storage proof value or 0x if the storage slot is empty
+     */
+    function getSingleStorageProof(bytes32 storageRoot, uint256 slot, bytes memory witness) private pure returns (bytes memory) {
+        (bool storageExists, bytes memory retrievedValue) = Lib_SecureMerkleTrie.get(
+            abi.encodePacked(slot),
+            witness,
+            storageRoot
+        );
+        /*
+         * this means the storage slot is empty. So we can directly return 0x without RLP encoding it.
+         */
+        if (!storageExists) {
+            return retrievedValue;
+        }
+        return Lib_RLPReader.readBytes(retrievedValue);
+    }
+
+    function computeFirstSlot(bytes32[] memory path, bytes32[] memory indexTable, uint256 idx) private pure returns(bool isDynamic, uint256 slot) {
+        isDynamic = (path[0] >> 255) != 0;
+        slot = (uint256(path[0]) << 1) >> 1; // Mask out MSB
+
+        for(uint256 j = 1; j < path.length; j++) {
+            bytes32 index = path[j];
+            uint256 valueIdx = uint256(index) - MAGIC_SLOT;
+            if(valueIdx < idx) {
+                index = indexTable[valueIdx];
+            }
+            slot = uint256(keccak256(abi.encodePacked(slot, index)));
+        }
+    }
+
+    function getDynamicValue(bytes32 storageRoot, uint256 slot, StateProof memory proof, uint256 proofIdx) private pure returns(bytes memory value, uint256 newProofIdx) {
+        value = getSingleStorageProof(storageRoot, slot++, proof.storageProofs[proofIdx++]);
+        require(value.length == 32, "Slot value is not of expected length");
+        uint256 firstValue = abi.decode(value, (uint256));
+        if(firstValue & 0x01 == 0x01) {
+            // Long value: first slot is `length * 2 + 1`, following slots are data.
+            uint256 length = (firstValue - 1) / 2;
+            value = "";
+            // This is horribly inefficient - O(n^2). A better approach would be to build an array of words and concatenate them
+            // all at once, but we're trying to avoid writing new library code.
+            while(length > 0) {
+                if(length < 32) {
+                    value = value.concat(getSingleStorageProof(storageRoot, slot++, proof.storageProofs[proofIdx++]).slice(0, length));
+                    length = 0;
+                } else {
+                    value = value.concat(getSingleStorageProof(storageRoot, slot++, proof.storageProofs[proofIdx++]));
+                    length -= 32;
+                }
+            }
+            return (value, proofIdx);
+        } else {
+            // Short value: least significant byte is `length * 2`, other bytes are data.
+            uint256 length = (firstValue & 0xFF) / 2;
+            return (value.slice(0, length), proofIdx);
+        }
+    }
+
+    function getStorageValues(address target, bytes32[][] memory paths, bytes32 stateRoot, StateProof memory proof) internal pure returns(bytes[] memory values) {
+        bytes32 storageRoot = getStorageRoot(stateRoot, target, proof.stateTrieWitness);
+        bytes32[] memory indexTable = new bytes32[](paths.length);
+        uint256 proofIdx = 0;
+        values = new bytes[](paths.length);
+        for(uint256 i = 0; i < paths.length; i++) {
+            bytes32[] memory path = paths[i];
+            (bool isDynamic, uint256 slot) = computeFirstSlot(path, indexTable, i);
+            if(!isDynamic) {
+                values[i] = getSingleStorageProof(storageRoot, slot, proof.storageProofs[proofIdx++]);
+                require(values[i].length == 32, "Slot value is not of expected length");
+                indexTable[i] = abi.decode(values[i], (bytes32));
+            } else {
+                (values[i], proofIdx) = getDynamicValue(storageRoot, slot, proof, proofIdx);
+                indexTable[i] = keccak256(values[i]);
+            }
+        }
+    }
+}

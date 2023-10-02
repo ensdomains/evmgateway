@@ -2,7 +2,7 @@
  * Response of the eth_getProof RPC method.
  */
 export interface EthGetProofResponse {
-    accountProof: string;
+    accountProof: string[];
     balance: string;
     codeHash: string;
     nonce: string;
@@ -12,16 +12,4 @@ export interface EthGetProofResponse {
         value: string;
         proof: string[];
     }[];
-}
-/**
- * The ProofInputObject that will be passed to the BedrockProofVerifier contract
- */
-export interface StorageProof {
-    key: string;
-    storageTrieWitness: string;
-}
-
-export interface CreateProofResult {
-    proof: string;
-    result: string;
 }

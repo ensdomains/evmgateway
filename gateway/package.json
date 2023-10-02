@@ -1,0 +1,61 @@
+{
+  "version": "0.1.0",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "engines": {
+    "node": ">=10"
+  },
+  "scripts": {
+    "start": "tsdx watch",
+    "build": "tsdx build",
+    "test": "tsdx test",
+    "lint": "tsdx lint",
+    "prepare": "tsdx build",
+    "size": "size-limit",
+    "analyze": "size-limit --why"
+  },
+  "peerDependencies": {},
+  "husky": {
+    "hooks": {
+      "pre-commit": "tsdx lint"
+    }
+  },
+  "prettier": {
+    "printWidth": 80,
+    "semi": true,
+    "singleQuote": true,
+    "trailingComma": "es5"
+  },
+  "name": "evm-l2-gateway",
+  "author": "Nick Johnson",
+  "module": "dist/evm-l2-gateway.esm.js",
+  "size-limit": [
+    {
+      "path": "dist/evm-l2-gateway.cjs.production.min.js",
+      "limit": "10 KB"
+    },
+    {
+      "path": "dist/evm-l2-gateway.esm.js",
+      "limit": "10 KB"
+    }
+  ],
+  "devDependencies": {
+    "@size-limit/preset-small-lib": "^9.0.0",
+    "husky": "^8.0.3",
+    "size-limit": "^9.0.0",
+    "tsdx": "^0.14.1",
+    "tslib": "^2.6.2",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "@chainlink/ccip-read-server": "^0.2.1",
+    "@ethereumjs/block": "^5.0.0",
+    "dotenv": "^16.3.1",
+    "ethers": "^6.7.1"
+  }
+}
