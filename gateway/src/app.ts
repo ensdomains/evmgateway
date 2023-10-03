@@ -127,7 +127,8 @@ export function makeApp(path: string) {
       type: 'getStorageSlots',
       func: async (args) => {
         const [addr, paths] = args;
-        return [createProofs(addr, paths)];
+        const proofs = await createProofs(addr, paths);
+        return [proofs];
       }
     }
   ]);

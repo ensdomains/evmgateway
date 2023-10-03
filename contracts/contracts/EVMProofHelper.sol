@@ -57,6 +57,11 @@ library EVMProofHelper {
         return Lib_RLPReader.readBytes(retrievedValue);
     }
 
+    function getFixedValue(bytes32 storageRoot, uint256 slot, bytes memory witness) private pure returns(bytes32) {
+        bytes memory value = getSingleStorageProof(storageRoot, slot, witness);
+        return bytes32(value) >> (256 - 8 * value.length);
+    }
+
     function computeFirstSlot(bytes32[] memory path, bytes32[] memory indexTable, uint256 idx) private pure returns(bool isDynamic, uint256 slot) {
         isDynamic = (path[0] >> 255) != 0;
         slot = (uint256(path[0]) << 1) >> 1; // Mask out MSB
@@ -72,9 +77,7 @@ library EVMProofHelper {
     }
 
     function getDynamicValue(bytes32 storageRoot, uint256 slot, StateProof memory proof, uint256 proofIdx) private pure returns(bytes memory value, uint256 newProofIdx) {
-        value = getSingleStorageProof(storageRoot, slot++, proof.storageProofs[proofIdx++]);
-        require(value.length == 32, "Slot value is not of expected length");
-        uint256 firstValue = abi.decode(value, (uint256));
+        uint256 firstValue = uint256(getFixedValue(storageRoot, slot++, proof.storageProofs[proofIdx++]));
         if(firstValue & 0x01 == 0x01) {
             // Long value: first slot is `length * 2 + 1`, following slots are data.
             uint256 length = (firstValue - 1) / 2;
@@ -94,7 +97,7 @@ library EVMProofHelper {
         } else {
             // Short value: least significant byte is `length * 2`, other bytes are data.
             uint256 length = (firstValue & 0xFF) / 2;
-            return (value.slice(0, length), proofIdx);
+            return (abi.encode(firstValue).slice(0, length), proofIdx);
         }
     }
 
@@ -107,9 +110,9 @@ library EVMProofHelper {
             bytes32[] memory path = paths[i];
             (bool isDynamic, uint256 slot) = computeFirstSlot(path, indexTable, i);
             if(!isDynamic) {
-                values[i] = getSingleStorageProof(storageRoot, slot, proof.storageProofs[proofIdx++]);
-                require(values[i].length == 32, "Slot value is not of expected length");
-                indexTable[i] = abi.decode(values[i], (bytes32));
+                values[i] = abi.encode(getFixedValue(storageRoot, slot, proof.storageProofs[proofIdx++]));
+                require(values[i].length <= 32, "Slot value is not of expected length");
+                indexTable[i] = bytes32(values[i]);
             } else {
                 (values[i], proofIdx) = getDynamicValue(storageRoot, slot, proof, proofIdx);
                 indexTable[i] = keccak256(values[i]);

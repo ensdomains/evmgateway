@@ -6,7 +6,7 @@ import { L1Verifier } from '../../contracts/L1Verifier.sol';
 error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData);
 
 interface L1Gateway {
-    function getStorageSlots(address addr, bytes32[][] memory paths) external view returns(bytes memory witness);
+    function getStorageSlots(address addr, bytes32[][] memory paths) external view returns(bytes memory rootWitness, bytes memory storageWitness);
 }
 
 contract TestTarget {
@@ -26,16 +26,17 @@ contract TestTarget {
         revert OffchainLookup(
             address(this),
             gatewayURLs,
-            abi.encodeWithSelector(L1Gateway.getStorageSlots.selector, paths),
-            this.getStorageValuesCallback.selector,
+            abi.encodeWithSelector(L1Gateway.getStorageSlots.selector, address(this), paths),
+            this.getSingleStorageSlotCallback.selector,
             abi.encode(paths)
         );
     }
 
-    function getStorageValuesCallback(bytes calldata response, bytes calldata extraData) public view returns(bytes[] memory) {
+    function getSingleStorageSlotCallback(bytes calldata response, bytes calldata extraData) public view returns(uint256) {
+        bytes memory proof = abi.decode(response, (bytes));
         bytes32[][] memory paths = abi.decode(extraData, (bytes32[][]));
-        bytes[] memory values = L1Verifier.getStorageValues(address(this), paths, response);
+        bytes[] memory values = L1Verifier.getStorageValues(address(this), paths, proof);
         require(values.length == paths.length, "Invalid number of values");
-        return values;
+        return uint256(bytes32(values[0]));
     }
 }
