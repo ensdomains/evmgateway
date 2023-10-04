@@ -71,4 +71,14 @@ describe("L1Verifier", () => {
         const result = await target.getHighscorer(1, { enableCcipRead: true});
         expect(result).to.equal("Hubert Blaine Wolfeschlegelsteinhausenbergerdorff Sr.");
     });
+
+    it("nested proofs with lookbehind", async () => {
+        const result = await target.getLatestHighscore({ enableCcipRead: true});
+        expect(Number(result)).to.equal(12345);
+    });
+
+    it("nested proofs with lookbehind for dynamic values", async () => {
+        const result = await target.getLatestHighscorer({ enableCcipRead: true});
+        expect(result).to.equal("Hal Finney");
+    });
 });

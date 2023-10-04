@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import { EVMFetcher, DYNAMIC_MASK } from '@ensdomains/evm-verifier/contracts/EVMFetcher.sol';
+import { EVMFetcher, DYNAMIC_MASK, MAGIC_SLOT } from '@ensdomains/evm-verifier/contracts/EVMFetcher.sol';
 import { IEVMVerifier } from '@ensdomains/evm-verifier/contracts/IEVMVerifier.sol';
 
 contract TestTarget is EVMFetcher {
@@ -32,7 +32,7 @@ contract TestTarget is EVMFetcher {
     }
 
     function getLatestCallback(bytes[] memory values, bytes memory) public pure returns(uint256) {
-        return uint256(bytes32(values[0]));
+        return abi.decode(values[0], (uint256));
     }
 
     function getName() public view returns(string memory) {
@@ -58,5 +58,35 @@ contract TestTarget is EVMFetcher {
 
     function getHighscorerCallback(bytes[] memory values, bytes memory) public pure returns(string memory) {
         return string(values[0]);
+    }
+
+    function getLatestHighscore() public view returns(uint256) {
+        bytes32[][] memory paths = new bytes32[][](2);
+        paths[0] = new bytes32[](1);
+        paths[0][0] = bytes32(uint256(1));
+        paths[1] = new bytes32[](2);
+        paths[1][0] = bytes32(uint256(3));
+        paths[1][1] = bytes32(uint256(MAGIC_SLOT) + 0);
+
+        getStorageSlots(verifier, address(this), paths, this.getLatestHighscoreCallback.selector, "");
+    }
+
+    function getLatestHighscoreCallback(bytes[] memory values, bytes memory) public pure returns(uint256) {
+        return abi.decode(values[1], (uint256));
+    }
+
+    function getLatestHighscorer() public view returns(string memory) {
+        bytes32[][] memory paths = new bytes32[][](2);
+        paths[0] = new bytes32[](1);
+        paths[0][0] = bytes32(uint256(1));
+        paths[1] = new bytes32[](2);
+        paths[1][0] = DYNAMIC_MASK | bytes32(uint256(4));
+        paths[1][1] = bytes32(uint256(MAGIC_SLOT) + 0);
+
+        getStorageSlots(verifier, address(this), paths, this.getLatestHighscorerCallback.selector, "");
+    }
+
+    function getLatestHighscorerCallback(bytes[] memory values, bytes memory) public pure returns(string memory) {
+        return string(values[1]);
     }
 }
