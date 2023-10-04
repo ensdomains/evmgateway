@@ -34,13 +34,6 @@ export class EVMProofHelper {
     }
 
     /**
-     * @dev Returns an object representing a block whose state can be proven on L1.
-     */
-    async getProvableBlock(): Promise<number> {
-        return ((await this.provider.getBlock('latest')) as any).number - 1;
-    }
-
-    /**
      * @dev Returns the value of a contract state slot at the specified block
      * @param block A `ProvableBlock` returned by `getProvableBlock`.
      * @param address The address of the contract to fetch data from.

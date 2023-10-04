@@ -22,8 +22,8 @@ export class L1ProofService implements IProofService<L1ProvableBlock> {
     /**
      * @dev Returns an object representing a block whose state can be proven on L1.
      */
-    getProvableBlock(): Promise<L1ProvableBlock> {
-        return this.helper.getProvableBlock();
+    async getProvableBlock(): Promise<number> {
+        return ((await this.provider.getBlock('latest')) as any).number - 1;
     }
 
     /**
