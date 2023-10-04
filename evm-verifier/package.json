@@ -1,9 +1,8 @@
 {
-  "name": "evm-l2-gateway-contracts",
+  "name": "@ensdomains/evm-verifier",
   "license": "MIT",
   "version": "0.1.0",
   "devDependencies": {
-    "@ensdomains/l1-gateway": "^0.1.0",
     "@foundry-rs/hardhat-anvil": "^0.1.7",
     "@nomicfoundation/hardhat-toolbox": "^3.0.0",
     "@types/express": "^4.17.18",

@@ -2,7 +2,7 @@
 pragma solidity ^0.8.17;
 
 import {Lib_RLPReader} from "@eth-optimism/contracts/libraries/rlp/Lib_RLPReader.sol";
-import { StateProof, EVMProofHelper } from './EVMProofHelper.sol';
+import { StateProof, EVMProofHelper } from '@ensdomains/evm-verifier/contracts/EVMProofHelper.sol';
 
 struct L1WitnessData {
     uint256 blockNo;

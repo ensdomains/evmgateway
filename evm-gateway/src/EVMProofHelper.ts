@@ -40,8 +40,8 @@ export class EVMProofHelper {
      * @param slot The slot to fetch.
      * @returns The value in `slot` of `address` at block `block`
      */
-    getStorageAt(block: number, address: ethers.AddressLike, slot: bigint): Promise<string> {
-        return this.provider.getStorage(address, slot, block);
+    getStorageAt(blockNo: number, address: ethers.AddressLike, slot: bigint): Promise<string> {
+        return this.provider.getStorage(address, slot, blockNo);
     }
 
     /**

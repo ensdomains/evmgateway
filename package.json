@@ -8,7 +8,8 @@
     "packages": [
       "evm-gateway",
       "l1-gateway",
-      "contracts"
+      "evm-verifier",
+      "l1-verifier"
     ],
     "nohoist": [
       "**/@nomiclabs/**",
