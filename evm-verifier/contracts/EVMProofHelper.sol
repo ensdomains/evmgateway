@@ -74,11 +74,12 @@ library EVMProofHelper {
     }
 
     function getDynamicValue(bytes32 storageRoot, uint256 slot, StateProof memory proof, uint256 proofIdx) private pure returns(bytes memory value, uint256 newProofIdx) {
-        uint256 firstValue = uint256(getFixedValue(storageRoot, slot++, proof.storageProofs[proofIdx++]));
+        uint256 firstValue = uint256(getFixedValue(storageRoot, slot, proof.storageProofs[proofIdx++]));
         if(firstValue & 0x01 == 0x01) {
             // Long value: first slot is `length * 2 + 1`, following slots are data.
             uint256 length = (firstValue - 1) / 2;
             value = "";
+            slot = uint256(keccak256(abi.encodePacked(slot)));
             // This is horribly inefficient - O(n^2). A better approach would be to build an array of words and concatenate them
             // all at once, but we're trying to avoid writing new library code.
             while(length > 0) {
