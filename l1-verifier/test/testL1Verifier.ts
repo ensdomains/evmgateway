@@ -8,7 +8,7 @@ import request from 'supertest';
 describe("L1Verifier", () => {
     let provider: ethers.Provider;
     let signer: ethers.Signer;
-    // let server: ChildProcess;
+    let verifier: ethers.Contract;
     let target: ethers.Contract;
     let gateway: express.Application;
 
@@ -42,8 +42,11 @@ describe("L1Verifier", () => {
             }
         })
 
+        const l1VerifierFactory = await ethers.getContractFactory('L1Verifier', signer);
+        verifier = await l1VerifierFactory.deploy(['test:']);
+
         const testTargetFactory = await ethers.getContractFactory('TestTarget', signer);
-        target = await testTargetFactory.deploy(['test:']);
+        target = await testTargetFactory.deploy(await verifier.getAddress());
 
         // Mine an empty block so we have something to prove against
         await provider.send("evm_mine", []);

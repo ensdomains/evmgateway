@@ -1,13 +1,6 @@
-# Sample Hardhat Project
+### @ensdomains/l1-verifier
+A complete Solidity library that facilitates sending CCIP-Read requests for L1 state, and verifying the responses.
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
+This repository also contains the end-to-end tests for the entire stack.
 
-Try running some of the following tasks:
-
-```shell
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat run scripts/deploy.ts
-```
+For usage documentation, see the [parent directory](/).
