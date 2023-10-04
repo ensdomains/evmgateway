@@ -52,8 +52,23 @@ describe("L1Verifier", () => {
         await provider.send("evm_mine", []);
     });
 
-    it("generates and verifies simple proofs", async () => {
-        const result = await target.getTestUint({ enableCcipRead: true });
+    it("simple proofs for fixed values", async () => {
+        const result = await target.getLatest({ enableCcipRead: true });
         expect(Number(result)).to.equal(42);
+    });
+
+    it("simple proofs for dynamic values", async () => {
+        const result = await target.getName({ enableCcipRead: true });
+        expect(result).to.equal("Vitalik Buterin");
+    });
+
+    it("nested proofs for dynamic values", async () => {
+        const result = await target.getHighscorer(42, { enableCcipRead: true});
+        expect(result).to.equal("Hal Finney");
+    });
+
+    it("nested proofs for long dynamic values", async () => {
+        const result = await target.getHighscorer(1, { enableCcipRead: true});
+        expect(result).to.equal("Hubert Blaine Wolfeschlegelsteinhausenbergerdorff Sr.");
     });
 });

@@ -71,11 +71,13 @@ library EVMProofHelper {
 
         for(uint256 j = 1; j < path.length; j++) {
             bytes32 index = path[j];
-            uint256 valueIdx = uint256(index) - MAGIC_SLOT;
-            if(valueIdx < idx) {
-                index = indexTable[valueIdx];
+            unchecked {
+                uint256 valueIdx = uint256(index) - MAGIC_SLOT;
+                if(valueIdx < idx) {
+                    index = indexTable[valueIdx];
+                }
             }
-            slot = uint256(keccak256(abi.encodePacked(slot, index)));
+            slot = uint256(keccak256(abi.encodePacked(index, slot)));
         }
     }
 
