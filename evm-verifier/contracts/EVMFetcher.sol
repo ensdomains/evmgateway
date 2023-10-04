@@ -8,6 +8,8 @@ interface IEVMGateway {
     function getStorageSlots(address addr, bytes32[][] memory paths) external view returns(bytes memory witness);
 }
 
+bytes32 constant MAGIC_SLOT = 0xd3b7df68fbfff5d2ac8f3603e97698b8e10d49e5cc92d1c72514f593c17b2229;
+
 abstract contract EVMFetcher {
     using Address for address;
 
