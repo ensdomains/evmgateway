@@ -1,6 +1,20 @@
 import { ethers } from 'ethers';
 
-import { EthGetProofResponse } from './types';
+/**
+ * Response of the eth_getProof RPC method.
+ */
+interface EthGetProofResponse {
+    accountProof: string[];
+    balance: string;
+    codeHash: string;
+    nonce: string;
+    storageHash: string;
+    storageProof: {
+        key: string;
+        value: string;
+        proof: string[];
+    }[];
+}
 
 export interface StateProof {
     stateTrieWitness: string;
@@ -23,7 +37,7 @@ export class EVMProofHelper {
      * @dev Returns an object representing a block whose state can be proven on L1.
      */
     async getProvableBlock(): Promise<number> {
-        return (await this.provider.getBlockNumber()) - 1;
+        return ((await this.provider.getBlock('latest')) as any).number - 1;
     }
 
     /**
@@ -46,8 +60,11 @@ export class EVMProofHelper {
      *   corresponding decoding library will understand.
      */
     async getProofs(blockNo: number, address: ethers.AddressLike, slots: bigint[]): Promise<StateProof> {
-        const proofs: EthGetProofResponse = await this.provider.send('eth_getProof', [address, slots.map((slot) => ethers.toBeHex(slot)), blockNo]);
-        console.log(proofs);
+        const args = [address, slots.map((slot) => ethers.toBeHex(slot, 32)), ethers.toBeHex(blockNo)];
+        const proofs: EthGetProofResponse = await this.provider.send(
+            'eth_getProof',
+            args
+        );
         return {
             stateTrieWitness: ethers.encodeRlp(proofs.accountProof),
             storageProofs: proofs.storageProof.map((proof) => ethers.encodeRlp(proof.proof)),

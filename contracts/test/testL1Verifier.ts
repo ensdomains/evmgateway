@@ -1,37 +1,56 @@
 import { ethers } from "hardhat";
 import { expect } from "chai";
-import { fork, ChildProcess } from "child_process";
+import { makeL1Gateway } from "@ensdomains/l1-gateway";
+import express from 'express';
+import { FetchCancelSignal, FetchRequest } from "ethers";
+import request from 'supertest';
 
 describe("L1Verifier", () => {
-    let provider;
-    let server: ChildProcess;
+    let provider: ethers.Provider;
+    let signer: ethers.Signer;
+    // let server: ChildProcess;
     let target: ethers.Contract;
+    let gateway: express.Application;
 
     before(async () => {
-        provider = new ethers.JsonRpcProvider("http://localhost:8545/");
-        provider.on("debug", (x) => console.log(JSON.stringify(x, undefined, 2)));
-        const signer = ethers.Wallet.fromPhrase("myth like bonus scare over problem client lizard pioneer submit female collect", provider);
-        // Start a gateway in a new process, and get its port number.
-        /*server = fork('../node_modules/evm-l2-gateway', ['0']);
-        const port = await new Promise((resolve: (arg0: number) => void) => {
-            server.on('message', (m: any) => resolve(m.port));
-        });*/
-        const port = 8080;
+        // Hack to get a 'real' ethers provider from hardhat. The default `HardhatProvider`
+        // doesn't support CCIP-read.
+        provider = new ethers.BrowserProvider(ethers.provider._hardhatProvider);
+        // provider.on("debug", (x: any) => console.log(JSON.stringify(x, undefined, 2)));
+        signer = await provider.getSigner(0);
+
+        const server = makeL1Gateway(provider);
+        gateway = server.makeApp('/');
+
+        // Replace ethers' fetch function with one that calls the gateway directly.
+        ethers.FetchRequest.registerGetUrl(async (req: FetchRequest, signal?: FetchCancelSignal) => {
+            const r = request(gateway)
+                .post('/');
+            if(req.hasBody()) {
+                r
+                    .set("Content-Type", "application/json")
+                    .send(ethers.toUtf8String(req.body));
+            }
+            const response = await r;
+            return {
+                statusCode: response.statusCode,
+                statusMessage: response.ok ? 'OK' : response.statusCode.toString(),
+                body: ethers.toUtf8Bytes(JSON.stringify(response.body)),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }
+        })
 
         const testTargetFactory = await ethers.getContractFactory('TestTarget', signer);
-        target = await testTargetFactory.deploy([`http://localhost:${port}/`]);
+        target = await testTargetFactory.deploy(['test:']);
 
         // Mine an empty block so we have something to prove against
         await provider.send("evm_mine", []);
     });
 
-    after(async () => {
-        // server.kill();
-    })
-
     it("generates and verifies simple proofs", async () => {
-        console.log({address: target.address});
         const result = await target.getTestUint({ enableCcipRead: true });
-        expect(result).to.equal(42);
+        expect(Number(result)).to.equal(42);
     });
 });

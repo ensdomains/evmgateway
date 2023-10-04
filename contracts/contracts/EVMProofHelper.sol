@@ -59,6 +59,9 @@ library EVMProofHelper {
 
     function getFixedValue(bytes32 storageRoot, uint256 slot, bytes memory witness) private pure returns(bytes32) {
         bytes memory value = getSingleStorageProof(storageRoot, slot, witness);
+        // RLP encoded storage slots are stored without leading 0 bytes.
+        // Casting to bytes32 appends trailing 0 bytes, so we have to bit shift to get the 
+        // original fixed-length representation back.
         return bytes32(value) >> (256 - 8 * value.length);
     }
 

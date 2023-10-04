@@ -1,7 +1,6 @@
 import { AbiCoder, ethers } from 'ethers';
 
-import { EVMProofHelper } from './EVMProofHelper';
-import { IProofService } from './IProofService';
+import { EVMProofHelper, IProofService } from '@ensdomains/evm-gateway';
 import { Block } from '@ethereumjs/block';
 
 export type L1ProvableBlock = number;
@@ -48,8 +47,7 @@ export class L1ProofService implements IProofService<L1ProvableBlock> {
      */
     async getProofs(blockNo: L1ProvableBlock, address: ethers.AddressLike, slots: bigint[]): Promise<string> {
         const proof = await this.helper.getProofs(blockNo, address, slots);
-        const rpcBlock = await this.provider.send('eth_getBlockByNumber', [blockNo]);
-        console.log(rpcBlock.stateRoot);
+        const rpcBlock = await this.provider.send('eth_getBlockByNumber', [ethers.toBeHex(blockNo), false]);
         const block = Block.fromRPC(rpcBlock as any);
         const blockHeader = ethers.encodeRlp(block.header.raw() as any);
         return AbiCoder.defaultAbiCoder().encode([
