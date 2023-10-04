@@ -14,7 +14,6 @@
     "supertest": "^6.3.3"
   },
   "dependencies": {
-    "@eth-optimism/contracts": "^0.6.0",
     "@eth-optimism/contracts-bedrock": "^0.16.2",
     "@nomicfoundation/hardhat-chai-matchers": "^2.0.0",
     "@nomicfoundation/hardhat-ethers": "^3.0.0",

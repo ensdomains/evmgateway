@@ -1,15 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import {Lib_RLPReader} from "@eth-optimism/contracts/libraries/rlp/Lib_RLPReader.sol";
-
-import {Lib_SecureMerkleTrie} from "@eth-optimism/contracts/libraries/trie/Lib_SecureMerkleTrie.sol";
+import {RLPReader} from "@eth-optimism/contracts-bedrock/src/libraries/rlp/RLPReader.sol";
+import {SecureMerkleTrie} from "@eth-optimism/contracts-bedrock/src/libraries/trie/SecureMerkleTrie.sol";
 
 import {BytesLib} from "solidity-bytes-utils/contracts/BytesLib.sol";
 
 struct StateProof {
-    bytes stateTrieWitness;         // Witness proving the `storageRoot` against a state root.
-    bytes[] storageProofs;          // An array of proofs of individual storage elements 
+    bytes[] stateTrieWitness;         // Witness proving the `storageRoot` against a state root.
+    bytes[][] storageProofs;          // An array of proofs of individual storage elements 
 }
 
 library EVMProofHelper {
@@ -24,15 +23,14 @@ library EVMProofHelper {
      * @param witness A witness proving the value of the storage root for `target`.
      * @return The storage root retrieved from the provided state root
      */
-    function getStorageRoot(bytes32 stateRoot, address target, bytes memory witness) private pure returns (bytes32) {
-        (bool exists, bytes memory encodedResolverAccount) = Lib_SecureMerkleTrie.get(
+    function getStorageRoot(bytes32 stateRoot, address target, bytes[] memory witness) private pure returns (bytes32) {
+        bytes memory encodedResolverAccount = SecureMerkleTrie.get(
             abi.encodePacked(target),
             witness,
             stateRoot
         );
-        require(exists, "Account is not part of the provided state root");
-        Lib_RLPReader.RLPItem[] memory accountState = Lib_RLPReader.readList(encodedResolverAccount);
-        return bytes32(Lib_RLPReader.readBytes(accountState[2]));
+        RLPReader.RLPItem[] memory accountState = RLPReader.readList(encodedResolverAccount);
+        return bytes32(RLPReader.readBytes(accountState[2]));
     }
 
     /**
@@ -42,22 +40,16 @@ library EVMProofHelper {
      * @param witness the StorageProof struct containing the necessary proof data
      * @return The retrieved storage proof value or 0x if the storage slot is empty
      */
-    function getSingleStorageProof(bytes32 storageRoot, uint256 slot, bytes memory witness) private pure returns (bytes memory) {
-        (bool storageExists, bytes memory retrievedValue) = Lib_SecureMerkleTrie.get(
+    function getSingleStorageProof(bytes32 storageRoot, uint256 slot, bytes[] memory witness) private pure returns (bytes memory) {
+        bytes memory retrievedValue = SecureMerkleTrie.get(
             abi.encodePacked(slot),
             witness,
             storageRoot
         );
-        /*
-         * this means the storage slot is empty. So we can directly return 0x without RLP encoding it.
-         */
-        if (!storageExists) {
-            return retrievedValue;
-        }
-        return Lib_RLPReader.readBytes(retrievedValue);
+        return RLPReader.readBytes(retrievedValue);
     }
 
-    function getFixedValue(bytes32 storageRoot, uint256 slot, bytes memory witness) private pure returns(bytes32) {
+    function getFixedValue(bytes32 storageRoot, uint256 slot, bytes[] memory witness) private pure returns(bytes32) {
         bytes memory value = getSingleStorageProof(storageRoot, slot, witness);
         // RLP encoded storage slots are stored without leading 0 bytes.
         // Casting to bytes32 appends trailing 0 bytes, so we have to bit shift to get the 

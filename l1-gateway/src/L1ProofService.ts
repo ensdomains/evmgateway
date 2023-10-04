@@ -52,7 +52,7 @@ export class L1ProofService implements IProofService<L1ProvableBlock> {
         const blockHeader = ethers.encodeRlp(block.header.raw() as any);
         return AbiCoder.defaultAbiCoder().encode([
             'tuple(uint256 blockNo, bytes blockHeader)',
-            'tuple(bytes stateTrieWitness, bytes[] storageProofs)'
+            'tuple(bytes[] stateTrieWitness, bytes[][] storageProofs)'
         ], [
             {blockNo, blockHeader},
             proof

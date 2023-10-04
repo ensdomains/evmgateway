@@ -17,8 +17,8 @@ interface EthGetProofResponse {
 }
 
 export interface StateProof {
-    stateTrieWitness: string;
-    storageProofs: string[];
+    stateTrieWitness: string[];
+    storageProofs: string[][];
 }
 
 /**
@@ -59,8 +59,8 @@ export class EVMProofHelper {
             args
         );
         return {
-            stateTrieWitness: ethers.encodeRlp(proofs.accountProof),
-            storageProofs: proofs.storageProof.map((proof) => ethers.encodeRlp(proof.proof)),
+            stateTrieWitness: proofs.accountProof,
+            storageProofs: proofs.storageProof.map((proof) => proof.proof),
         };
     }
 }
