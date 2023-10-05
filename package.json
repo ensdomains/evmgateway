@@ -24,6 +24,11 @@
     "workspace": "bun ./scripts/workspace.ts",
     "prepare": "husky install"
   },
+  "husky": {
+    "hooks": {
+      "pre-commit": "bun workspace all lint"
+    }
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/Arachnid/evm-l2-gateway.git"
