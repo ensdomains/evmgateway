@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "scripts": {
     "build": "hardhat compile",
+    "test": "hardhat test",
     "clean": "rm -fr artifacts cache node_modules typechain-types"
   },
   "devDependencies": {
