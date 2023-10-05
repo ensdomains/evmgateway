@@ -69,9 +69,9 @@ contract TestTarget is EVMFetcher {
     }
 
     function getTestUint() public view returns(uint256) {
-        bytes32[][] memory paths = new bytes32[][](1);
-        paths[0] = new bytes32[](1);
-        paths[0][0] = bytes32(uint256(1));
+        bytes[][] memory paths = new bytes[][](1);
+        paths[0] = new bytes[](1);
+        paths[0][0] = abi.encode(uint256(1));
 
         getStorageSlots(verifier, address(this), paths, this.getSingleStorageSlotCallback.selector, "");
     }
