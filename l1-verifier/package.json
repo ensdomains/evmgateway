@@ -2,6 +2,10 @@
   "name": "@ensdomains/l1-verifier",
   "license": "MIT",
   "version": "0.1.0",
+  "scripts": {
+    "build": "hardhat compile",
+    "clean": "rm -fr artifacts cache node_modules typechain-types"
+  },
   "devDependencies": {
     "@ensdomains/l1-gateway": "^0.1.0",
     "@ensdomains/evm-verifier": "^0.1.0",

@@ -3,7 +3,7 @@ import { EVMGateway } from '@ensdomains/evm-gateway';
 import { L1ProofService } from './L1ProofService';
 import { ethers } from 'ethers';
 
-dotenv.config({ path: '../.env' });
+dotenv.config({ path: './.env' });
 
 const provider = new ethers.JsonRpcProvider(process.env.PROVIDER_URL || "http://localhost:8545/");
 const gateway = new EVMGateway(new L1ProofService(provider));

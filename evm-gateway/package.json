@@ -17,7 +17,8 @@
     "lint": "tsdx lint",
     "prepare": "tsdx build",
     "size": "size-limit",
-    "analyze": "size-limit --why"
+    "analyze": "size-limit --why",
+    "clean": "rm -fr node_modules dist"
   },
   "peerDependencies": {},
   "husky": {
@@ -46,15 +47,13 @@
   ],
   "devDependencies": {
     "@size-limit/preset-small-lib": "^9.0.0",
-    "husky": "^8.0.3",
     "size-limit": "^9.0.0",
     "tsdx": "^0.14.1",
     "tslib": "^2.6.2",
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@ethereumjs/block": "^5.0.0",
-    "dotenv": "^16.3.1",
+    "@chainlink/ccip-read-server": "^0.2.1",
     "ethers": "^6.7.1"
   }
 }
