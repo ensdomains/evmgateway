@@ -16,11 +16,12 @@ contract TestTarget is EVMFetcher {
         verifier = _verifier;
 
         latest = 42;
-        name = "Vitalik Buterin";
+        name = "Satoshi";
         highscores[latest] = 12345;
         highscorers[latest] = "Hal Finney";
         highscorers[1] = "Hubert Blaine Wolfeschlegelsteinhausenbergerdorff Sr.";
-        realnames["satoshi"] = "Hal Finney";
+        realnames["Money Skeleton"] = "Vitalik Buterin";
+        realnames["Satoshi"] = "Hal Finney";
     }
 
     function getLatest() public view returns(uint256) {
@@ -87,6 +88,34 @@ contract TestTarget is EVMFetcher {
     }
 
     function getLatestHighscorerCallback(bytes[] memory values, bytes memory) public pure returns(string memory) {
+        return string(values[1]);
+    }
+
+    function getNickname(string memory _name) public view returns(string memory) {
+        bytes[][] memory paths = new bytes[][](1);
+        paths[0] = new bytes[](2);
+        paths[0][0] = abi.encode(DYNAMIC_MASK | bytes32(uint256(5)));
+        paths[0][1] = bytes(_name);
+
+        getStorageSlots(verifier, address(this), paths, this.getNicknameCallback.selector, "");
+    }
+
+    function getNicknameCallback(bytes[] memory values, bytes memory) public pure returns (string memory) {
+        return string(values[0]);
+    }
+
+    function getPrimaryNickname() public view returns(string memory) {
+        bytes[][] memory paths = new bytes[][](2);
+        paths[0] = new bytes[](1);
+        paths[0][0] = abi.encode(DYNAMIC_MASK | bytes32(uint256(2)));
+        paths[1] = new bytes[](2);
+        paths[1][0] = abi.encode(DYNAMIC_MASK | bytes32(uint256(5)));
+        paths[1][1] = abi.encode(uint256(MAGIC_SLOT) + 0);
+
+        getStorageSlots(verifier, address(this), paths, this.getPrimaryNicknameCallback.selector, "");
+    }
+
+    function getPrimaryNicknameCallback(bytes[] memory values, bytes memory) public pure returns (string memory) {
         return string(values[1]);
     }
 }

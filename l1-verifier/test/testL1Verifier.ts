@@ -59,7 +59,7 @@ describe("L1Verifier", () => {
 
     it("simple proofs for dynamic values", async () => {
         const result = await target.getName({ enableCcipRead: true });
-        expect(result).to.equal("Vitalik Buterin");
+        expect(result).to.equal("Satoshi");
     });
 
     it("nested proofs for dynamic values", async () => {
@@ -79,6 +79,16 @@ describe("L1Verifier", () => {
 
     it("nested proofs with lookbehind for dynamic values", async () => {
         const result = await target.getLatestHighscorer({ enableCcipRead: true});
+        expect(result).to.equal("Hal Finney");
+    });
+
+    it("mappings with variable-length keys", async () => {
+        const result = await target.getNickname("Money Skeleton", { enableCcipRead: true});
+        expect(result).to.equal("Vitalik Buterin");
+    });
+
+    it("nested proofs of mappings with variable-length keys", async () => {
+        const result = await target.getPrimaryNickname({ enableCcipRead: true});
         expect(result).to.equal("Hal Finney");
     });
 });

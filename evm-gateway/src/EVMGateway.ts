@@ -78,7 +78,6 @@ export class EVMGateway<T extends ProvableBlock> {
     }
     // Resolve all the outstanding requests
     const results = await Promise.all(requests);
-    console.log(results);
     const slots = Array.prototype.concat(
       ...results.map(result => result.slots)
     );
