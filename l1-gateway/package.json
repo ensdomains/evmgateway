@@ -53,8 +53,8 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@ensdomains/evm-gateway": "^0.1.0",
     "@chainlink/ccip-read-server": "^0.2.1",
+    "@ensdomains/evm-gateway": "^0.1.0",
     "@ethereumjs/block": "^5.0.0",
     "@nomicfoundation/ethereumjs-block": "^5.0.2",
     "dotenv": "^16.3.1",
