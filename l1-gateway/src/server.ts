@@ -5,13 +5,15 @@ import { ethers } from 'ethers';
 
 dotenv.config({ path: './.env' });
 
-const provider = new ethers.JsonRpcProvider(process.env.PROVIDER_URL || "http://localhost:8545/");
+const provider = new ethers.JsonRpcProvider(
+  process.env.PROVIDER_URL || 'http://localhost:8545/'
+);
 const gateway = new EVMGateway(new L1ProofService(provider));
 const app = gateway.makeApp('/');
 
 const port = parseInt(process.argv[2] || '8080');
 (async () => {
-    app.listen(port, function() {
-        console.log(`Listening on ${port}`);
-    });
+  app.listen(port, function() {
+    console.log(`Listening on ${port}`);
+  });
 })();
