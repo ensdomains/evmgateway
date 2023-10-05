@@ -23,7 +23,7 @@ contract L1Verifier is IEVMVerifier {
         return _gatewayURLs;
     }
 
-    function getStorageValues(address target, bytes32[][] memory paths, bytes memory proof) external view returns(bytes[] memory values) {
+    function getStorageValues(address target, bytes[][] memory paths, bytes memory proof) external view returns(bytes[] memory values) {
         (L1WitnessData memory l1Data, StateProof memory stateProof) = abi.decode(proof, (L1WitnessData, StateProof));
         if(keccak256(l1Data.blockHeader) != blockhash(l1Data.blockNo)) {
             revert BlockHeaderHashMismatch(block.number, l1Data.blockNo, blockhash(l1Data.blockNo), keccak256(l1Data.blockHeader));

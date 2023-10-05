@@ -57,16 +57,19 @@ library EVMProofHelper {
         return bytes32(value) >> (256 - 8 * value.length);
     }
 
-    function computeFirstSlot(bytes32[] memory path, bytes32[] memory indexTable, uint256 idx) private pure returns(bool isDynamic, uint256 slot) {
-        isDynamic = (path[0] >> 255) != 0;
-        slot = (uint256(path[0]) << 1) >> 1; // Mask out MSB
+    function computeFirstSlot(bytes[] memory path, bytes[] memory values, uint256 idx) private pure returns(bool isDynamic, uint256 slot) {
+        require(path[0].length == 32, "First path element must be 32 bytes");
+        isDynamic = (bytes32(path[0]) >> 255) != 0;
+        slot = (uint256(bytes32(path[0])) << 1) >> 1; // Mask out MSB
 
         for(uint256 j = 1; j < path.length; j++) {
-            bytes32 index = path[j];
-            unchecked {
-                uint256 valueIdx = uint256(index) - MAGIC_SLOT;
-                if(valueIdx < idx) {
-                    index = indexTable[valueIdx];
+            bytes memory index = path[j];
+            if(index.length == 32) {
+                unchecked {
+                    uint256 valueIdx = uint256(bytes32(index)) - MAGIC_SLOT;
+                    if(valueIdx < idx) {
+                        index = values[valueIdx];
+                    }
                 }
             }
             slot = uint256(keccak256(abi.encodePacked(index, slot)));
@@ -99,21 +102,18 @@ library EVMProofHelper {
         }
     }
 
-    function getStorageValues(address target, bytes32[][] memory paths, bytes32 stateRoot, StateProof memory proof) internal pure returns(bytes[] memory values) {
+    function getStorageValues(address target, bytes[][] memory paths, bytes32 stateRoot, StateProof memory proof) internal pure returns(bytes[] memory values) {
         bytes32 storageRoot = getStorageRoot(stateRoot, target, proof.stateTrieWitness);
-        bytes32[] memory indexTable = new bytes32[](paths.length);
         uint256 proofIdx = 0;
         values = new bytes[](paths.length);
         for(uint256 i = 0; i < paths.length; i++) {
-            bytes32[] memory path = paths[i];
-            (bool isDynamic, uint256 slot) = computeFirstSlot(path, indexTable, i);
+            bytes[] memory path = paths[i];
+            (bool isDynamic, uint256 slot) = computeFirstSlot(path, values, i);
             if(!isDynamic) {
                 values[i] = abi.encode(getFixedValue(storageRoot, slot, proof.storageProofs[proofIdx++]));
                 require(values[i].length <= 32, "Slot value is not of expected length");
-                indexTable[i] = bytes32(values[i]);
             } else {
                 (values[i], proofIdx) = getDynamicValue(storageRoot, slot, proof, proofIdx);
-                indexTable[i] = keccak256(values[i]);
             }
         }
     }

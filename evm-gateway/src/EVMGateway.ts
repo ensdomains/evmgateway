@@ -46,7 +46,7 @@ export class EVMGateway<T extends ProvableBlock> {
   makeApp(path: string) {
     const server = new Server();
     const abi = [
-      'function getStorageSlots(address addr, bytes32[][] memory paths) external view returns(bytes memory witness)',
+      'function getStorageSlots(address addr, bytes[][] memory paths) external view returns(bytes memory witness)',
     ];
     server.add(abi, [
       {
@@ -102,13 +102,10 @@ export class EVMGateway<T extends ProvableBlock> {
       const offset = ethers.toBigInt(index) - MAGIC_SLOT;
       if (offset >= 0 && offset < requests.length) {
         const targetElement = await requests[Number(offset)];
-        const targetValue = await targetElement.value();
-        index = ethers.getBytes(
-          targetElement.isDynamic ? ethers.keccak256(targetValue) : targetValue
-        );
+        index = ethers.getBytes(await targetElement.value());
       }
       slot = ethers.toBigInt(
-        ethers.solidityPackedKeccak256(['bytes32', 'uint256'], [index, slot])
+        ethers.solidityPackedKeccak256(['bytes', 'uint256'], [index, slot])
       );
     }
 

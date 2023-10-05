@@ -24,9 +24,9 @@ contract TestTarget is EVMFetcher {
     }
 
     function getLatest() public view returns(uint256) {
-        bytes32[][] memory paths = new bytes32[][](1);
-        paths[0] = new bytes32[](1);
-        paths[0][0] = bytes32(uint256(1));
+        bytes[][] memory paths = new bytes[][](1);
+        paths[0] = new bytes[](1);
+        paths[0][0] = abi.encode(uint256(1));
 
         getStorageSlots(verifier, address(this), paths, this.getLatestCallback.selector, "");
     }
@@ -36,9 +36,9 @@ contract TestTarget is EVMFetcher {
     }
 
     function getName() public view returns(string memory) {
-        bytes32[][] memory paths = new bytes32[][](1);
-        paths[0] = new bytes32[](1);
-        paths[0][0] = DYNAMIC_MASK | bytes32(uint256(2));
+        bytes[][] memory paths = new bytes[][](1);
+        paths[0] = new bytes[](1);
+        paths[0][0] = abi.encode(DYNAMIC_MASK | bytes32(uint256(2)));
 
         getStorageSlots(verifier, address(this), paths, this.getNameCallback.selector, "");
     }
@@ -48,10 +48,10 @@ contract TestTarget is EVMFetcher {
     }
 
     function getHighscorer(uint256 idx) public view returns(string memory) {
-        bytes32[][] memory paths = new bytes32[][](1);
-        paths[0] = new bytes32[](2);
-        paths[0][0] = DYNAMIC_MASK | bytes32(uint256(4));
-        paths[0][1] = bytes32(idx);
+        bytes[][] memory paths = new bytes[][](1);
+        paths[0] = new bytes[](2);
+        paths[0][0] = abi.encode(DYNAMIC_MASK | bytes32(uint256(4)));
+        paths[0][1] = abi.encode(idx);
 
         getStorageSlots(verifier, address(this), paths, this.getNameCallback.selector, "");
     }
@@ -61,12 +61,12 @@ contract TestTarget is EVMFetcher {
     }
 
     function getLatestHighscore() public view returns(uint256) {
-        bytes32[][] memory paths = new bytes32[][](2);
-        paths[0] = new bytes32[](1);
-        paths[0][0] = bytes32(uint256(1));
-        paths[1] = new bytes32[](2);
-        paths[1][0] = bytes32(uint256(3));
-        paths[1][1] = bytes32(uint256(MAGIC_SLOT) + 0);
+        bytes[][] memory paths = new bytes[][](2);
+        paths[0] = new bytes[](1);
+        paths[0][0] = abi.encode(uint256(1));
+        paths[1] = new bytes[](2);
+        paths[1][0] = abi.encode(uint256(3));
+        paths[1][1] = abi.encode(uint256(MAGIC_SLOT) + 0);
 
         getStorageSlots(verifier, address(this), paths, this.getLatestHighscoreCallback.selector, "");
     }
@@ -76,12 +76,12 @@ contract TestTarget is EVMFetcher {
     }
 
     function getLatestHighscorer() public view returns(string memory) {
-        bytes32[][] memory paths = new bytes32[][](2);
-        paths[0] = new bytes32[](1);
-        paths[0][0] = bytes32(uint256(1));
-        paths[1] = new bytes32[](2);
-        paths[1][0] = DYNAMIC_MASK | bytes32(uint256(4));
-        paths[1][1] = bytes32(uint256(MAGIC_SLOT) + 0);
+        bytes[][] memory paths = new bytes[][](2);
+        paths[0] = new bytes[](1);
+        paths[0][0] = abi.encode(uint256(1));
+        paths[1] = new bytes[](2);
+        paths[1][0] = abi.encode(DYNAMIC_MASK | bytes32(uint256(4)));
+        paths[1][1] = abi.encode(uint256(MAGIC_SLOT) + 0);
 
         getStorageSlots(verifier, address(this), paths, this.getLatestHighscorerCallback.selector, "");
     }

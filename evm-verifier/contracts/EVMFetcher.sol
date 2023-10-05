@@ -5,7 +5,7 @@ import { IEVMVerifier } from './IEVMVerifier.sol';
 import { Address } from '@openzeppelin/contracts/utils/Address.sol';
 
 interface IEVMGateway {
-    function getStorageSlots(address addr, bytes32[][] memory paths) external view returns(bytes memory witness);
+    function getStorageSlots(address addr, bytes[][] memory paths) external view returns(bytes memory witness);
 }
 
 bytes32 constant DYNAMIC_MASK = 0x8000000000000000000000000000000000000000000000000000000000000000;
@@ -56,7 +56,7 @@ abstract contract EVMFetcher {
     function getStorageSlots(
         IEVMVerifier verifier,
         address addr,
-        bytes32[][] memory paths,
+        bytes[][] memory paths,
         bytes4 callback,
         bytes memory callbackData) internal view
     {
@@ -74,8 +74,8 @@ abstract contract EVMFetcher {
      */
     function getStorageSlotsCallback(bytes calldata response, bytes calldata extradata) external {
         bytes memory proof = abi.decode(response, (bytes));
-        (IEVMVerifier verifier, address addr, bytes32[][] memory paths, bytes4 callback, bytes memory callbackData) =
-            abi.decode(extradata, (IEVMVerifier, address, bytes32[][], bytes4, bytes));
+        (IEVMVerifier verifier, address addr, bytes[][] memory paths, bytes4 callback, bytes memory callbackData) =
+            abi.decode(extradata, (IEVMVerifier, address, bytes[][], bytes4, bytes));
         bytes[] memory values = verifier.getStorageValues(addr, paths, proof);
         require(values.length == paths.length, "Invalid number of values");
         bytes memory ret = address(this).functionCall(abi.encodeWithSelector(callback, values, callbackData));
