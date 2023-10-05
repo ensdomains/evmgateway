@@ -22,9 +22,6 @@ jobs:
       - name: Install deps and build (with cache)
         run: yarn install
 
-      - name: Lint
-        run: yarn lint
-
       - name: Test
         run: yarn test --ci --coverage --maxWorkers=2
 

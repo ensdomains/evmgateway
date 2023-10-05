@@ -17,7 +17,8 @@
     "lint": "tsdx lint",
     "prepare": "tsdx build",
     "size": "size-limit",
-    "analyze": "size-limit --why"
+    "analyze": "size-limit --why",
+    "clean": "rm -fr node_modules dist"
   },
   "peerDependencies": {},
   "husky": {
