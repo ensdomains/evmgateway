@@ -12,10 +12,10 @@
   },
   "scripts": {
     "start": "tsdx watch",
-    "build": "tsdx build",
+    "build": "echo 'Not implemented'",
     "test": "tsdx test --passWithNoTests",
     "lint": "tsdx lint",
-    "prepare": "tsdx build",
+    "prepare": "echo 'Not implemented'",
     "size": "size-limit",
     "analyze": "size-limit --why",
     "clean": "rm -fr node_modules dist"

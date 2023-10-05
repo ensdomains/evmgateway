@@ -2,3 +2,6 @@
 .DS_Store
 node_modules
 dist
+_types
+_esm
+_cjs
