@@ -1,19 +1,25 @@
-import dotenv from 'dotenv';
+import { Command } from '@commander-js/extra-typings';
 import { EVMGateway } from '@ensdomains/evm-gateway';
-import { L1ProofService } from './L1ProofService';
 import { ethers } from 'ethers';
+import { L1ProofService } from './L1ProofService.js';
 
-dotenv.config({ path: './.env' });
+const program = new Command()
+  .option('-p, --port <port>', 'port to listen on', '8080')
+  .option('-u, --provider-url <url>', 'provider url', 'http://localhost:8545/');
 
-const provider = new ethers.JsonRpcProvider(
-  process.env.PROVIDER_URL || 'http://localhost:8545/'
-);
+program.parse();
+
+const options = program.opts();
+
+const provider = new ethers.JsonRpcProvider(options.providerUrl);
 const gateway = new EVMGateway(new L1ProofService(provider));
 const app = gateway.makeApp('/');
 
-const port = parseInt(process.argv[2] || '8080');
+const port = parseInt(options.port);
+if (String(port) !== options.port) throw new Error('Invalid port');
+
 (async () => {
-  app.listen(port, function() {
+  app.listen(port, function () {
     console.log(`Listening on ${port}`);
   });
 })();

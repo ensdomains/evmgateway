@@ -1,7 +1,16 @@
-import { AbiCoder, ethers } from 'ethers';
+import {
+  AbiCoder,
+  encodeRlp as encodeRlp_,
+  toBeHex,
+  type AddressLike,
+  type JsonRpcProvider,
+} from 'ethers';
 
-import { EVMProofHelper, IProofService } from '@ensdomains/evm-gateway';
-import { Block } from '@ethereumjs/block';
+import { EVMProofHelper, type IProofService } from '@ensdomains/evm-gateway';
+import { Block, type JsonRpcBlock } from '@ethereumjs/block';
+
+type RlpObject = Uint8Array | Array<RlpObject>;
+const encodeRlp = encodeRlp_ as (object: RlpObject) => string;
 
 export type L1ProvableBlock = number;
 
@@ -11,10 +20,10 @@ export type L1ProvableBlock = number;
  *
  */
 export class L1ProofService implements IProofService<L1ProvableBlock> {
-  private readonly provider: ethers.JsonRpcProvider;
+  private readonly provider: JsonRpcProvider;
   private readonly helper: EVMProofHelper;
 
-  constructor(provider: ethers.JsonRpcProvider) {
+  constructor(provider: JsonRpcProvider) {
     this.provider = provider;
     this.helper = new EVMProofHelper(provider);
   }
@@ -23,7 +32,9 @@ export class L1ProofService implements IProofService<L1ProvableBlock> {
    * @dev Returns an object representing a block whose state can be proven on L1.
    */
   async getProvableBlock(): Promise<number> {
-    return ((await this.provider.getBlock('latest')) as any).number - 1;
+    const block = await this.provider.getBlock('latest');
+    if (!block) throw new Error('No block found');
+    return block.number - 1;
   }
 
   /**
@@ -35,7 +46,7 @@ export class L1ProofService implements IProofService<L1ProvableBlock> {
    */
   getStorageAt(
     block: L1ProvableBlock,
-    address: ethers.AddressLike,
+    address: AddressLike,
     slot: bigint
   ): Promise<string> {
     return this.helper.getStorageAt(block, address, slot);
@@ -51,16 +62,16 @@ export class L1ProofService implements IProofService<L1ProvableBlock> {
    */
   async getProofs(
     blockNo: L1ProvableBlock,
-    address: ethers.AddressLike,
+    address: AddressLike,
     slots: bigint[]
   ): Promise<string> {
     const proof = await this.helper.getProofs(blockNo, address, slots);
-    const rpcBlock = await this.provider.send('eth_getBlockByNumber', [
-      ethers.toBeHex(blockNo),
-      false,
-    ]);
-    const block = Block.fromRPC(rpcBlock as any);
-    const blockHeader = ethers.encodeRlp(block.header.raw() as any);
+    const rpcBlock: JsonRpcBlock = await this.provider.send(
+      'eth_getBlockByNumber',
+      [toBeHex(blockNo), false]
+    );
+    const block = Block.fromRPC(rpcBlock);
+    const blockHeader = encodeRlp(block.header.raw());
     return AbiCoder.defaultAbiCoder().encode(
       [
         'tuple(uint256 blockNo, bytes blockHeader)',
