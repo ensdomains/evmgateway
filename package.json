@@ -22,11 +22,13 @@
   "scripts": {
     "env": "env",
     "workspace": "bun ./scripts/workspace.ts",
+    "build": "bun run workspace all build",
+    "test": "bun run workspace all test",
     "prepare": "husky install"
   },
   "husky": {
     "hooks": {
-      "pre-commit": "bun workspace all lint"
+      "pre-commit": "bun run workspace all lint"
     }
   },
   "repository": {
