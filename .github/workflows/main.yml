@@ -3,6 +3,7 @@ on: [push]
 jobs:
   test:
     name: Test on Node ${{ matrix.node }} and ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         node: ['18.x', '20.x']
