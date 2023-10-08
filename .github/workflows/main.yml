@@ -1,29 +1,49 @@
 name: CI
 on: [push]
 jobs:
-  build:
-    name: Build, lint, and test on Node ${{ matrix.node }} and ${{ matrix.os }}
-
-    runs-on: ${{ matrix.os }}
+  test:
+    name: Test on Node ${{ matrix.node }} and ${{ matrix.os }}
     strategy:
       matrix:
         node: ['18.x', '20.x']
-        os: [ubuntu-latest, windows-latest, macOS-latest]
-
+        os: [ubuntu-latest, macOS-latest]
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+
+      - name: Use Bun 1.0.4
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: 1.0.4
 
       - name: Use Node ${{ matrix.node }}
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node }}
 
-      - name: Install deps and build (with cache)
-        run: yarn install
+      - name: Install Dependencies
+        run: bun install
 
-      - name: Test
-        run: yarn test --ci --coverage --maxWorkers=2
+      - name: Test (uses node internally)
+        run: bun run test
+
+  build:
+    name: Build and lint with Bun 1.0.4
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Use Bun 1.0.4
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: 1.0.4
+
+      - name: Install Dependencies
+        run: bun install
+
+      - name: Lint
+        run: bun run lint
 
       - name: Build
-        run: yarn build
+        run: bun run build
