@@ -1,10 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import { EVMFetcher, DYNAMIC_MASK, MAGIC_SLOT } from '@ensdomains/evm-verifier/contracts/EVMFetcher.sol';
+import { EVMFetcher } from '@ensdomains/evm-verifier/contracts/EVMFetcher.sol';
+import { EVMFetchTarget } from '@ensdomains/evm-verifier/contracts/EVMFetchTarget.sol';
 import { IEVMVerifier } from '@ensdomains/evm-verifier/contracts/IEVMVerifier.sol';
 
-contract TestTarget is EVMFetcher {
+contract TestTarget is EVMFetchTarget {
+    using EVMFetcher for EVMFetcher.EVMFetchRequest;
+
     IEVMVerifier verifier;                  // Slot 0
     uint256 latest;                         // Slot 1
     string name;                            // Slot 2
@@ -25,11 +28,9 @@ contract TestTarget is EVMFetcher {
     }
 
     function getLatest() public view returns(uint256) {
-        bytes[][] memory paths = new bytes[][](1);
-        paths[0] = new bytes[](1);
-        paths[0][0] = abi.encode(uint256(1));
-
-        getStorageSlots(verifier, address(this), paths, this.getLatestCallback.selector, "");
+        EVMFetcher.newFetchRequest(1, verifier, address(this))
+            .getStatic(1, 1)
+            .fetch(this.getLatestCallback.selector, "");
     }
 
     function getLatestCallback(bytes[] memory values, bytes memory) public pure returns(uint256) {
@@ -37,11 +38,9 @@ contract TestTarget is EVMFetcher {
     }
 
     function getName() public view returns(string memory) {
-        bytes[][] memory paths = new bytes[][](1);
-        paths[0] = new bytes[](1);
-        paths[0][0] = abi.encode(DYNAMIC_MASK | bytes32(uint256(2)));
-
-        getStorageSlots(verifier, address(this), paths, this.getNameCallback.selector, "");
+        EVMFetcher.newFetchRequest(1, verifier, address(this))
+            .getDynamic(1, 2)
+            .fetch(this.getNameCallback.selector, "");
     }
 
     function getNameCallback(bytes[] memory values, bytes memory) public pure returns(string memory) {
@@ -49,12 +48,10 @@ contract TestTarget is EVMFetcher {
     }
 
     function getHighscorer(uint256 idx) public view returns(string memory) {
-        bytes[][] memory paths = new bytes[][](1);
-        paths[0] = new bytes[](2);
-        paths[0][0] = abi.encode(DYNAMIC_MASK | bytes32(uint256(4)));
-        paths[0][1] = abi.encode(idx);
-
-        getStorageSlots(verifier, address(this), paths, this.getNameCallback.selector, "");
+        EVMFetcher.newFetchRequest(1, verifier, address(this))
+            .getDynamic(2, 4)
+                .element(idx)
+            .fetch(this.getHighscorerCallback.selector, "");
     }
 
     function getHighscorerCallback(bytes[] memory values, bytes memory) public pure returns(string memory) {
@@ -62,14 +59,11 @@ contract TestTarget is EVMFetcher {
     }
 
     function getLatestHighscore() public view returns(uint256) {
-        bytes[][] memory paths = new bytes[][](2);
-        paths[0] = new bytes[](1);
-        paths[0][0] = abi.encode(uint256(1));
-        paths[1] = new bytes[](2);
-        paths[1][0] = abi.encode(uint256(3));
-        paths[1][1] = abi.encode(uint256(MAGIC_SLOT) + 0);
-
-        getStorageSlots(verifier, address(this), paths, this.getLatestHighscoreCallback.selector, "");
+        EVMFetcher.newFetchRequest(2, verifier, address(this))
+            .getStatic(1, 1)
+            .getStatic(2, 3)
+                .ref(0)
+            .fetch(this.getLatestHighscoreCallback.selector, "");
     }
 
     function getLatestHighscoreCallback(bytes[] memory values, bytes memory) public pure returns(uint256) {
@@ -77,14 +71,11 @@ contract TestTarget is EVMFetcher {
     }
 
     function getLatestHighscorer() public view returns(string memory) {
-        bytes[][] memory paths = new bytes[][](2);
-        paths[0] = new bytes[](1);
-        paths[0][0] = abi.encode(uint256(1));
-        paths[1] = new bytes[](2);
-        paths[1][0] = abi.encode(DYNAMIC_MASK | bytes32(uint256(4)));
-        paths[1][1] = abi.encode(uint256(MAGIC_SLOT) + 0);
-
-        getStorageSlots(verifier, address(this), paths, this.getLatestHighscorerCallback.selector, "");
+        EVMFetcher.newFetchRequest(2, verifier, address(this))
+            .getStatic(1, 1)
+            .getDynamic(2, 4)
+                .ref(0)
+            .fetch(this.getLatestHighscorerCallback.selector, "");
     }
 
     function getLatestHighscorerCallback(bytes[] memory values, bytes memory) public pure returns(string memory) {
@@ -92,12 +83,10 @@ contract TestTarget is EVMFetcher {
     }
 
     function getNickname(string memory _name) public view returns(string memory) {
-        bytes[][] memory paths = new bytes[][](1);
-        paths[0] = new bytes[](2);
-        paths[0][0] = abi.encode(DYNAMIC_MASK | bytes32(uint256(5)));
-        paths[0][1] = bytes(_name);
-
-        getStorageSlots(verifier, address(this), paths, this.getNicknameCallback.selector, "");
+        EVMFetcher.newFetchRequest(1, verifier, address(this))
+            .getDynamic(2, 5)
+                .element(_name)
+            .fetch(this.getNicknameCallback.selector, "");
     }
 
     function getNicknameCallback(bytes[] memory values, bytes memory) public pure returns (string memory) {
@@ -105,14 +94,11 @@ contract TestTarget is EVMFetcher {
     }
 
     function getPrimaryNickname() public view returns(string memory) {
-        bytes[][] memory paths = new bytes[][](2);
-        paths[0] = new bytes[](1);
-        paths[0][0] = abi.encode(DYNAMIC_MASK | bytes32(uint256(2)));
-        paths[1] = new bytes[](2);
-        paths[1][0] = abi.encode(DYNAMIC_MASK | bytes32(uint256(5)));
-        paths[1][1] = abi.encode(uint256(MAGIC_SLOT) + 0);
-
-        getStorageSlots(verifier, address(this), paths, this.getPrimaryNicknameCallback.selector, "");
+        EVMFetcher.newFetchRequest(2, verifier, address(this))
+            .getDynamic(1, 2)
+            .getDynamic(2, 5)
+                .ref(0)
+            .fetch(this.getPrimaryNicknameCallback.selector, "");
     }
 
     function getPrimaryNicknameCallback(bytes[] memory values, bytes memory) public pure returns (string memory) {
