@@ -21,7 +21,7 @@ import { IEVMVerifier } from '@ensdomains/evm-verifier/contracts/IEVMVerifier.so
 
 contract TestTarget is EVMFetchTarget {
     using EVMFetcher for EVMFetcher.EVMFetchRequest;
-    
+
     IEVMVerifier verifier;      // Slot 0
     uint256 testUint;           // Slot 1
 
@@ -31,8 +31,8 @@ contract TestTarget is EVMFetchTarget {
     }
 
     function getTestUint() public view returns(uint256) {
-        EVMFetcher.newFetchRequest(1, verifier, address(this))
-            .getStatic(1, 1)
+        EVMFetcher.newFetchRequest(verifier, address(this))
+            .getStatic(1)
             .fetch(this.getLatestCallback.selector, "");
     }
 

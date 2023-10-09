@@ -28,8 +28,8 @@ contract TestTarget is EVMFetchTarget {
     }
 
     function getLatest() public view returns(uint256) {
-        EVMFetcher.newFetchRequest(1, verifier, address(this))
-            .getStatic(1, 1)
+        EVMFetcher.newFetchRequest(verifier, address(this))
+            .getStatic(1)
             .fetch(this.getLatestCallback.selector, "");
     }
 
@@ -38,8 +38,8 @@ contract TestTarget is EVMFetchTarget {
     }
 
     function getName() public view returns(string memory) {
-        EVMFetcher.newFetchRequest(1, verifier, address(this))
-            .getDynamic(1, 2)
+        EVMFetcher.newFetchRequest(verifier, address(this))
+            .getDynamic(2)
             .fetch(this.getNameCallback.selector, "");
     }
 
@@ -48,8 +48,8 @@ contract TestTarget is EVMFetchTarget {
     }
 
     function getHighscorer(uint256 idx) public view returns(string memory) {
-        EVMFetcher.newFetchRequest(1, verifier, address(this))
-            .getDynamic(2, 4)
+        EVMFetcher.newFetchRequest(verifier, address(this))
+            .getDynamic(4)
                 .element(idx)
             .fetch(this.getHighscorerCallback.selector, "");
     }
@@ -59,9 +59,9 @@ contract TestTarget is EVMFetchTarget {
     }
 
     function getLatestHighscore() public view returns(uint256) {
-        EVMFetcher.newFetchRequest(2, verifier, address(this))
-            .getStatic(1, 1)
-            .getStatic(2, 3)
+        EVMFetcher.newFetchRequest(verifier, address(this))
+            .getStatic(1)
+            .getStatic(3)
                 .ref(0)
             .fetch(this.getLatestHighscoreCallback.selector, "");
     }
@@ -71,9 +71,9 @@ contract TestTarget is EVMFetchTarget {
     }
 
     function getLatestHighscorer() public view returns(string memory) {
-        EVMFetcher.newFetchRequest(2, verifier, address(this))
-            .getStatic(1, 1)
-            .getDynamic(2, 4)
+        EVMFetcher.newFetchRequest(verifier, address(this))
+            .getStatic(1)
+            .getDynamic(4)
                 .ref(0)
             .fetch(this.getLatestHighscorerCallback.selector, "");
     }
@@ -83,8 +83,8 @@ contract TestTarget is EVMFetchTarget {
     }
 
     function getNickname(string memory _name) public view returns(string memory) {
-        EVMFetcher.newFetchRequest(1, verifier, address(this))
-            .getDynamic(2, 5)
+        EVMFetcher.newFetchRequest(verifier, address(this))
+            .getDynamic(5)
                 .element(_name)
             .fetch(this.getNicknameCallback.selector, "");
     }
@@ -94,9 +94,9 @@ contract TestTarget is EVMFetchTarget {
     }
 
     function getPrimaryNickname() public view returns(string memory) {
-        EVMFetcher.newFetchRequest(2, verifier, address(this))
-            .getDynamic(1, 2)
-            .getDynamic(2, 5)
+        EVMFetcher.newFetchRequest(verifier, address(this))
+            .getDynamic(2)
+            .getDynamic(5)
                 .ref(0)
             .fetch(this.getPrimaryNicknameCallback.selector, "");
     }

@@ -17,10 +17,13 @@ uint256 constant MAGIC_SLOT = 0xd3b7df68fbfff5d2ac8f3603e97698b8e10d49e5cc92d1c7
  *      See l1-verifier/test/TestTarget.sol for example usage.
  */
 library EVMFetcher {
+    uint256 constant MAX_PATH_LENGTH = 4;
+    uint256 constant MAX_REQUESTS = 8;
+
     using Address for address;
 
-    error RequestLengthMismatch(uint256 expected, uint256 received);
-    error PathLengthMismatch(uint256 request, uint256 expected, uint256 received);
+    error TooManyRequests(uint256 max);
+    error PathTooLong(uint256 request, uint256 max);
     error InvalidReference(uint256 value, uint256 max);
     error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData);
 
@@ -28,20 +31,21 @@ library EVMFetcher {
         IEVMVerifier verifier;
         address target;
         bytes[][] paths;
-        uint256 requestIdx; // Index of the next request to populate in `paths`
-        uint256 pathIdx; // Index of the next path element to populate in `paths[requestIdx]`
     }
 
     /**
      * @dev Creates a request to fetch the value of multiple storage slots from a contract via CCIP-Read, possibly from
      *      another chain.
      *      Supports dynamic length values and slot numbers derived from other retrieved values.
-     * @param fetchCount The number of fetch requests to be made.
      * @param verifier An instance of a verifier contract that can provide and verify the storage slot information.
      * @param target The address of the contract to fetch storage proofs for.
      */
-    function newFetchRequest(uint256 fetchCount, IEVMVerifier verifier, address target) internal pure returns (EVMFetchRequest memory) {
-        return EVMFetchRequest(verifier, target, new bytes[][](fetchCount), 0, 0);
+    function newFetchRequest(IEVMVerifier verifier, address target) internal pure returns (EVMFetchRequest memory) {
+        bytes[][] memory paths = new bytes[][](MAX_REQUESTS);
+        assembly {
+            mstore(paths, 0) // Set current array length to 0
+        }
+        return EVMFetchRequest(verifier, target, paths);
     }
 
     /**
@@ -50,17 +54,22 @@ library EVMFetcher {
      *      See https://docs.soliditylang.org/en/v0.8.17/internals/layout_in_storage.html for details on how Solidity
      *      lays out storage variables.
      * @param request The request object being operated on.
-     * @param elementCount The number of elements in the path being described.
      * @param baseSlot The base slot ID that forms the root of the path.
      */
-    function getStatic(EVMFetchRequest memory request, uint256 elementCount, uint256 baseSlot) internal pure returns (EVMFetchRequest memory) {
-        if(request.requestIdx > 0 && request.pathIdx != request.paths[request.requestIdx - 1].length) {
-            revert PathLengthMismatch(request.requestIdx - 1, request.paths[request.requestIdx - 1].length, request.pathIdx);
+    function getStatic(EVMFetchRequest memory request, uint256 baseSlot) internal pure returns (EVMFetchRequest memory) {
+        bytes[][] memory paths = request.paths;
+        assembly {
+            mstore(paths, add(mload(paths), 1)) // Increment array length
         }
-        request.paths[request.requestIdx] = new bytes[](elementCount);
-        request.paths[request.requestIdx][0] = abi.encode(baseSlot);
-        request.requestIdx++;
-        request.pathIdx = 1;
+        if(request.paths.length > MAX_REQUESTS) {
+            revert TooManyRequests(MAX_REQUESTS);
+        }
+        bytes[] memory path = new bytes[](MAX_PATH_LENGTH);
+        path[0] = abi.encode(baseSlot);
+        assembly {
+            mstore(path, 1) // Set current array length to 1
+        }
+        request.paths[request.paths.length - 1] = path;
         return request;
     }
 
@@ -70,17 +79,22 @@ library EVMFetcher {
      *      See https://docs.soliditylang.org/en/v0.8.17/internals/layout_in_storage.html for details on how Solidity
      *      lays out storage variables.
      * @param request The request object being operated on.
-     * @param elementCount The number of elements in the path being described.
      * @param baseSlot The base slot ID that forms the root of the path.
      */
-    function getDynamic(EVMFetchRequest memory request, uint256 elementCount, uint256 baseSlot) internal pure returns (EVMFetchRequest memory) {
-        if(request.requestIdx > 0 && request.pathIdx != request.paths[request.requestIdx - 1].length) {
-            revert PathLengthMismatch(request.requestIdx - 1, request.paths[request.requestIdx - 1].length, request.pathIdx);
+    function getDynamic(EVMFetchRequest memory request, uint256 baseSlot) internal pure returns (EVMFetchRequest memory) {
+        bytes[][] memory paths = request.paths;
+        assembly {
+            mstore(paths, add(mload(paths), 1)) // Increment array length
         }
-        request.paths[request.requestIdx] = new bytes[](elementCount);
-        request.paths[request.requestIdx][0] = abi.encode(baseSlot | DYNAMIC_MASK);
-        request.requestIdx++;
-        request.pathIdx = 1;
+        if(request.paths.length > MAX_REQUESTS) {
+            revert TooManyRequests(MAX_REQUESTS);
+        }
+        bytes[] memory path = new bytes[](MAX_PATH_LENGTH);
+        path[0] = abi.encode(baseSlot | DYNAMIC_MASK);
+        assembly {
+            mstore(path, 1) // Set current array length to 1
+        }
+        request.paths[request.paths.length - 1] = path;
         return request;
     }
 
@@ -90,7 +104,14 @@ library EVMFetcher {
      * @param el The element to add.
      */
     function element(EVMFetchRequest memory request, uint256 el) internal pure returns (EVMFetchRequest memory) {
-        request.paths[request.requestIdx - 1][request.pathIdx++] = abi.encode(el);
+        bytes[] memory path = request.paths[request.paths.length - 1];
+        assembly {
+            mstore(path, add(mload(path), 1)) // Increment array length
+        }
+        if(path.length > MAX_PATH_LENGTH) {
+            revert PathTooLong(request.paths.length - 1, MAX_PATH_LENGTH);
+        }
+        path[path.length - 1] = abi.encode(el);
         return request;
     }
 
@@ -100,7 +121,14 @@ library EVMFetcher {
      * @param el The element to add.
      */
     function element(EVMFetchRequest memory request, bytes32 el) internal pure returns (EVMFetchRequest memory) {
-        request.paths[request.requestIdx - 1][request.pathIdx++] = abi.encode(el);
+        bytes[] memory path = request.paths[request.paths.length - 1];
+        assembly {
+            mstore(path, add(mload(path), 1)) // Increment array length
+        }
+        if(path.length > MAX_PATH_LENGTH) {
+            revert PathTooLong(request.paths.length - 1, MAX_PATH_LENGTH);
+        }
+        path[path.length - 1] = abi.encode(el);
         return request;
     }
 
@@ -110,7 +138,14 @@ library EVMFetcher {
      * @param el The element to add.
      */
     function element(EVMFetchRequest memory request, address el) internal pure returns (EVMFetchRequest memory) {
-        request.paths[request.requestIdx - 1][request.pathIdx++] = abi.encode(el);
+        bytes[] memory path = request.paths[request.paths.length - 1];
+        assembly {
+            mstore(path, add(mload(path), 1)) // Increment array length
+        }
+        if(path.length > MAX_PATH_LENGTH) {
+            revert PathTooLong(request.paths.length - 1, MAX_PATH_LENGTH);
+        }
+        path[path.length - 1] = abi.encode(el);
         return request;
     }
 
@@ -120,7 +155,14 @@ library EVMFetcher {
      * @param el The element to add.
      */
     function element(EVMFetchRequest memory request, bytes memory el) internal pure returns (EVMFetchRequest memory) {
-        request.paths[request.requestIdx - 1][request.pathIdx++] = el;
+        bytes[] memory path = request.paths[request.paths.length - 1];
+        assembly {
+            mstore(path, add(mload(path), 1)) // Increment array length
+        }
+        if(path.length > MAX_PATH_LENGTH) {
+            revert PathTooLong(request.paths.length - 1, MAX_PATH_LENGTH);
+        }
+        path[path.length - 1] = el;
         return request;
     }
 
@@ -130,15 +172,26 @@ library EVMFetcher {
      * @param el The element to add.
      */
     function element(EVMFetchRequest memory request, string memory el) internal pure returns (EVMFetchRequest memory) {
-        request.paths[request.requestIdx - 1][request.pathIdx++] = bytes(el);
+        bytes[] memory path = request.paths[request.paths.length - 1];
+        assembly {
+            mstore(path, add(mload(path), 1)) // Increment array length
+        }
+        if(path.length > MAX_PATH_LENGTH) {
+            revert PathTooLong(request.paths.length - 1, MAX_PATH_LENGTH);
+        }
+        path[path.length - 1] = bytes(el);
         return request;
     }
 
     function ref(EVMFetchRequest memory request, uint256 idx) internal pure returns (EVMFetchRequest memory) {
-        if(idx >= request.requestIdx - 1) {
-            revert InvalidReference(idx, request.requestIdx - 1);
+        bytes[] memory path = request.paths[request.paths.length - 1];
+        assembly {
+            mstore(path, add(mload(path), 1)) // Increment array length
         }
-        request.paths[request.requestIdx - 1][request.pathIdx++] = abi.encode(idx + MAGIC_SLOT);
+        if(path.length > MAX_PATH_LENGTH) {
+            revert PathTooLong(request.paths.length - 1, MAX_PATH_LENGTH);
+        }
+        path[path.length - 1] = abi.encode(idx + MAGIC_SLOT);
         return request;
     }
 
@@ -152,13 +205,6 @@ library EVMFetcher {
      * @param callbackData Extra data to supply to the callback.
      */
     function fetch(EVMFetchRequest memory request, bytes4 callbackId, bytes memory callbackData) internal view {
-        if(request.requestIdx != request.paths.length) {
-            revert RequestLengthMismatch(request.requestIdx, request.paths.length);
-        }
-        if(request.pathIdx != request.paths[request.requestIdx - 1].length) {
-            revert PathLengthMismatch(request.requestIdx - 1, request.paths[request.requestIdx - 1].length, request.pathIdx);
-        }
-
         revert OffchainLookup(
             address(this),
             request.verifier.gatewayURLs(),
