@@ -1,13 +1,17 @@
 import { Server } from '@chainlink/ccip-read-server';
-import { ethers } from 'ethers';
-import { IProofService, ProvableBlock } from './IProofService';
+import {
+  concat,
+  dataSlice,
+  getBytes,
+  solidityPackedKeccak256,
+  toBigInt,
+} from 'ethers';
+import type { IProofService, ProvableBlock } from './IProofService.js';
 
-const MAGIC_SLOT = BigInt(
-  '0xd3b7df68fbfff5d2ac8f3603e97698b8e10d49e5cc92d1c72514f593c17b2229'
-);
-const UINT256_MSB = BigInt(
-  '0x8000000000000000000000000000000000000000000000000000000000000000'
-);
+const MAGIC_SLOT =
+  0xd3b7df68fbfff5d2ac8f3603e97698b8e10d49e5cc92d1c72514f593c17b2229n;
+const UINT256_MSB =
+  0x8000000000000000000000000000000000000000000000000000000000000000n;
 
 export enum StorageLayout {
   /**
@@ -51,7 +55,7 @@ export class EVMGateway<T extends ProvableBlock> {
     server.add(abi, [
       {
         type: 'getStorageSlots',
-        func: async args => {
+        func: async (args) => {
           const [addr, paths] = args;
           const proofs = await this.createProofs(addr, paths);
           return [proofs];
@@ -79,7 +83,7 @@ export class EVMGateway<T extends ProvableBlock> {
     // Resolve all the outstanding requests
     const results = await Promise.all(requests);
     const slots = Array.prototype.concat(
-      ...results.map(result => result.slots)
+      ...results.map((result) => result.slots)
     );
     return this.proofService.getProofs(block, address, slots);
   }
@@ -88,7 +92,7 @@ export class EVMGateway<T extends ProvableBlock> {
     path: string[],
     requests: Promise<StorageElement>[]
   ): Promise<{ slot: bigint; isDynamic: boolean }> {
-    let slot = ethers.toBigInt(path[0]);
+    let slot = toBigInt(path[0]);
 
     // MSB indicates if the proof should be dynamic; check it and mask it out.
     const isDynamic = (slot & UINT256_MSB) !== BigInt(0);
@@ -96,15 +100,15 @@ export class EVMGateway<T extends ProvableBlock> {
 
     // If there are multiple path elements, recursively hash them solidity-style to get the final slot.
     for (let j = 1; j < path.length; j++) {
-      let index = ethers.getBytes(path[j]);
+      let index = getBytes(path[j]);
       // Indexes close to MAGIC_SLOT are replaced with the result of a previous operation.
-      const offset = ethers.toBigInt(index) - MAGIC_SLOT;
+      const offset = toBigInt(index) - MAGIC_SLOT;
       if (offset >= 0 && offset < requests.length) {
         const targetElement = await requests[Number(offset)];
-        index = ethers.getBytes(await targetElement.value());
+        index = getBytes(await targetElement.value());
       }
-      slot = ethers.toBigInt(
-        ethers.solidityPackedKeccak256(['bytes', 'uint256'], [index, slot])
+      slot = toBigInt(
+        solidityPackedKeccak256(['bytes', 'uint256'], [index, slot])
       );
     }
 
@@ -116,16 +120,14 @@ export class EVMGateway<T extends ProvableBlock> {
     address: string,
     slot: bigint
   ): Promise<StorageElement> {
-    const firstValue = ethers.getBytes(
+    const firstValue = getBytes(
       await this.proofService.getStorageAt(block, address, slot)
     );
     // Decode Solidity dynamic value encoding
     if (firstValue[31] & 0x01) {
       // Long value: first slot is `length * 2 + 1`, following slots are data.
-      const len = (Number(ethers.toBigInt(firstValue)) - 1) / 2;
-      const hashedSlot = ethers.toBigInt(
-        ethers.solidityPackedKeccak256(['uint256'], [slot])
-      );
+      const len = (Number(toBigInt(firstValue)) - 1) / 2;
+      const hashedSlot = toBigInt(solidityPackedKeccak256(['uint256'], [slot]));
       const slotNumbers = Array(Math.ceil(len / 32))
         .fill(BigInt(hashedSlot))
         .map((i, idx) => i + BigInt(idx));
@@ -134,11 +136,11 @@ export class EVMGateway<T extends ProvableBlock> {
         isDynamic: true,
         value: memoize(async () => {
           const values = await Promise.all(
-            slotNumbers.map(slot =>
+            slotNumbers.map((slot) =>
               this.proofService.getStorageAt(block, address, slot)
             )
           );
-          return ethers.dataSlice(ethers.concat(values), 0, len);
+          return dataSlice(concat(values), 0, len);
         }),
       };
     } else {
@@ -147,7 +149,7 @@ export class EVMGateway<T extends ProvableBlock> {
       return {
         slots: [slot],
         isDynamic: true,
-        value: () => Promise.resolve(ethers.dataSlice(firstValue, 0, len)),
+        value: () => Promise.resolve(dataSlice(firstValue, 0, len)),
       };
     }
   }

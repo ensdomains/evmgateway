@@ -1,9 +1,7 @@
 {
   "private": true,
+  "type": "module",
   "description": "A generic gateway and smart contract library for cross-chain data retrieval",
-  "engines": {
-    "node": ">=14"
-  },
   "workspaces": {
     "packages": [
       "evm-gateway",
@@ -23,11 +21,16 @@
   },
   "scripts": {
     "env": "env",
-    "prepare": "husky install",
-    "test": "yarn workspaces run test",
-    "lint": "yarn workspaces run lint",
-    "build": "yarn workspaces run build",
-    "clean": "rm -fr node_modules && yarn workspaces run clean"
+    "workspace": "bun ./scripts/workspace.ts",
+    "build": "bun run workspace evm-gateway build && bun run workspace -evm-gateway build",
+    "test": "bun run workspace l1-verifier test",
+    "lint": "bun run workspace all lint",
+    "prepare": "husky install"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "bun run workspace all lint"
+    }
   },
   "repository": {
     "type": "git",
@@ -38,14 +41,15 @@
   "bugs": {
     "url": "https://github.com/arachnid/evm-l2-gateway/issues"
   },
-  "peerDependencies": {},
   "homepage": "https://github.com/arachnid/evm-l2-gateway#readme",
   "devDependencies": {
-    "husky": "^6.0.0"
-  },
-  "dependencies": {},
-  "resolutions": {
-    "@types/express-serve-static-core": "4.17.20",
-    "@types/express": "4.17.2"
+    "@typescript-eslint/eslint-plugin": "^6.7.4",
+    "@typescript-eslint/parser": "^6.7.4",
+    "eslint": "^8.50.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "husky": "^6.0.0",
+    "prettier": "^3.0.3",
+    "typescript": "^5.2.2"
   }
 }

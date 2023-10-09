@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { toBeHex, type AddressLike, type JsonRpcProvider } from 'ethers';
 
 /**
  * Response of the eth_getProof RPC method.
@@ -27,9 +27,9 @@ export interface StateProof {
  *
  */
 export class EVMProofHelper {
-  private readonly provider: ethers.JsonRpcProvider;
+  private readonly provider: JsonRpcProvider;
 
-  constructor(provider: ethers.JsonRpcProvider) {
+  constructor(provider: JsonRpcProvider) {
     this.provider = provider;
   }
 
@@ -42,7 +42,7 @@ export class EVMProofHelper {
    */
   getStorageAt(
     blockNo: number,
-    address: ethers.AddressLike,
+    address: AddressLike,
     slot: bigint
   ): Promise<string> {
     return this.provider.getStorage(address, slot, blockNo);
@@ -58,13 +58,13 @@ export class EVMProofHelper {
    */
   async getProofs(
     blockNo: number,
-    address: ethers.AddressLike,
+    address: AddressLike,
     slots: bigint[]
   ): Promise<StateProof> {
     const args = [
       address,
-      slots.map(slot => ethers.toBeHex(slot, 32)),
-      ethers.toBeHex(blockNo),
+      slots.map((slot) => toBeHex(slot, 32)),
+      toBeHex(blockNo),
     ];
     const proofs: EthGetProofResponse = await this.provider.send(
       'eth_getProof',
@@ -72,7 +72,7 @@ export class EVMProofHelper {
     );
     return {
       stateTrieWitness: proofs.accountProof,
-      storageProofs: proofs.storageProof.map(proof => proof.proof),
+      storageProofs: proofs.storageProof.map((proof) => proof.proof),
     };
   }
 }

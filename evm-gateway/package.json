@@ -1,59 +1,56 @@
 {
+  "name": "@ensdomains/evm-gateway",
   "version": "0.1.0",
+  "description": "A generic CCIP-Read gateway for fetching state proofs of data on other EVM chains",
+  "author": "Nick Johnson",
   "license": "MIT",
-  "main": "dist/index.js",
-  "typings": "dist/index.d.ts",
+  "type": "module",
+  "main": "./_cjs/index.js",
+  "module": "./_esm/index.js",
+  "types": "./_types/index.d.ts",
+  "typings": "./_types/index.d.ts",
+  "sideEffects": false,
   "files": [
-    "dist",
-    "src"
+    "_esm",
+    "_cjs",
+    "_types",
+    "src",
+    "!**/*.tsbuildinfo"
   ],
+  "exports": {
+    ".": {
+      "types": "./_types/index.d.ts",
+      "import": "./_esm/index.js",
+      "require": "./_cjs/index.js"
+    },
+    "./package.json": "./package.json"
+  },
   "engines": {
-    "node": ">=10"
+    "node": ">=10",
+    "bun": ">=1.0.4"
+  },
+  "peerDependencies": {
+    "typescript": ">=5.0.4"
+  },
+  "peerDependenciesMeta": {
+    "typescript": {
+      "optional": true
+    }
   },
   "scripts": {
-    "start": "tsdx watch",
-    "build": "tsdx build",
-    "test": "tsdx test --passWithNoTests",
-    "lint": "tsdx lint",
-    "prepare": "tsdx build",
-    "size": "size-limit",
-    "analyze": "size-limit --why",
-    "clean": "rm -fr node_modules dist"
+    "build:cjs": "tsc --project tsconfig.build.json --module commonjs --outDir ./_cjs --removeComments --verbatimModuleSyntax false && echo > ./_cjs/package.json '{\"type\":\"commonjs\"}'",
+    "build:esm": "tsc --project tsconfig.build.json --module es2022 --outDir ./_esm && echo > ./_esm/package.json '{\"type\":\"module\",\"sideEffects\":false}'",
+    "build:types": "tsc --project ./tsconfig.build.json --module esnext --declarationDir ./_types --emitDeclarationOnly --declaration --declarationMap",
+    "build": "bun run clean && bun run build:cjs && bun run build:esm && bun run build:types",
+    "prepublishOnly": "bun ../scripts/prepublishOnly.ts",
+    "lint": "eslint . --ext .ts",
+    "prepare": "bun run build",
+    "clean": "rm -fr _cjs _esm _types"
   },
-  "peerDependencies": {},
   "husky": {
     "hooks": {
-      "pre-commit": "tsdx lint"
+      "pre-commit": "bun run lint"
     }
-  },
-  "prettier": {
-    "printWidth": 80,
-    "semi": true,
-    "singleQuote": true,
-    "trailingComma": "es5"
-  },
-  "name": "@ensdomains/evm-gateway",
-  "author": "Nick Johnson",
-  "module": "dist/evm-gateway.esm.js",
-  "size-limit": [
-    {
-      "path": "dist/evm-gateway.cjs.production.min.js",
-      "limit": "10 KB"
-    },
-    {
-      "path": "dist/evm-gateway.esm.js",
-      "limit": "10 KB"
-    }
-  ],
-  "devDependencies": {
-    "@size-limit/preset-small-lib": "^9.0.0",
-    "@typescript-eslint/eslint-plugin": "^6.7.4",
-    "@typescript-eslint/parser": "^6.7.4",
-    "eslint": "^8.50.0",
-    "size-limit": "^9.0.0",
-    "tsdx": "^0.14.1",
-    "tslib": "^2.6.2",
-    "typescript": "^5.2.2"
   },
   "dependencies": {
     "@chainlink/ccip-read-server": "^0.2.1",
