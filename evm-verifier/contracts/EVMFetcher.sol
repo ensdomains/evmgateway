@@ -6,31 +6,35 @@ import { EVMFetchTarget } from './EVMFetchTarget.sol';
 import { Address } from '@openzeppelin/contracts/utils/Address.sol';
 
 interface IEVMGateway {
-    function getStorageSlots(address addr, bytes[][] memory paths) external pure returns(bytes memory witness);
+    function getStorageSlots(address addr, bytes32[] memory commands, bytes[] memory constants) external pure returns(bytes memory witness);
 }
 
-uint256 constant DYNAMIC_MASK = 0x8000000000000000000000000000000000000000000000000000000000000000;
-uint256 constant MAGIC_SLOT = 0xd3b7df68fbfff5d2ac8f3603e97698b8e10d49e5cc92d1c72514f593c17b2229;
+uint8 constant FLAG_DYNAMIC = 0x01;
+uint8 constant OP_CONSTANT = 0x00;
+uint8 constant OP_BACKREF = 0x20;
+uint8 constant OP_END = 0xff;
 
 /**
  * @dev A library to facilitate requesting storage data proofs from contracts, possibly on a different chain.
  *      See l1-verifier/test/TestL1.sol for example usage.
  */
 library EVMFetcher {
-    uint256 constant MAX_PATH_LENGTH = 4;
-    uint256 constant MAX_REQUESTS = 8;
+    uint256 constant MAX_COMMANDS = 32;
+    uint256 constant MAX_CONSTANTS = 32; // Must not be greater than 32
 
     using Address for address;
 
-    error TooManyRequests(uint256 max);
-    error PathTooLong(uint256 request, uint256 max);
+    error TooManyCommands(uint256 max);
+    error CommandTooLong();
     error InvalidReference(uint256 value, uint256 max);
     error OffchainLookup(address sender, string[] urls, bytes callData, bytes4 callbackFunction, bytes extraData);
 
     struct EVMFetchRequest {
         IEVMVerifier verifier;
         address target;
-        bytes[][] paths;
+        bytes32[] commands;
+        uint256 operationIdx;
+        bytes[] constants;
     }
 
     /**
@@ -41,11 +45,13 @@ library EVMFetcher {
      * @param target The address of the contract to fetch storage proofs for.
      */
     function newFetchRequest(IEVMVerifier verifier, address target) internal pure returns (EVMFetchRequest memory) {
-        bytes[][] memory paths = new bytes[][](MAX_REQUESTS);
+        bytes32[] memory commands = new bytes32[](MAX_COMMANDS);
+        bytes[] memory constants = new bytes[](MAX_CONSTANTS);
         assembly {
-            mstore(paths, 0) // Set current array length to 0
-        }
-        return EVMFetchRequest(verifier, target, paths);
+            mstore(commands, 0) // Set current array length to 0
+            mstore(constants, 0)
+        }        
+        return EVMFetchRequest(verifier, target, commands, 0, constants);
     }
 
     /**
@@ -57,19 +63,21 @@ library EVMFetcher {
      * @param baseSlot The base slot ID that forms the root of the path.
      */
     function getStatic(EVMFetchRequest memory request, uint256 baseSlot) internal pure returns (EVMFetchRequest memory) {
-        bytes[][] memory paths = request.paths;
+        bytes32[] memory commands = request.commands;
+        uint256 commandIdx = commands.length;
+        if(commandIdx > 0 && request.operationIdx < 32) {
+            // Terminate previous command
+            _addOperation(request, OP_END);
+        }
         assembly {
-            mstore(paths, add(mload(paths), 1)) // Increment array length
+            mstore(commands, add(commandIdx, 1)) // Increment command array length
         }
-        if(request.paths.length > MAX_REQUESTS) {
-            revert TooManyRequests(MAX_REQUESTS);
+        if(request.commands.length > MAX_COMMANDS) {
+            revert TooManyCommands(MAX_COMMANDS);
         }
-        bytes[] memory path = new bytes[](MAX_PATH_LENGTH);
-        path[0] = abi.encode(baseSlot);
-        assembly {
-            mstore(path, 1) // Set current array length to 1
-        }
-        request.paths[request.paths.length - 1] = path;
+        request.operationIdx = 0;
+        _addOperation(request, 0);
+        _addOperation(request, _addConstant(request, abi.encode(baseSlot)));
         return request;
     }
 
@@ -82,19 +90,21 @@ library EVMFetcher {
      * @param baseSlot The base slot ID that forms the root of the path.
      */
     function getDynamic(EVMFetchRequest memory request, uint256 baseSlot) internal pure returns (EVMFetchRequest memory) {
-        bytes[][] memory paths = request.paths;
+        bytes32[] memory commands = request.commands;
+        uint256 commandIdx = commands.length;
+        if(commandIdx > 0 && request.operationIdx < 32) {
+            // Terminate previous command
+            _addOperation(request, OP_END);
+        }
         assembly {
-            mstore(paths, add(mload(paths), 1)) // Increment array length
+            mstore(commands, add(commandIdx, 1)) // Increment command array length
         }
-        if(request.paths.length > MAX_REQUESTS) {
-            revert TooManyRequests(MAX_REQUESTS);
+        if(request.commands.length > MAX_COMMANDS) {
+            revert TooManyCommands(MAX_COMMANDS);
         }
-        bytes[] memory path = new bytes[](MAX_PATH_LENGTH);
-        path[0] = abi.encode(baseSlot | DYNAMIC_MASK);
-        assembly {
-            mstore(path, 1) // Set current array length to 1
-        }
-        request.paths[request.paths.length - 1] = path;
+        request.operationIdx = 0;
+        _addOperation(request, FLAG_DYNAMIC);
+        _addOperation(request, _addConstant(request, abi.encode(baseSlot)));
         return request;
     }
 
@@ -104,14 +114,10 @@ library EVMFetcher {
      * @param el The element to add.
      */
     function element(EVMFetchRequest memory request, uint256 el) internal pure returns (EVMFetchRequest memory) {
-        bytes[] memory path = request.paths[request.paths.length - 1];
-        assembly {
-            mstore(path, add(mload(path), 1)) // Increment array length
+        if(request.operationIdx >= 32) {
+            revert CommandTooLong();
         }
-        if(path.length > MAX_PATH_LENGTH) {
-            revert PathTooLong(request.paths.length - 1, MAX_PATH_LENGTH);
-        }
-        path[path.length - 1] = abi.encode(el);
+        _addOperation(request, _addConstant(request, abi.encode(el)));
         return request;
     }
 
@@ -121,14 +127,10 @@ library EVMFetcher {
      * @param el The element to add.
      */
     function element(EVMFetchRequest memory request, bytes32 el) internal pure returns (EVMFetchRequest memory) {
-        bytes[] memory path = request.paths[request.paths.length - 1];
-        assembly {
-            mstore(path, add(mload(path), 1)) // Increment array length
+        if(request.operationIdx >= 32) {
+            revert CommandTooLong();
         }
-        if(path.length > MAX_PATH_LENGTH) {
-            revert PathTooLong(request.paths.length - 1, MAX_PATH_LENGTH);
-        }
-        path[path.length - 1] = abi.encode(el);
+        _addOperation(request, _addConstant(request, abi.encode(el)));
         return request;
     }
 
@@ -138,14 +140,10 @@ library EVMFetcher {
      * @param el The element to add.
      */
     function element(EVMFetchRequest memory request, address el) internal pure returns (EVMFetchRequest memory) {
-        bytes[] memory path = request.paths[request.paths.length - 1];
-        assembly {
-            mstore(path, add(mload(path), 1)) // Increment array length
+        if(request.operationIdx >= 32) {
+            revert CommandTooLong();
         }
-        if(path.length > MAX_PATH_LENGTH) {
-            revert PathTooLong(request.paths.length - 1, MAX_PATH_LENGTH);
-        }
-        path[path.length - 1] = abi.encode(el);
+        _addOperation(request, _addConstant(request, abi.encode(el)));
         return request;
     }
 
@@ -155,14 +153,10 @@ library EVMFetcher {
      * @param el The element to add.
      */
     function element(EVMFetchRequest memory request, bytes memory el) internal pure returns (EVMFetchRequest memory) {
-        bytes[] memory path = request.paths[request.paths.length - 1];
-        assembly {
-            mstore(path, add(mload(path), 1)) // Increment array length
+        if(request.operationIdx >= 32) {
+            revert CommandTooLong();
         }
-        if(path.length > MAX_PATH_LENGTH) {
-            revert PathTooLong(request.paths.length - 1, MAX_PATH_LENGTH);
-        }
-        path[path.length - 1] = el;
+        _addOperation(request, _addConstant(request, el));
         return request;
     }
 
@@ -172,14 +166,10 @@ library EVMFetcher {
      * @param el The element to add.
      */
     function element(EVMFetchRequest memory request, string memory el) internal pure returns (EVMFetchRequest memory) {
-        bytes[] memory path = request.paths[request.paths.length - 1];
-        assembly {
-            mstore(path, add(mload(path), 1)) // Increment array length
+        if(request.operationIdx >= 32) {
+            revert CommandTooLong();
         }
-        if(path.length > MAX_PATH_LENGTH) {
-            revert PathTooLong(request.paths.length - 1, MAX_PATH_LENGTH);
-        }
-        path[path.length - 1] = bytes(el);
+        _addOperation(request, _addConstant(request, bytes(el)));
         return request;
     }
 
@@ -188,15 +178,14 @@ library EVMFetcher {
      * @param request The request object being operated on.
      * @param idx The index of the previous fetch request, starting at 0.
      */
-    function ref(EVMFetchRequest memory request, uint256 idx) internal pure returns (EVMFetchRequest memory) {
-        bytes[] memory path = request.paths[request.paths.length - 1];
-        assembly {
-            mstore(path, add(mload(path), 1)) // Increment array length
+    function ref(EVMFetchRequest memory request, uint8 idx) internal pure returns (EVMFetchRequest memory) {
+        if(request.operationIdx >= 32) {
+            revert CommandTooLong();
         }
-        if(path.length > MAX_PATH_LENGTH) {
-            revert PathTooLong(request.paths.length - 1, MAX_PATH_LENGTH);
+        if(idx > request.commands.length || idx > 31) {
+            revert InvalidReference(idx, request.commands.length);
         }
-        path[path.length - 1] = abi.encode(idx + MAGIC_SLOT);
+        _addOperation(request, OP_BACKREF | idx);
         return request;
     }
 
@@ -210,13 +199,30 @@ library EVMFetcher {
      * @param callbackData Extra data to supply to the callback.
      */
     function fetch(EVMFetchRequest memory request, bytes4 callbackId, bytes memory callbackData) internal view {
+        if(request.commands.length > 0 && request.operationIdx < 32) {
+            // Terminate last command
+            _addOperation(request, OP_END);
+        }
         revert OffchainLookup(
             address(this),
             request.verifier.gatewayURLs(),
-            abi.encodeCall(IEVMGateway.getStorageSlots, (request.target, request.paths)),
+            abi.encodeCall(IEVMGateway.getStorageSlots, (request.target, request.commands, request.constants)),
             EVMFetchTarget.getStorageSlotsCallback.selector,
-            abi.encode(request.verifier, request.target, request.paths, callbackId, callbackData)
+            abi.encode(request.verifier, request.target, request.commands, request.constants, callbackId, callbackData)
         );
     }
 
+    function _addConstant(EVMFetchRequest memory request, bytes memory value) private pure returns(uint8 idx) {
+        bytes[] memory constants = request.constants;
+        idx = uint8(constants.length);
+        assembly {
+            mstore(constants, add(idx, 1)) // Increment constant array length
+        }
+        constants[idx] = value;
+    }
+
+    function _addOperation(EVMFetchRequest memory request, uint8 op) private pure {
+        uint256 commandIdx = request.commands.length - 1;
+        request.commands[commandIdx] = request.commands[commandIdx] | (bytes32(bytes1(op)) >> (8 * request.operationIdx++));
+    }
 }

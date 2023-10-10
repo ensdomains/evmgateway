@@ -10,12 +10,16 @@ struct StateProof {
     bytes[][] storageProofs;          // An array of proofs of individual storage elements 
 }
 
+uint8 constant OP_CONSTANT = 0x00;
+uint8 constant OP_BACKREF = 0x20;
+uint8 constant FLAG_DYNAMIC = 0x01;
+
 library EVMProofHelper {
     using Bytes for bytes;
 
-    uint256 constant private MAGIC_SLOT = 0xd3b7df68fbfff5d2ac8f3603e97698b8e10d49e5cc92d1c72514f593c17b2229;
-
     error AccountNotFound(address);
+    error UnknownOpcode(uint8);
+    error InvalidSlotSize(uint256 size);
 
     /**
      * @notice Get the storage root for the provided merkle proof
@@ -65,21 +69,29 @@ library EVMProofHelper {
         return bytes32(value) >> (256 - 8 * value.length);
     }
 
-    function computeFirstSlot(bytes[] memory path, bytes[] memory values, uint256 idx) private pure returns(bool isDynamic, uint256 slot) {
-        require(path[0].length == 32, "First path element must be 32 bytes");
-        isDynamic = (bytes32(path[0]) >> 255) != 0;
-        slot = (uint256(bytes32(path[0])) << 1) >> 1; // Mask out MSB
+    function executeOperation(bytes1 operation, bytes[] memory constants, bytes[] memory values) private pure returns(bytes memory) {
+        uint8 opcode = uint8(operation) & 0xe0;
+        uint8 operand = uint8(operation) & 0x1f;
 
-        for(uint256 j = 1; j < path.length; j++) {
-            bytes memory index = path[j];
-            if(index.length == 32) {
-                unchecked {
-                    uint256 valueIdx = uint256(bytes32(index)) - MAGIC_SLOT;
-                    if(valueIdx < idx) {
-                        index = values[valueIdx];
-                    }
-                }
-            }
+        if(opcode == OP_CONSTANT) {
+            return constants[operand];
+        } else if(opcode == OP_BACKREF) {
+            return values[operand];
+        } else {
+            revert UnknownOpcode(opcode);
+        }
+    }
+
+    function computeFirstSlot(bytes32 command, bytes[] memory constants, bytes[] memory values) private pure returns(bool isDynamic, uint256 slot) {
+        uint8 flags = uint8(command[0]);
+        isDynamic = (flags & FLAG_DYNAMIC) != 0;
+
+        bytes memory slotData = executeOperation(command[1], constants, values);
+        require(slotData.length == 32, "First path element must be 32 bytes");
+        slot = uint256(bytes32(slotData));
+
+        for(uint256 j = 2; j < 32 && command[j] != 0xff; j++) {
+            bytes memory index = executeOperation(command[j], constants, values);
             slot = uint256(keccak256(abi.encodePacked(index, slot)));
         }
     }
@@ -110,16 +122,18 @@ library EVMProofHelper {
         }
     }
 
-    function getStorageValues(address target, bytes[][] memory paths, bytes32 stateRoot, StateProof memory proof) internal pure returns(bytes[] memory values) {
+    function getStorageValues(address target, bytes32[] memory commands, bytes[] memory constants, bytes32 stateRoot, StateProof memory proof) internal pure returns(bytes[] memory values) {
         bytes32 storageRoot = getStorageRoot(stateRoot, target, proof.stateTrieWitness);
         uint256 proofIdx = 0;
-        values = new bytes[](paths.length);
-        for(uint256 i = 0; i < paths.length; i++) {
-            bytes[] memory path = paths[i];
-            (bool isDynamic, uint256 slot) = computeFirstSlot(path, values, i);
+        values = new bytes[](commands.length);
+        for(uint256 i = 0; i < commands.length; i++) {
+            bytes32 command = commands[i];
+            (bool isDynamic, uint256 slot) = computeFirstSlot(command, constants, values);
             if(!isDynamic) {
                 values[i] = abi.encode(getFixedValue(storageRoot, slot, proof.storageProofs[proofIdx++]));
-                require(values[i].length <= 32, "Slot value is not of expected length");
+                if(values[i].length > 32) {
+                    revert InvalidSlotSize(values[i].length);
+                }
             } else {
                 (values[i], proofIdx) = getDynamicValue(storageRoot, slot, proof, proofIdx);
             }

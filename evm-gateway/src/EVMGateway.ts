@@ -8,10 +8,8 @@ import {
 } from 'ethers';
 import type { IProofService, ProvableBlock } from './IProofService.js';
 
-const MAGIC_SLOT =
-  0xd3b7df68fbfff5d2ac8f3603e97698b8e10d49e5cc92d1c72514f593c17b2229n;
-const UINT256_MSB =
-  0x8000000000000000000000000000000000000000000000000000000000000000n;
+const OP_CONSTANT = 0x00;
+const OP_BACKREF = 0x20;
 
 export enum StorageLayout {
   /**
@@ -50,14 +48,14 @@ export class EVMGateway<T extends ProvableBlock> {
   makeApp(path: string) {
     const server = new Server();
     const abi = [
-      'function getStorageSlots(address addr, bytes[][] memory paths) external view returns(bytes memory witness)',
+      'function getStorageSlots(address addr, bytes32[] memory commands, bytes[] memory constants) external view returns(bytes memory witness)',
     ];
     server.add(abi, [
       {
         type: 'getStorageSlots',
         func: async (args) => {
-          const [addr, paths] = args;
-          const proofs = await this.createProofs(addr, paths);
+          const [addr, commands, constants] = args;
+          const proofs = await this.createProofs(addr, commands, constants);
           return [proofs];
         },
       },
@@ -71,13 +69,13 @@ export class EVMGateway<T extends ProvableBlock> {
    * @param paths Each element of this array specifies a Solidity-style path derivation for a storage slot ID.
    *              See README.md for details of the encoding.
    */
-  async createProofs(address: string, paths: string[][]): Promise<string> {
+  async createProofs(address: string, commands: string[], constants: string[]): Promise<string> {
     const block = await this.proofService.getProvableBlock();
     const requests: Promise<StorageElement>[] = [];
     // For each request, spawn a promise to compute the set of slots required
-    for (let i = 0; i < paths.length; i++) {
+    for (let i = 0; i < commands.length; i++) {
       requests.push(
-        this.getValueFromPath(block, address, paths[i], requests.slice())
+        this.getValueFromPath(block, address, commands[i], constants, requests.slice())
       );
     }
     // Resolve all the outstanding requests
@@ -88,25 +86,35 @@ export class EVMGateway<T extends ProvableBlock> {
     return this.proofService.getProofs(block, address, slots);
   }
 
+  private async executeOperation(operation: number, constants: string[], requests: Promise<StorageElement>[]): Promise<string> {
+    const opcode = operation & 0xe0;
+    const operand = operation & 0x1f;
+
+    switch(opcode) {
+    case OP_CONSTANT:
+      return constants[operand];
+    case OP_BACKREF:
+      const targetElement = await requests[operand];
+      return await targetElement.value();
+    default:
+      throw new Error("Unrecognized opcode");
+    }
+  }
+
   private async computeFirstSlot(
-    path: string[],
+    command: string,
+    constants: string[],
     requests: Promise<StorageElement>[]
   ): Promise<{ slot: bigint; isDynamic: boolean }> {
-    let slot = toBigInt(path[0]);
+    const commandWord = getBytes(command);
+    const flags = commandWord[0];
+    const isDynamic = (flags & 0x01) != 0;
 
-    // MSB indicates if the proof should be dynamic; check it and mask it out.
-    const isDynamic = (slot & UINT256_MSB) !== BigInt(0);
-    slot &= UINT256_MSB - BigInt(1);
+    let slot = toBigInt(await this.executeOperation(commandWord[1], constants, requests));
 
     // If there are multiple path elements, recursively hash them solidity-style to get the final slot.
-    for (let j = 1; j < path.length; j++) {
-      let index = getBytes(path[j]);
-      // Indexes close to MAGIC_SLOT are replaced with the result of a previous operation.
-      const offset = toBigInt(index) - MAGIC_SLOT;
-      if (offset >= 0 && offset < requests.length) {
-        const targetElement = await requests[Number(offset)];
-        index = getBytes(await targetElement.value());
-      }
+    for (let j = 2; j < 32 && commandWord[j] != 0xff; j++) {
+      let index = await this.executeOperation(commandWord[j], constants, requests);
       slot = toBigInt(
         solidityPackedKeccak256(['bytes', 'uint256'], [index, slot])
       );
@@ -157,10 +165,11 @@ export class EVMGateway<T extends ProvableBlock> {
   private async getValueFromPath(
     block: T,
     address: string,
-    path: string[],
+    command: string,
+    constants: string[],
     requests: Promise<StorageElement>[]
   ): Promise<StorageElement> {
-    const { slot, isDynamic } = await this.computeFirstSlot(path, requests);
+    const { slot, isDynamic } = await this.computeFirstSlot(command, constants, requests);
 
     if (!isDynamic) {
       return {
