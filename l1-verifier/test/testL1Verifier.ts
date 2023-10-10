@@ -71,11 +71,17 @@ describe('L1Verifier', () => {
     );
     verifier = await l1VerifierFactory.deploy(['test:']);
 
-    const testTargetFactory = await ethers.getContractFactory(
-      'TestTarget',
+    const testL2Factory = await ethers.getContractFactory(
+      'TestL2',
       signer
     );
-    target = await testTargetFactory.deploy(await verifier.getAddress());
+    const l2contract = await testL2Factory.deploy();
+
+    const testL1Factory = await ethers.getContractFactory(
+      'TestL1',
+      signer
+    );
+    target = await testL1Factory.deploy(await verifier.getAddress(), await l2contract.getAddress());
 
     // Mine an empty block so we have something to prove against
     await provider.send('evm_mine', []);

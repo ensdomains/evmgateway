@@ -9,7 +9,7 @@ This repository implements a generic CCIP-Read gateway framework for fetching st
 
 ## Example
 
-The example below fetches its own storage value `testUint` in the most byzantine possible manner.
+The example below fetches another contract's storage value `testUint`.
 
 ```
 // SPDX-License-Identifier: MIT
@@ -19,20 +19,28 @@ import { EVMFetcher } from '@ensdomains/evm-verifier/contracts/EVMFetcher.sol';
 import { EVMFetchTarget } from '@ensdomains/evm-verifier/contracts/EVMFetchTarget.sol';
 import { IEVMVerifier } from '@ensdomains/evm-verifier/contracts/IEVMVerifier.sol';
 
-contract TestTarget is EVMFetchTarget {
+contract TestL1 {
+    uint256 testUint; // Slot 0
+    
+    constructor() {
+        testUint = 42;
+    }
+}
+
+contract TestL2 is EVMFetchTarget {
     using EVMFetcher for EVMFetcher.EVMFetchRequest;
 
-    IEVMVerifier verifier;      // Slot 0
-    uint256 testUint;           // Slot 1
+    IEVMVerifier verifier;
+    address target;
 
-    constructor(IEVMVerifier _verifier) {
+    constructor(IEVMVerifier _verifier, address _target) {
         verifier = _verifier;
-        testUint = 42;
+        target = _target;
     }
 
     function getTestUint() public view returns(uint256) {
-        EVMFetcher.newFetchRequest(verifier, address(this))
-            .getStatic(1)
+        EVMFetcher.newFetchRequest(verifier, target)
+            .getStatic(0)
             .fetch(this.getSingleStorageSlotCallback.selector, "");
     }
 

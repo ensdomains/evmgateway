@@ -5,31 +5,20 @@ import { EVMFetcher } from '@ensdomains/evm-verifier/contracts/EVMFetcher.sol';
 import { EVMFetchTarget } from '@ensdomains/evm-verifier/contracts/EVMFetchTarget.sol';
 import { IEVMVerifier } from '@ensdomains/evm-verifier/contracts/IEVMVerifier.sol';
 
-contract TestTarget is EVMFetchTarget {
+contract TestL1 is EVMFetchTarget {
     using EVMFetcher for EVMFetcher.EVMFetchRequest;
 
     IEVMVerifier verifier;                  // Slot 0
-    uint256 latest;                         // Slot 1
-    string name;                            // Slot 2
-    mapping(uint256=>uint256) highscores;   // Slot 3
-    mapping(uint256=>string) highscorers;   // Slot 4
-    mapping(string=>string) realnames;      // Slot 5
+    address target;
 
-    constructor(IEVMVerifier _verifier) {
+    constructor(IEVMVerifier _verifier, address _target) {
         verifier = _verifier;
-
-        latest = 42;
-        name = "Satoshi";
-        highscores[latest] = 12345;
-        highscorers[latest] = "Hal Finney";
-        highscorers[1] = "Hubert Blaine Wolfeschlegelsteinhausenbergerdorff Sr.";
-        realnames["Money Skeleton"] = "Vitalik Buterin";
-        realnames["Satoshi"] = "Hal Finney";
+        target = _target;
     }
 
     function getLatest() public view returns(uint256) {
-        EVMFetcher.newFetchRequest(verifier, address(this))
-            .getStatic(1)
+        EVMFetcher.newFetchRequest(verifier, target)
+            .getStatic(0)
             .fetch(this.getLatestCallback.selector, "");
     }
 
@@ -38,8 +27,8 @@ contract TestTarget is EVMFetchTarget {
     }
 
     function getName() public view returns(string memory) {
-        EVMFetcher.newFetchRequest(verifier, address(this))
-            .getDynamic(2)
+        EVMFetcher.newFetchRequest(verifier, target)
+            .getDynamic(1)
             .fetch(this.getNameCallback.selector, "");
     }
 
@@ -48,8 +37,8 @@ contract TestTarget is EVMFetchTarget {
     }
 
     function getHighscorer(uint256 idx) public view returns(string memory) {
-        EVMFetcher.newFetchRequest(verifier, address(this))
-            .getDynamic(4)
+        EVMFetcher.newFetchRequest(verifier, target)
+            .getDynamic(3)
                 .element(idx)
             .fetch(this.getHighscorerCallback.selector, "");
     }
@@ -59,9 +48,9 @@ contract TestTarget is EVMFetchTarget {
     }
 
     function getLatestHighscore() public view returns(uint256) {
-        EVMFetcher.newFetchRequest(verifier, address(this))
-            .getStatic(1)
-            .getStatic(3)
+        EVMFetcher.newFetchRequest(verifier, target)
+            .getStatic(0)
+            .getStatic(2)
                 .ref(0)
             .fetch(this.getLatestHighscoreCallback.selector, "");
     }
@@ -71,9 +60,9 @@ contract TestTarget is EVMFetchTarget {
     }
 
     function getLatestHighscorer() public view returns(string memory) {
-        EVMFetcher.newFetchRequest(verifier, address(this))
-            .getStatic(1)
-            .getDynamic(4)
+        EVMFetcher.newFetchRequest(verifier, target)
+            .getStatic(0)
+            .getDynamic(3)
                 .ref(0)
             .fetch(this.getLatestHighscorerCallback.selector, "");
     }
@@ -83,8 +72,8 @@ contract TestTarget is EVMFetchTarget {
     }
 
     function getNickname(string memory _name) public view returns(string memory) {
-        EVMFetcher.newFetchRequest(verifier, address(this))
-            .getDynamic(5)
+        EVMFetcher.newFetchRequest(verifier, target)
+            .getDynamic(4)
                 .element(_name)
             .fetch(this.getNicknameCallback.selector, "");
     }
@@ -94,9 +83,9 @@ contract TestTarget is EVMFetchTarget {
     }
 
     function getPrimaryNickname() public view returns(string memory) {
-        EVMFetcher.newFetchRequest(verifier, address(this))
-            .getDynamic(2)
-            .getDynamic(5)
+        EVMFetcher.newFetchRequest(verifier, target)
+            .getDynamic(1)
+            .getDynamic(4)
                 .ref(0)
             .fetch(this.getPrimaryNicknameCallback.selector, "");
     }

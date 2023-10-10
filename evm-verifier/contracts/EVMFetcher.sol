@@ -14,7 +14,7 @@ uint256 constant MAGIC_SLOT = 0xd3b7df68fbfff5d2ac8f3603e97698b8e10d49e5cc92d1c7
 
 /**
  * @dev A library to facilitate requesting storage data proofs from contracts, possibly on a different chain.
- *      See l1-verifier/test/TestTarget.sol for example usage.
+ *      See l1-verifier/test/TestL1.sol for example usage.
  */
 library EVMFetcher {
     uint256 constant MAX_PATH_LENGTH = 4;
@@ -183,6 +183,11 @@ library EVMFetcher {
         return request;
     }
 
+    /**
+     * @dev Adds a reference to a previous fetch to the current path.
+     * @param request The request object being operated on.
+     * @param idx The index of the previous fetch request, starting at 0.
+     */
     function ref(EVMFetchRequest memory request, uint256 idx) internal pure returns (EVMFetchRequest memory) {
         bytes[] memory path = request.paths[request.paths.length - 1];
         assembly {
