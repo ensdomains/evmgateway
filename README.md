@@ -33,7 +33,7 @@ contract TestTarget is EVMFetchTarget {
     function getTestUint() public view returns(uint256) {
         EVMFetcher.newFetchRequest(verifier, address(this))
             .getStatic(1)
-            .fetch(this.getLatestCallback.selector, "");
+            .fetch(this.getSingleStorageSlotCallback.selector, "");
     }
 
     function getSingleStorageSlotCallback(bytes[] memory values, bytes memory) public pure returns(uint256) {
