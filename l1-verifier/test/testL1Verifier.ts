@@ -134,5 +134,10 @@ describe('L1Verifier', () => {
   it('treats uninitialized storage elements as zeroes', async () => {
     const result = await target.getZero({ enableCcipRead: true });
     expect(Number(result)).to.equal(0);
+  });
+
+  it('treats uninitialized dynamic values as empty strings', async () => {
+    const result = await target.getNickname('Santa', { enableCcipRead: true });
+    expect(result).to.equal("");
   })
 });
