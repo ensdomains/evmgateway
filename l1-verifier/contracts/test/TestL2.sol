@@ -7,6 +7,7 @@ contract TestL2 {
     mapping(uint256=>uint256) highscores;   // Slot 2
     mapping(uint256=>string) highscorers;   // Slot 3
     mapping(string=>string) realnames;      // Slot 4
+    uint256 zero;                           // Slot 5
 
     constructor() {
         latest = 42;

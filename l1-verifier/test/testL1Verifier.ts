@@ -130,4 +130,9 @@ describe('L1Verifier', () => {
     const result = await target.getPrimaryNickname({ enableCcipRead: true });
     expect(result).to.equal('Hal Finney');
   });
+
+  it('treats uninitialized storage elements as zeroes', async () => {
+    const result = await target.getZero({ enableCcipRead: true });
+    expect(Number(result)).to.equal(0);
+  })
 });

@@ -2,9 +2,8 @@
 pragma solidity ^0.8.17;
 
 import {RLPReader} from "@eth-optimism/contracts-bedrock/src/libraries/rlp/RLPReader.sol";
-import {SecureMerkleTrie} from "@eth-optimism/contracts-bedrock/src/libraries/trie/SecureMerkleTrie.sol";
-
-import {BytesLib} from "solidity-bytes-utils/contracts/BytesLib.sol";
+import {Bytes} from "@eth-optimism/contracts-bedrock/src/libraries/Bytes.sol";
+import {SecureMerkleTrie} from "./SecureMerkleTrie.sol";
 
 struct StateProof {
     bytes[] stateTrieWitness;         // Witness proving the `storageRoot` against a state root.
@@ -12,9 +11,11 @@ struct StateProof {
 }
 
 library EVMProofHelper {
-    using BytesLib for bytes;
+    using Bytes for bytes;
 
     uint256 constant private MAGIC_SLOT = 0xd3b7df68fbfff5d2ac8f3603e97698b8e10d49e5cc92d1c72514f593c17b2229;
+
+    error AccountNotFound(address);
 
     /**
      * @notice Get the storage root for the provided merkle proof
@@ -24,11 +25,14 @@ library EVMProofHelper {
      * @return The storage root retrieved from the provided state root
      */
     function getStorageRoot(bytes32 stateRoot, address target, bytes[] memory witness) private pure returns (bytes32) {
-        bytes memory encodedResolverAccount = SecureMerkleTrie.get(
+        (bool exists, bytes memory encodedResolverAccount) = SecureMerkleTrie.get(
             abi.encodePacked(target),
             witness,
             stateRoot
         );
+        if(!exists) {
+            revert AccountNotFound(target);
+        }
         RLPReader.RLPItem[] memory accountState = RLPReader.readList(encodedResolverAccount);
         return bytes32(RLPReader.readBytes(accountState[2]));
     }
@@ -41,11 +45,15 @@ library EVMProofHelper {
      * @return The retrieved storage proof value or 0x if the storage slot is empty
      */
     function getSingleStorageProof(bytes32 storageRoot, uint256 slot, bytes[] memory witness) private pure returns (bytes memory) {
-        bytes memory retrievedValue = SecureMerkleTrie.get(
+        (bool exists, bytes memory retrievedValue) = SecureMerkleTrie.get(
             abi.encodePacked(slot),
             witness,
             storageRoot
         );
+        if(!exists) {
+            // Nonexistent values are treated as zero.
+            return "";
+        }
         return RLPReader.readBytes(retrievedValue);
     }
 
@@ -87,10 +95,10 @@ library EVMProofHelper {
             // all at once, but we're trying to avoid writing new library code.
             while(length > 0) {
                 if(length < 32) {
-                    value = value.concat(getSingleStorageProof(storageRoot, slot++, proof.storageProofs[proofIdx++]).slice(0, length));
+                    value = bytes.concat(value, getSingleStorageProof(storageRoot, slot++, proof.storageProofs[proofIdx++]).slice(0, length));
                     length = 0;
                 } else {
-                    value = value.concat(getSingleStorageProof(storageRoot, slot++, proof.storageProofs[proofIdx++]));
+                    value = bytes.concat(value, getSingleStorageProof(storageRoot, slot++, proof.storageProofs[proofIdx++]));
                     length -= 32;
                 }
             }

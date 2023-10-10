@@ -93,4 +93,14 @@ contract TestL1 is EVMFetchTarget {
     function getPrimaryNicknameCallback(bytes[] memory values, bytes memory) public pure returns (string memory) {
         return string(values[1]);
     }
+
+    function getZero() public view returns(uint256) {
+        EVMFetcher.newFetchRequest(verifier, target)
+            .getStatic(5)
+            .fetch(this.getZeroCallback.selector, "");
+    }
+
+    function getZeroCallback(bytes[] memory values, bytes memory) public pure returns (uint256) {
+        return abi.decode(values[0], (uint256));
+    }
 }
