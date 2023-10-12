@@ -6,6 +6,7 @@
     "packages": [
       "evm-gateway",
       "l1-gateway",
+      "l1-gateway-worker",
       "evm-verifier",
       "l1-verifier"
     ],
@@ -51,5 +52,9 @@
     "husky": "^6.0.0",
     "prettier": "^3.0.3",
     "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "@ensdomains/ccip-read-cf-worker": "^0.0.1",
+    "tsc": "^2.0.4"
   }
 }

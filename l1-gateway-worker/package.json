@@ -1,0 +1,65 @@
+{
+  "name": "@ensdomains/l1-gateway-worker",
+  "version": "0.1.0",
+  "author": "Nick Johnson",
+  "license": "MIT",
+  "type": "module",
+  "main": "./_cjs/index.js",
+  "module": "./_esm/index.js",
+  "types": "./_types/index.d.ts",
+  "typings": "./_types/index.d.ts",
+  "bin": "./_cjs/server.js",
+  "sideEffects": false,
+  "files": [
+    "_esm",
+    "_cjs",
+    "_types",
+    "src",
+    "!**/*.tsbuildinfo"
+  ],
+  "exports": {
+    ".": {
+      "types": "./_types/index.d.ts",
+      "import": "./_esm/index.js",
+      "require": "./_cjs/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=10",
+    "bun": ">=1.0.4"
+  },
+  "peerDependencies": {
+    "typescript": ">=5.0.4"
+  },
+  "peerDependenciesMeta": {
+    "typescript": {
+      "optional": true
+    }
+  },
+  "scripts": {
+    "start": "wrangler dev",
+    "build:cjs": "tsc --project tsconfig.build.json --module commonjs --outDir ./_cjs --removeComments --verbatimModuleSyntax false && echo > ./_cjs/package.json '{\"type\":\"commonjs\"}'",
+    "build:esm": "tsc --project tsconfig.build.json --module es2022 --outDir ./_esm && echo > ./_esm/package.json '{\"type\":\"module\",\"sideEffects\":false}'",
+    "build:types": "tsc --project ./tsconfig.build.json --module esnext --declarationDir ./_types --emitDeclarationOnly --declaration --declarationMap",
+    "build": "bun run clean && bun run build:cjs && bun run build:esm && bun run build:types",
+    "prepublishOnly": "bun ../scripts/prepublishOnly.ts",
+    "lint": "eslint . --ext .ts",
+    "prepare": "bun run build",
+    "clean": "rm -fr _cjs _esm _types"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "bun run lint"
+    }
+  },
+  "dependencies": {
+    "@chainlink/ccip-read-server": "^0.2.1",
+    "@commander-js/extra-typings": "^11.0.0",
+    "@ensdomains/evm-gateway": "^0.1.0",
+    "@ethereumjs/block": "^5.0.0",
+    "@nomicfoundation/ethereumjs-block": "^5.0.2",
+    "commander": "^11.0.0",
+    "ethers": "^6.7.1"
+  }
+}
