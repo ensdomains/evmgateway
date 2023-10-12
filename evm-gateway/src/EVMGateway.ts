@@ -1,4 +1,6 @@
-import { Server } from '@chainlink/ccip-read-server';
+// import { Server } from '@chainlink/ccip-read-server';
+import { Server } from '@ensdomains/ccip-read-cf-worker';
+
 import {
   concat,
   dataSlice,
@@ -45,8 +47,7 @@ export class EVMGateway<T extends ProvableBlock> {
     this.proofService = proofService;
   }
 
-  makeApp(path: string) {
-    const server = new Server();
+  makeApp(server: Server, path: string) {
     const abi = [
       /**
        * This function implements a simple VM for fetching proofs for EVM contract storage data.
@@ -88,8 +89,10 @@ export class EVMGateway<T extends ProvableBlock> {
       {
         type: 'getStorageSlots',
         func: async (args) => {
+          console.log('***getStorageSlots1', {args})
           const [addr, commands, constants] = args;
           const proofs = await this.createProofs(addr, commands, constants);
+          console.log('***getStorageSlots2', {proofs})
           return [proofs];
         },
       },

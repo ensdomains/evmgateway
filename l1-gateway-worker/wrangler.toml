@@ -4,7 +4,7 @@ main = "./src/server.ts"
 node_compat = true
 
 [dev]
-port = 8000
+port = 8080
 
 [build]
 command = "yarn build"

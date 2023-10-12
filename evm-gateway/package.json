@@ -54,6 +54,8 @@
   },
   "dependencies": {
     "@chainlink/ccip-read-server": "^0.2.1",
-    "ethers": "^6.7.1"
+    "@ensdomains/ccip-read-cf-worker": "^0.0.1",
+    "ethers": "^6.7.1",
+    "typescript": "^5.2.2"
   }
 }
