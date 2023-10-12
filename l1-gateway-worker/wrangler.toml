@@ -1,0 +1,14 @@
+name = "l1-gateway-worker"
+account_id = ""
+main = "./src/server.ts"
+node_compat = true
+
+[dev]
+port = 8000
+
+[build]
+command = "yarn build"
+
+[vars]
+OG_DATA = "test.eth.json"
+OG_TTL = "60"
