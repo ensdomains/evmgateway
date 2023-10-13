@@ -5,7 +5,9 @@ import { Server } from '@ensdomains/ccip-read-cf-worker';
 
 function fetch(request:any, env:any, _context:any){
   console.log({request}, {env},{ _context})
-  const provider = new ethers.JsonRpcProvider(env.PROVIDER_URL);
+  const { PROVIDER_URL } = env;
+  console.log({PROVIDER_URL})
+  const provider = new ethers.JsonRpcProvider(PROVIDER_URL);
   const gateway = new EVMGateway(new L1ProofService(provider));
   const server = new Server();
   const app = gateway.makeApp(server, '/');
