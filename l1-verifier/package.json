@@ -5,6 +5,7 @@
   "scripts": {
     "build": "hardhat compile",
     "test": "node scripts/test.js",
+    "remote_test": "hardhat run scripts/remote.ts",
     "clean": "rm -fr artifacts cache node_modules typechain-types"
   },
   "devDependencies": {
