@@ -11,4 +11,3 @@ port = 8080
 command = "yarn build"
 
 [vars]
-PROVIDER_URL = 'http://0.0.0.0:8545'

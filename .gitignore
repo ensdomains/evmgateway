@@ -5,3 +5,4 @@ dist
 _types
 _esm
 _cjs
+.dev.vars
