@@ -88,9 +88,14 @@ export class EVMGateway<T extends ProvableBlock> {
       {
         type: 'getStorageSlots',
         func: async (args) => {
-          const [addr, commands, constants] = args;
-          const proofs = await this.createProofs(addr, commands, constants);
-          return [proofs];
+          try {
+            const [addr, commands, constants] = args;
+            const proofs = await this.createProofs(addr, commands, constants);
+            return [proofs];
+          } catch(e:any) {
+            console.log(e.stack);
+            throw(e);
+          }
         },
       },
     ]);

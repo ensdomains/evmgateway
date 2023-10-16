@@ -5,3 +5,5 @@ dist
 _types
 _esm
 _cjs
+op-verifier/deployments/opDevnetL1
+op-verifier/deployments/opDevnetL2
