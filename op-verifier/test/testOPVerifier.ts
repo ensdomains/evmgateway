@@ -1,20 +1,20 @@
-import { makeL1Gateway } from '@ensdomains/l1-gateway';
-import { Server } from '@chainlink/ccip-read-server';
+import { makeOPGateway } from '@ensdomains/op-gateway';
 import { HardhatEthersProvider } from '@nomicfoundation/hardhat-ethers/internal/hardhat-ethers-provider';
 import type { HardhatEthersHelpers } from '@nomicfoundation/hardhat-ethers/types';
 import { expect } from 'chai';
+import hre from 'hardhat';
 import {
-  BrowserProvider,
   Contract,
-  JsonRpcProvider,
-  Signer,
-  ethers as ethersT
+  Provider,
+  ethers as ethersT,
+  FetchRequest,
+  Signer
 } from 'ethers';
-import { FetchRequest } from 'ethers';
 import express from 'express';
 import { ethers } from 'hardhat';
 import { EthereumProvider } from 'hardhat/types';
 import request from 'supertest';
+import fs from 'fs';
 
 type ethersObj = typeof ethersT &
   Omit<HardhatEthersHelpers, 'provider'> & {
@@ -30,25 +30,36 @@ declare module 'hardhat/types/runtime' {
   }
 }
 
-describe('L1Verifier', () => {
-  let provider: BrowserProvider;
+describe('OPVerifier', () => {
+  let provider: Provider;
   let signer: Signer;
-  let verifier: Contract;
-  let target: Contract;
   let gateway: express.Application;
+  let target: Contract;
 
   before(async () => {
     // Hack to get a 'real' ethers provider from hardhat. The default `HardhatProvider`
     // doesn't support CCIP-read.
-    provider = new ethers.BrowserProvider(ethers.provider._hardhatProvider);
-    // provider.on("debug", (x: any) => console.log(JSON.stringify(x, undefined, 2)));
+    provider = new ethers.BrowserProvider(hre.network.provider);
     signer = await provider.getSigner(0);
 
-    const proof = makeL1Gateway(provider as unknown as JsonRpcProvider);
-    const server = new Server()
-    proof.add(server)
-    const gateway = server.makeApp('/')
-    const getUrl = FetchRequest.createGetUrlFunc();    
+    const opAddresses = await (await fetch("http://localhost:8080/addresses.json")).json();
+    opAddresses.StateCommitmentChain = '0x0000000000000000000000000000000000000000';
+    opAddresses.CanonicalTransactionChain = '0x0000000000000000000000000000000000000000';
+    opAddresses.BondManager = '0x0000000000000000000000000000000000000000';
+    opAddresses.L2OutputOracle = opAddresses.L2OutputOracleProxy;
+
+    const server = await makeOPGateway(
+      (hre.network.config as any).url,
+      (hre.config.networks[hre.network.companionNetworks.l2] as any).url,
+      5, 
+      {
+        l1: opAddresses
+      }
+    );
+    gateway = server.makeApp('/');
+
+    // Replace ethers' fetch function with one that calls the gateway directly.
+    const getUrl = FetchRequest.createGetUrlFunc();
     ethers.FetchRequest.registerGetUrl(async (req: FetchRequest) => {
       if(req.url != "test:") return getUrl(req);
 
@@ -68,26 +79,10 @@ describe('L1Verifier', () => {
         },
       };
     });
-    const l1VerifierFactory = await ethers.getContractFactory(
-      'L1Verifier',
-      signer
-    );
-    verifier = await l1VerifierFactory.deploy(['test:']);
 
-    const testL2Factory = await ethers.getContractFactory(
-      'TestL2',
-      signer
-    );
-    const l2contract = await testL2Factory.deploy();
-
-    const testL1Factory = await ethers.getContractFactory(
-      'TestL1',
-      signer
-    );
-    target = await testL1Factory.deploy(await verifier.getAddress(), await l2contract.getAddress());
-    // Mine an empty block so we have something to prove against
-    await provider.send('evm_mine', []);
-  });
+    const targetDeployment = await hre.deployments.get('TestL1');
+    target = await ethers.getContractAt('TestL1', targetDeployment.address, signer);
+  })
 
   it('simple proofs for fixed values', async () => {
     const result = await target.getLatest({ enableCcipRead: true });

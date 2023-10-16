@@ -7,8 +7,10 @@
       "evm-gateway",
       "l1-gateway",
       "l1-gateway-worker",
+      "op-gateway",
       "evm-verifier",
-      "l1-verifier"
+      "l1-verifier",
+      "op-verifier"
     ],
     "nohoist": [
       "**/@nomiclabs/**",
@@ -43,6 +45,9 @@
     "url": "https://github.com/arachnid/evm-l2-gateway/issues"
   },
   "homepage": "https://github.com/arachnid/evm-l2-gateway#readme",
+  "resolutions": {
+    "@eth-optimism/sdk/**/ethers": "^5.7.0"
+  },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^6.7.4",
     "@typescript-eslint/parser": "^6.7.4",
@@ -55,6 +60,7 @@
   },
   "dependencies": {
     "@ensdomains/ccip-read-cf-worker": "^0.0.1",
-    "tsc": "^2.0.4"
+    "tsc": "^2.0.4",
+    "@eth-optimism/sdk": "^3.1.4"
   }
 }

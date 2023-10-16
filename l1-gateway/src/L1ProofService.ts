@@ -1,7 +1,6 @@
 import {
   AbiCoder,
   encodeRlp as encodeRlp_,
-  toBeHex,
   type AddressLike,
   type JsonRpcProvider,
 } from 'ethers';
@@ -68,7 +67,7 @@ export class L1ProofService implements IProofService<L1ProvableBlock> {
     const proof = await this.helper.getProofs(blockNo, address, slots);
     const rpcBlock: JsonRpcBlock = await this.provider.send(
       'eth_getBlockByNumber',
-      [toBeHex(blockNo), false]
+      ['0x' + blockNo.toString(16), false]
     );
     const block = Block.fromRPC(rpcBlock);
     const blockHeader = encodeRlp(block.header.raw());

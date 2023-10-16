@@ -19,6 +19,7 @@ interface EthGetProofResponse {
 export interface StateProof {
   stateTrieWitness: string[];
   storageProofs: string[][];
+  stateRoot: string;
 }
 
 /**
@@ -64,7 +65,7 @@ export class EVMProofHelper {
     const args = [
       address,
       slots.map((slot) => toBeHex(slot, 32)),
-      toBeHex(blockNo),
+      '0x' + blockNo.toString(16),
     ];
     const proofs: EthGetProofResponse = await this.provider.send(
       'eth_getProof',
@@ -73,6 +74,7 @@ export class EVMProofHelper {
     return {
       stateTrieWitness: proofs.accountProof,
       storageProofs: proofs.storageProof.map((proof) => proof.proof),
+      stateRoot: proofs.storageHash,
     };
   }
 }
