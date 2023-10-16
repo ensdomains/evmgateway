@@ -3,7 +3,7 @@ import {
   dataSlice,
   getBytes,
   solidityPackedKeccak256,
-  toBigInt
+  toBigInt,
 } from 'ethers';
 import type { Fragment, Interface, JsonFragment } from '@ethersproject/abi';
 import type { HandlerDescription } from '@ensdomains/ccip-read-cf-worker';
