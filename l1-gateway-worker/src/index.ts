@@ -1,7 +1,6 @@
 import { EVMGateway } from '@ensdomains/evm-gateway';
 import { JsonRpcProvider } from 'ethers';
-import { L1ProofService, type L1ProvableBlock } from './L1ProofService.js';
-
+import { L1ProofService, type L1ProvableBlock } from '@ensdomains/l1-gateway';
 export type L1Gateway = EVMGateway<L1ProvableBlock>;
 
 export function makeL1Gateway(provider: JsonRpcProvider): L1Gateway {
