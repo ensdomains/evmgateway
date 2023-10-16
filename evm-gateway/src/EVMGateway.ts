@@ -92,9 +92,10 @@ export class EVMGateway<T extends ProvableBlock> {
             const [addr, commands, constants] = args;
             const proofs = await this.createProofs(addr, commands, constants);
             return [proofs];
-          } catch(e:any) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          } catch (e: any) {
             console.log(e.stack);
-            throw(e);
+            throw e;
           }
         },
       },

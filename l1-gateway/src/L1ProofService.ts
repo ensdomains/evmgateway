@@ -1,7 +1,6 @@
 import {
   AbiCoder,
   encodeRlp as encodeRlp_,
-  toBeHex,
   type AddressLike,
   type JsonRpcProvider,
 } from 'ethers';

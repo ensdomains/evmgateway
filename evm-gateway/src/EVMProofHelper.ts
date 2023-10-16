@@ -74,7 +74,7 @@ export class EVMProofHelper {
     return {
       stateTrieWitness: proofs.accountProof,
       storageProofs: proofs.storageProof.map((proof) => proof.proof),
-      stateRoot: proofs.storageHash
+      stateRoot: proofs.storageHash,
     };
   }
 }

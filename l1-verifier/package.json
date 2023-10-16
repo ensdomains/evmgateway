@@ -5,7 +5,8 @@
   "scripts": {
     "build": "hardhat compile",
     "test": "node scripts/test.js",
-    "clean": "rm -fr artifacts cache node_modules typechain-types"
+    "clean": "rm -fr artifacts cache node_modules typechain-types",
+    "lint": "exit 0"
   },
   "devDependencies": {
     "@ensdomains/l1-gateway": "^0.1.0",
