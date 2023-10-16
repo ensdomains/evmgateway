@@ -11,9 +11,6 @@ const program = new Command()
 program.parse();
 
 const options = program.opts();
-console.log({
-  options
-})
 const provider = new ethers.JsonRpcProvider(options.providerUrl);
 const gateway = new EVMGateway(new L1ProofService(provider));
 const server = new Server();

@@ -1,5 +1,4 @@
-// import { Server } from '@chainlink/ccip-read-server';
-import { Server } from '@ensdomains/ccip-read-cf-worker';
+import { Server } from '@chainlink/ccip-read-server';
 
 import {
   concat,
@@ -89,10 +88,8 @@ export class EVMGateway<T extends ProvableBlock> {
       {
         type: 'getStorageSlots',
         func: async (args) => {
-          console.log('***getStorageSlots1', {args})
           const [addr, commands, constants] = args;
           const proofs = await this.createProofs(addr, commands, constants);
-          console.log('***getStorageSlots2', {proofs})
           return [proofs];
         },
       },
