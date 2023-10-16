@@ -5,14 +5,15 @@ async function fetch(request:any, env:any, _context:any){
   // Otherwise, deployment thorws "Error: Script startup exceeded CPU time limit." error
   const ethers = await import('ethers');
   const { EVMGateway } = await import('@ensdomains/evm-gateway');
-  const { L1ProofService } = await import('./L1ProofService');
+  const { L1ProofService } = await import('./L1ProofService.js');
   // Set PROVIDER_URL under .dev.vars locally. Set the key as secret remotely with `wrangler secret put WORKER_PROVIDER_URL`
   const { PROVIDER_URL } = env;
   console.log({PROVIDER_URL})
   const provider = new ethers.JsonRpcProvider(PROVIDER_URL);
-  const gateway = new EVMGateway(new L1ProofService(provider));
+  const proof = new EVMGateway(new L1ProofService(provider));
   const server = new Server();
-  const app = gateway.makeApp(server, '/');
+  proof.add(server);
+  const app = server.makeApp("/")
   return app.handle(request)
 }
 
