@@ -5,8 +5,8 @@ import type { DeepPartial, OEContractsLike } from '@eth-optimism/sdk';
 export type OPGateway = EVMGateway<OPProvableBlock>;
 
 export async function makeOPGateway(
-  l1provider: string | EthereumProvider,
-  l2provider: string,
+  l1providerUrl: string,
+  l2providerUrl: string,
   delay: number,
   contracts?: DeepPartial<OEContractsLike>
 ): Promise<OPGateway> {
