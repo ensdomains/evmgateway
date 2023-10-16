@@ -1,5 +1,14 @@
 # EVM CCIP-Read Gateway
-This repository implements a generic CCIP-Read gateway framework for fetching state proofs of data on other EVM chains.
+This repository implements a generic CCIP-Read gateway framework for fetching state proofs of data on other EVM chains. This allows L1 smart contracts to fetch and verify state from L2s. The library is built to be as modular and interchangeable as possible. This means:
+
+ - Anyone can operate their own gateway, but...
+ - Only one gateway needs to be operated for each chain, regardless of the applications requesting data from it.
+ - Gateways do not need to be trusted; their responses are fully verified on L1.
+ - Contracts can fetch L2 state using a simple builder interface and callbacks.
+ - Contracts can change targets (eg, a different L2) just by swapping out the address of a verifier contract for another.
+
+While this functionality is written primarily with read calls in mind, it also functions for transactions; using a compliant
+library like Ethers, a transaction that includes relevant L2 proofs can be generated and signed.
 
 ## Usage
 
@@ -19,7 +28,7 @@ import { EVMFetcher } from '@ensdomains/evm-verifier/contracts/EVMFetcher.sol';
 import { EVMFetchTarget } from '@ensdomains/evm-verifier/contracts/EVMFetchTarget.sol';
 import { IEVMVerifier } from '@ensdomains/evm-verifier/contracts/IEVMVerifier.sol';
 
-contract TestL1 {
+contract TestL2 {
     uint256 testUint; // Slot 0
     
     constructor() {
@@ -27,7 +36,7 @@ contract TestL1 {
     }
 }
 
-contract TestL2 is EVMFetchTarget {
+contract TestL1 is EVMFetchTarget {
     using EVMFetcher for EVMFetcher.EVMFetchRequest;
 
     IEVMVerifier verifier;
@@ -79,3 +88,9 @@ functionality.
 A complete Solidity library that facilitates sending CCIP-Read requests for L1 state, and verifying the responses.
 
 This repository also contains the end-to-end tests for the entire stack.
+
+### [op-gateway](/op-gateway/)
+An instantiation of `evm-gateway` that targets Optimism. Combined with `op-verifier`, makes it possible for L1 contracts to fetch contract state data from Optimism.
+
+### [op-verifier](/op-verifier/)
+A complete Solidity library that facilitates sending CCIP-Read requests for Optimism state, and verifying the responses.
