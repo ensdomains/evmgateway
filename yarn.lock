@@ -5818,9 +5818,10 @@ hardhat-deploy-ethers@^0.4.1:
   resolved "https://registry.yarnpkg.com/hardhat-deploy-ethers/-/hardhat-deploy-ethers-0.4.1.tgz#dd70b0cc413ed99e98994047b383a004cf1c14f8"
   integrity sha512-RM6JUcD0dOCjemxnKLtK7XQQI7NWn+LxF5qicGYax0PtWayEUXAewOb4WIHZ/yearhj+s2t6dL0MnHyLTENwJg==
 
-hardhat-deploy@nataouze/hardhat-deploy#fixCompanionNetworks:
-  version "0.11.42"
-  resolved "https://codeload.github.com/nataouze/hardhat-deploy/tar.gz/dbc174ab3bd6a9aef97ab03720cae637beedaa5b"
+hardhat-deploy@^0.11.43:
+  version "0.11.43"
+  resolved "https://registry.yarnpkg.com/hardhat-deploy/-/hardhat-deploy-0.11.43.tgz#b22ff15b3ea201b72ba0f17f4b2e182cc950e73e"
+  integrity sha512-D760CjDtinwjOCpKOvdyRtIJYLQIYXmhfgkFe+AkxlYM9bPZ/T4tZ/xIB2tR89ZT+z0hF1YuZFBXIL3/G/9T5g==
   dependencies:
     "@ethersproject/abi" "^5.7.0"
     "@ethersproject/abstract-signer" "^5.7.0"
