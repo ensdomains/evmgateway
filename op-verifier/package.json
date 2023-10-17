@@ -3,13 +3,13 @@
   "license": "MIT",
   "version": "0.1.0",
   "scripts": {
-    "build": "hardhat compile",
+    "build": "echo 'building op-verifier...' && hardhat compile",
     "test": "echo hardhat test",
     "clean": "rm -fr artifacts cache node_modules typechain-types",
     "lint": "exit 0"
   },
   "devDependencies": {
-    "@ensdomains/op-gateway": "^0.1.0",
+    "@ensdomains/op-gateway": "workspace:*",
     "@nomicfoundation/hardhat-chai-matchers": "^2.0.0",
     "@nomicfoundation/hardhat-ethers": "^3.0.0",
     "@nomicfoundation/hardhat-network-helpers": "^1.0.0",
@@ -26,7 +26,7 @@
     "express": "^4.18.2",
     "ganache": "^7.9.1",
     "hardhat": "^2.16.0",
-    "hardhat-deploy": "nataouze/hardhat-deploy#fixCompanionNetworks",
+    "hardhat-deploy": "^0.11.43",
     "hardhat-deploy-ethers": "^0.4.1",
     "hardhat-gas-reporter": "^1.0.8",
     "solidity-bytes-utils": "^0.8.0",

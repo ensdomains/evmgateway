@@ -6,10 +6,6 @@ For a detailed readme and usage instructions, see the [monorepo readme](https://
 
 ## Testing
 
-This repo is currently pinned to a fork of hardhat-deploy due to [this bug](https://github.com/wighawag/hardhat-deploy/issues/490). Once resolved it can be pointed back at the latest release.
-
-Due to this, after running `yarn` you will need to `cd node_modules/hardhat-deploy` and do `git submodule init && git submodule update && yarn build`.
-
 Start up a devnet by following Optimism's instructions [here](https://community.optimism.io/docs/developers/build/dev-node/#do-i-need-this).
 
 Then, deploy the L2 contract:

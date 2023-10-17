@@ -12,7 +12,12 @@ const runScriptForWorkspace = (w: string) => {
   });
 };
 
-if (workspace !== 'all' && !workspace.startsWith('-'))
+if (workspace.includes(',')) {
+  const workspaces = workspace.split(',');
+  for (const w of workspaces) {
+    runScriptForWorkspace(w);
+  }
+} else if (workspace !== 'all' && !workspace.startsWith('-'))
   runScriptForWorkspace(workspace);
 else {
   const excluded = workspace.startsWith('-') && workspace.slice(1);
