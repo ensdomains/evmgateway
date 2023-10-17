@@ -12,10 +12,10 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Use Bun 1.0.4
+      - name: Use Bun 1.0.6
         uses: oven-sh/setup-bun@v1
         with:
-          bun-version: 1.0.4
+          bun-version: 1.0.6
 
       - name: Use Node ${{ matrix.node }}
         uses: actions/setup-node@v3
@@ -23,28 +23,31 @@ jobs:
           node-version: ${{ matrix.node }}
 
       - name: Install Dependencies
-        run: bun install
+        run: bun install --frozen-lockfile --ignore-scripts
+
+      - name: Build
+        run: bun run build
 
       - name: Test (uses node internally)
         run: bun run test
 
   build:
-    name: Build and lint with Bun 1.0.4
+    name: Build and lint with Bun 1.0.6
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Use Bun 1.0.4
+      - name: Use Bun 1.0.6
         uses: oven-sh/setup-bun@v1
         with:
-          bun-version: 1.0.4
+          bun-version: 1.0.6
 
       - name: Install Dependencies
-        run: bun install
-
-      - name: Lint
-        run: bun run lint
+        run: bun install --frozen-lockfile --ignore-scripts
 
       - name: Build
         run: bun run build
+
+      - name: Lint
+        run: bun run lint
