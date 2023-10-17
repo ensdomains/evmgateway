@@ -41,10 +41,10 @@ jobs:
           bun-version: 1.0.6
 
       - name: Install Dependencies
-        run: bun install --frozen-lockfile
-
-      - name: Lint
-        run: bun run lint
+        run: bun install --frozen-lockfile --ignore-scripts
 
       - name: Build
         run: bun run build
+
+      - name: Lint
+        run: bun run lint
