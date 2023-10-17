@@ -7,7 +7,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const {deploy} = deployments;
   const {deployer} = await getNamedAccounts();
   let L2_OUTPUT_ORACLE_ADDRESS, GATEWAY_URL
-  console.log('00_op_verifier1')
   if(network.name === 'opDevnetL1'){
     GATEWAY_URL = 'http://localhost:8080/{sender}/{data}.json'
     const opAddresses = await (await fetch("http://localhost:8080/addresses.json")).json();

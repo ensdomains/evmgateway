@@ -4,20 +4,20 @@ An instantiation of [evm-gateway](https://github.com/ensdomains/evmgateway/tree/
 
 For a detailed readme and usage instructions, see the [monorepo readme](https://github.com/ensdomains/evmgateway/tree/main).
 
-## How to use l1-gateway locally
+## How to use op-gateway locally via cloudflare dev env (aka wrangler)
 
 ```
-cd l1-gateway
+cd op-gateway
 yarn
 touch .dev.vars
-## set L1_PROVIDER_URL, L2_PROVIDER_URL, DELAY=5
+## set L1_PROVIDER_URL, L2_PROVIDER_URL, L2_OUTPUT_ORACLE, DELAY=5
 yarn dev
 ```
 
-## How to deploy l1-gateway to cloudflare
+## How to deploy op-gateway to cloudflare
 
 ```
-cd l1-gateway
+cd op-gateway
 npm install -g wrangler
 wrngler login
 wrangler secret put L1_PROVIDER_URL
