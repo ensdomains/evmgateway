@@ -1,6 +1,7 @@
 import { Command } from '@commander-js/extra-typings';
 import { EVMGateway } from '@ensdomains/evm-gateway';
 import { OPProofService } from './OPProofService.js';
+import { Server } from '@chainlink/ccip-read-server';
 
 const program = new Command()
   .option('-p, --port <port>', 'port to listen on', '8080')
@@ -21,14 +22,16 @@ program.parse();
 (async () => {
   const options = program.opts();
 
-  const gateway = new EVMGateway(
+  const proof = new EVMGateway(
     await OPProofService.create(
       options.l1ProviderUrl,
       options.l2ProviderUrl,
       Number(options.delay)
     )
   );
-  const app = gateway.makeApp('/');
+  const server = new Server();
+  proof.add(server);
+  const app = server.makeApp("/")
 
   const port = parseInt(options.port);
   if (String(port) !== options.port) throw new Error('Invalid port');
