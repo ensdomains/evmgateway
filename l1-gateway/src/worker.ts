@@ -1,6 +1,8 @@
 import { Server } from '@ensdomains/ccip-read-cf-worker';
-
-async function fetch(request:any, env:any, _context:any){
+interface Env {
+  WORKER_PROVIDER_URL: string
+}
+async function fetch(request:Request, env:Env){
   // Loading libraries dynamically as a temp work around.
   // Otherwise, deployment thorws "Error: Script startup exceeded CPU time limit." error
   const ethers = await import('ethers');
