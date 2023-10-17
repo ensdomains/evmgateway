@@ -41,7 +41,7 @@ jobs:
           bun-version: 1.0.6
 
       - name: Install Dependencies
-        run: bun install
+        run: bun install --frozen-lockfile
 
       - name: Lint
         run: bun run lint
