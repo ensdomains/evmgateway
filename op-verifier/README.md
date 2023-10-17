@@ -33,38 +33,3 @@ hardhat test --network opDevnetL1
 ```
 
 The tests will require small modifications to work on public testnets; specifically, contract addresses are currently fetched from `http://localhost:8080/addresses.json`; this will need to be made conditional on the network being used.
-
-## How to use l1-gateway locally
-
-```
-cd l1-gateway
-yarn
-touch .dev.vars
-## set WORKER_PROVIDER_URL
-yarn dev
-```
-
-## How to deploy l1-gateway to cloudflare
-
-```
-cd l1-gateway
-npm install -g wrangler
-wrngler login
-wrangler secret put WORKER_PROVIDER_URL
-yarn deploy
-```
-
-## How to test
-
-```
-cd ../l1-verifier l1-gateway
-PROVIDER_URL=$PROVIDER_URL TARGET_ADDRESS=$TARGET_ADDRESS yarn remote_test
-```
-
-## Current deployments
-
-## L1 Gateway
-
-- Verifier = [0xA63381212fBf7AA2D0b4a2cAe453f8c361B11d06](https://goerli.etherscan.io/address/0xA63381212fBf7AA2D0b4a2cAe453f8c361B11d06)
-- TestL1 = [0xD5b1cB24f9BA18C9c35b3D090309E643bC77491e](https://goerli.etherscan.io/address/0xD5b1cB24f9BA18C9c35b3D090309E643bC77491e)
-- TestL2 = [0x43c0CBb8943E394FaE4C4def054D7702c29c9037](https://goerli.etherscan.io/address/0x43c0CBb8943E394FaE4C4def054D7702c29c9037)
