@@ -1,17 +1,19 @@
 import { EVMGateway } from '@ensdomains/evm-gateway';
 import { OPProofService, type OPProvableBlock } from './OPProofService.js';
-import type { DeepPartial, OEContractsLike } from '@eth-optimism/sdk';
+import { JsonRpcProvider } from 'ethers';
 
 export type OPGateway = EVMGateway<OPProvableBlock>;
 
 export async function makeOPGateway(
   l1providerUrl: string,
   l2providerUrl: string,
-  delay: number,
-  contracts?: DeepPartial<OEContractsLike>
+  l2OutputOracleAddress: string,
+  delay: number
 ): Promise<OPGateway> {
+  const l1Provider = new JsonRpcProvider(l1providerUrl);
+  const l2Provider = new JsonRpcProvider(l2providerUrl);
   return new EVMGateway(
-    await OPProofService.create(l1providerUrl, l2providerUrl, delay, contracts)
+    await new OPProofService(l1Provider, l2Provider, l2OutputOracleAddress, delay)
   );
 }
 

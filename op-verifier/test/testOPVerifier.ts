@@ -8,13 +8,13 @@ import {
   Provider,
   ethers as ethersT,
   FetchRequest,
-  Signer
+  Signer,
+  JsonRpcProvider
 } from 'ethers';
 import express from 'express';
 import { ethers } from 'hardhat';
 import { EthereumProvider } from 'hardhat/types';
 import request from 'supertest';
-import fs from 'fs';
 
 type ethersObj = typeof ethersT &
   Omit<HardhatEthersHelpers, 'provider'> & {
@@ -43,18 +43,12 @@ describe('OPVerifier', () => {
     signer = await provider.getSigner(0);
 
     const opAddresses = await (await fetch("http://localhost:8080/addresses.json")).json();
-    opAddresses.StateCommitmentChain = '0x0000000000000000000000000000000000000000';
-    opAddresses.CanonicalTransactionChain = '0x0000000000000000000000000000000000000000';
-    opAddresses.BondManager = '0x0000000000000000000000000000000000000000';
-    opAddresses.L2OutputOracle = opAddresses.L2OutputOracleProxy;
 
     const server = await makeOPGateway(
       (hre.network.config as any).url,
       (hre.config.networks[hre.network.companionNetworks.l2] as any).url,
-      5, 
-      {
-        l1: opAddresses
-      }
+      opAddresses.L2OutputOracleProxy,
+      5,
     );
     gateway = server.makeApp('/');
 

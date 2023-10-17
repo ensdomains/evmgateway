@@ -1,6 +1,7 @@
 import { Command } from '@commander-js/extra-typings';
 import { EVMGateway } from '@ensdomains/evm-gateway';
 import { OPProofService } from './OPProofService.js';
+import { JsonRpcProvider } from 'ethers';
 
 const program = new Command()
   .option('-p, --port <port>', 'port to listen on', '8080')
@@ -14,6 +15,11 @@ const program = new Command()
     'l2 provider url',
     'http://localhost:9545/'
   )
+  .option(
+    '-o --l2-output-oracle <address>',
+    'address for L2 output oracle on the L1',
+    ''
+  )
   .option('-d, --delay <number>', 'number of blocks delay to use', '5');
 
 program.parse();
@@ -21,10 +27,14 @@ program.parse();
 (async () => {
   const options = program.opts();
 
+  const l1Provider = new JsonRpcProvider(options.l1ProviderUrl);
+  const l2Provider = new JsonRpcProvider(options.l2ProviderUrl);
+
   const gateway = new EVMGateway(
-    await OPProofService.create(
-      options.l1ProviderUrl,
-      options.l2ProviderUrl,
+    new OPProofService(
+      l1Provider,
+      l2Provider,
+      options.l2OutputOracle,
       Number(options.delay)
     )
   );

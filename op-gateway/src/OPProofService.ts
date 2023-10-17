@@ -1,12 +1,4 @@
-import { AbiCoder, type AddressLike, JsonRpcProvider } from 'ethers';
-import { ethers as ethers5 } from 'ethers5';
-
-import {
-  asL2Provider,
-  CrossChainMessenger,
-  type DeepPartial,
-  type OEContractsLike,
-} from '@eth-optimism/sdk';
+import { AbiCoder, type AddressLike, JsonRpcProvider, Contract } from 'ethers';
 import { EVMProofHelper, type IProofService } from '@ensdomains/evm-gateway';
 import { type JsonRpcBlock } from '@ethereumjs/block';
 
@@ -15,52 +7,34 @@ export interface OPProvableBlock {
   l2OutputIndex: number;
 }
 
+const L2_OUTPUT_ORACLE_ABI = [
+  'function latestOutputIndex() external view returns (uint256)',
+  'function getL2Output(uint256 _l2OutputIndex) external view returns (tuple(bytes32 outputRoot, uint128 timestamp, uint128 l2BlockNumber))',
+];
+
+const L2_TO_L1_MESSAGE_PASSER_ADDRESS = "0x4200000000000000000000000000000000000016";
+
 /**
  * The proofService class can be used to calculate proofs for a given target and slot on the Optimism Bedrock network.
  * It's also capable of proofing long types such as mappings or string by using all included slots in the proof.
  *
  */
 export class OPProofService implements IProofService<OPProvableBlock> {
-  readonly crossChainMessenger: CrossChainMessenger;
-  private readonly provider: JsonRpcProvider;
+  private readonly l2OutputOracle: Contract;
+  private readonly l2Provider: JsonRpcProvider;
   private readonly helper: EVMProofHelper;
   private readonly delay: number;
 
-  static async create(
-    l1ProviderUrl: string,
-    l2ProviderUrl: string,
-    delay: number,
-    contracts?: DeepPartial<OEContractsLike>
-  ) {
-    const provider = new JsonRpcProvider(l2ProviderUrl);
-    const v5l1Provider = new ethers5.providers.StaticJsonRpcProvider(
-      l1ProviderUrl
-    );
-    const v5l2Provider = new ethers5.providers.StaticJsonRpcProvider(
-      l2ProviderUrl
-    );
-    const opts: ConstructorParameters<typeof CrossChainMessenger>[0] = {
-      l1ChainId: (await v5l1Provider.getNetwork()).chainId,
-      l2ChainId: (await v5l2Provider.getNetwork()).chainId,
-      l1SignerOrProvider: v5l1Provider,
-      l2SignerOrProvider: asL2Provider(v5l2Provider),
-    };
-    if (contracts) {
-      opts.contracts = contracts;
-    }
-    const crossChainMessenger = new CrossChainMessenger(opts);
-    return new OPProofService(crossChainMessenger, provider, delay);
-  }
-
-  private constructor(
-    crossChainMessenger: CrossChainMessenger,
-    provider: JsonRpcProvider,
+  constructor(
+    l1Provider: JsonRpcProvider,
+    l2Provider: JsonRpcProvider,
+    l2OutputOracleAddress: string,
     delay: number
   ) {
-    this.crossChainMessenger = crossChainMessenger;
-    this.provider = provider;
-    this.helper = new EVMProofHelper(provider);
+    this.l2Provider = l2Provider;
+    this.helper = new EVMProofHelper(l2Provider);
     this.delay = delay;
+    this.l2OutputOracle = new Contract(l2OutputOracleAddress, L2_OUTPUT_ORACLE_ABI, l1Provider);
   }
 
   /**
@@ -72,9 +46,9 @@ export class OPProofService implements IProofService<OPProvableBlock> {
      * We go a few batches backwards to avoid errors like delays between nodes
      *
      */
-    const l2OutputIndex = (
-      await this.crossChainMessenger.contracts.l1.L2OutputOracle.latestOutputIndex()
-    ).sub(this.delay);
+    const l2OutputIndex = 
+      Number(await this.l2OutputOracle.latestOutputIndex()) - this.delay;
+    
 
     /**
      *    struct OutputProposal {
@@ -84,13 +58,13 @@ export class OPProofService implements IProofService<OPProvableBlock> {
      *      }
      */
     const outputProposal =
-      await this.crossChainMessenger.contracts.l1.L2OutputOracle.getL2Output(
+      await this.l2OutputOracle.getL2Output(
         l2OutputIndex
       );
 
     return {
-      number: outputProposal.l2BlockNumber.toNumber(),
-      l2OutputIndex: l2OutputIndex.toNumber(),
+      number: outputProposal.l2BlockNumber,
+      l2OutputIndex: l2OutputIndex,
     };
   }
 
@@ -123,7 +97,7 @@ export class OPProofService implements IProofService<OPProvableBlock> {
     slots: bigint[]
   ): Promise<string> {
     const proof = await this.helper.getProofs(block.number, address, slots);
-    const rpcBlock: JsonRpcBlock = await this.provider.send(
+    const rpcBlock: JsonRpcBlock = await this.l2Provider.send(
       'eth_getBlockByNumber',
       ['0x' + block.number.toString(16), false]
     );
@@ -156,7 +130,7 @@ export class OPProofService implements IProofService<OPProvableBlock> {
   private async getMessagePasserStorageRoot(blockNo: number) {
     const { stateRoot } = await this.helper.getProofs(
       blockNo,
-      this.crossChainMessenger.contracts.l2.BedrockMessagePasser.address,
+      L2_TO_L1_MESSAGE_PASSER_ADDRESS,
       []
     );
     return stateRoot;

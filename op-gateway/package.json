@@ -57,11 +57,9 @@
     "@chainlink/ccip-read-server": "^0.2.1",
     "@commander-js/extra-typings": "^11.0.0",
     "@ensdomains/evm-gateway": "^0.1.0",
-    "@eth-optimism/sdk": "^3.1.4",
     "@ethereumjs/block": "^5.0.0",
     "@nomicfoundation/ethereumjs-block": "^5.0.2",
     "commander": "^11.0.0",
-    "ethers": "^6.7.1",
-    "ethers5": "npm:ethers@5"
+    "ethers": "^6.7.1"
   }
 }
