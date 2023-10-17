@@ -11,13 +11,13 @@ Start up a devnet by following Optimism's instructions [here](https://community.
 Then, deploy the L2 contract:
 
 ```
-hardhat deploy --network opDevnetL2
+bun run hardhat deploy --network opDevnetL2
 ```
 
 Followed by the L1 contract:
 
 ```
-hardhat deploy --network opDevnetL1
+bun run hardhat deploy --network opDevnetL1
 ```
 
 The L1 contracts contain a reference to the L2 contract, and so will require redeploying if the L2 contract changes.

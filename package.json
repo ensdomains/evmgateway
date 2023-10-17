@@ -6,7 +6,6 @@
     "packages": [
       "evm-gateway",
       "l1-gateway",
-      "l1-gateway-worker",
       "op-gateway",
       "evm-verifier",
       "l1-verifier",
