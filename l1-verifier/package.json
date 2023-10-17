@@ -3,7 +3,7 @@
   "license": "MIT",
   "version": "0.1.0",
   "scripts": {
-    "build": "hardhat compile",
+    "build": "echo 'building l1-verifier...' && hardhat compile",
     "test": "node scripts/test.js",
     "clean": "rm -fr artifacts cache node_modules typechain-types",
     "lint": "exit 0"
