@@ -1,4 +1,3 @@
-import { Server } from '@chainlink/ccip-read-server';
 import {
   concat,
   dataSlice,
@@ -6,6 +5,9 @@ import {
   solidityPackedKeccak256,
   toBigInt,
 } from 'ethers';
+import type { Fragment, Interface, JsonFragment } from '@ethersproject/abi';
+import type { HandlerDescription } from '@ensdomains/ccip-read-cf-worker';
+
 import type { IProofService, ProvableBlock } from './IProofService.js';
 
 const OP_CONSTANT = 0x00;
@@ -28,6 +30,10 @@ interface StorageElement {
   isDynamic: boolean;
 }
 
+interface Server {
+  add:(abi: string | readonly (string | Fragment | JsonFragment)[] | Interface, handlers: HandlerDescription[]) => void;
+}
+
 function memoize<T>(fn: () => Promise<T>): () => Promise<T> {
   let promise: Promise<T> | undefined;
   return () => {
@@ -45,8 +51,7 @@ export class EVMGateway<T extends ProvableBlock> {
     this.proofService = proofService;
   }
 
-  makeApp(path: string) {
-    const server = new Server();
+  add(server: Server) {
     const abi = [
       /**
        * This function implements a simple VM for fetching proofs for EVM contract storage data.
@@ -100,7 +105,7 @@ export class EVMGateway<T extends ProvableBlock> {
         },
       },
     ]);
-    return server.makeApp(path);
+    return server
   }
 
   /**

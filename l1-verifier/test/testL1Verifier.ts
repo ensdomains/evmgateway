@@ -1,4 +1,5 @@
 import { makeL1Gateway } from '@ensdomains/l1-gateway';
+import { Server } from '@chainlink/ccip-read-server';
 import { HardhatEthersProvider } from '@nomicfoundation/hardhat-ethers/internal/hardhat-ethers-provider';
 import type { HardhatEthersHelpers } from '@nomicfoundation/hardhat-ethers/types';
 import { expect } from 'chai';
@@ -43,14 +44,15 @@ describe('L1Verifier', () => {
     // provider.on("debug", (x: any) => console.log(JSON.stringify(x, undefined, 2)));
     signer = await provider.getSigner(0);
 
-    const server = makeL1Gateway(provider as unknown as JsonRpcProvider);
-    gateway = server.makeApp('/');
-
-    const getUrl = FetchRequest.createGetUrlFunc();
+    const gateway = makeL1Gateway(provider as unknown as JsonRpcProvider);
+    const server = new Server()
+    gateway.add(server)
+    const app = server.makeApp('/')
+    const getUrl = FetchRequest.createGetUrlFunc();    
     ethers.FetchRequest.registerGetUrl(async (req: FetchRequest) => {
       if(req.url != "test:") return getUrl(req);
 
-      const r = request(gateway).post('/');
+      const r = request(app).post('/');
       if (req.hasBody()) {
         r.set('Content-Type', 'application/json').send(
           ethers.toUtf8String(req.body)
@@ -66,7 +68,6 @@ describe('L1Verifier', () => {
         },
       };
     });
-
     const l1VerifierFactory = await ethers.getContractFactory(
       'L1Verifier',
       signer
@@ -84,7 +85,6 @@ describe('L1Verifier', () => {
       signer
     );
     target = await testL1Factory.deploy(await verifier.getAddress(), await l2contract.getAddress());
-
     // Mine an empty block so we have something to prove against
     await provider.send('evm_mine', []);
   });

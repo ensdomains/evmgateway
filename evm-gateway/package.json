@@ -1,22 +1,14 @@
 {
   "name": "@ensdomains/evm-gateway",
   "version": "0.1.0",
-  "description": "A generic CCIP-Read gateway for fetching state proofs of data on other EVM chains",
   "author": "Nick Johnson",
-  "license": "MIT",
-  "type": "module",
   "main": "./_cjs/index.js",
   "module": "./_esm/index.js",
-  "types": "./_types/index.d.ts",
-  "typings": "./_types/index.d.ts",
-  "sideEffects": false,
-  "files": [
-    "_esm",
-    "_cjs",
-    "_types",
-    "src",
-    "!**/*.tsbuildinfo"
-  ],
+  "dependencies": {
+    "@chainlink/ccip-read-server": "^0.2.1",
+    "@ensdomains/ccip-read-cf-worker": "^0.0.1",
+    "ethers": "^6.7.1"
+  },
   "exports": {
     ".": {
       "types": "./_types/index.d.ts",
@@ -25,13 +17,24 @@
     },
     "./package.json": "./package.json"
   },
+  "description": "A generic CCIP-Read gateway for fetching state proofs of data on other EVM chains",
   "engines": {
     "node": ">=10",
     "bun": ">=1.0.4"
   },
-  "peerDependencies": {
-    "typescript": ">=5.0.4"
+  "files": [
+    "_esm",
+    "_cjs",
+    "_types",
+    "src",
+    "!**/*.tsbuildinfo"
+  ],
+  "husky": {
+    "hooks": {
+      "pre-commit": "bun run lint"
+    }
   },
+  "license": "MIT",
   "peerDependenciesMeta": {
     "typescript": {
       "optional": true
@@ -47,13 +50,8 @@
     "prepare": "bun run build",
     "clean": "rm -fr _cjs _esm _types"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "bun run lint"
-    }
-  },
-  "dependencies": {
-    "@chainlink/ccip-read-server": "^0.2.1",
-    "ethers": "^6.7.1"
-  }
+  "sideEffects": false,
+  "type": "module",
+  "types": "./_types/index.d.ts",
+  "typings": "./_types/index.d.ts"
 }

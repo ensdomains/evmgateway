@@ -1,6 +1,7 @@
 import { Command } from '@commander-js/extra-typings';
 import { EVMGateway } from '@ensdomains/evm-gateway';
 import { OPProofService } from './OPProofService.js';
+import { Server } from '@chainlink/ccip-read-server';
 import { JsonRpcProvider } from 'ethers';
 
 const program = new Command()
@@ -38,7 +39,9 @@ program.parse();
       Number(options.delay)
     )
   );
-  const app = gateway.makeApp('/');
+  const server = new Server();
+  gateway.add(server);
+  const app = server.makeApp("/")
 
   const port = parseInt(options.port);
   if (String(port) !== options.port) throw new Error('Invalid port');

@@ -38,7 +38,9 @@
     }
   },
   "scripts": {
-    "start": "bun ./src/server.ts",
+  "start": "bun ./src/server.ts",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
     "build:cjs": "tsc --project tsconfig.build.json --module commonjs --outDir ./_cjs --removeComments --verbatimModuleSyntax false && echo > ./_cjs/package.json '{\"type\":\"commonjs\"}'",
     "build:esm": "tsc --project tsconfig.build.json --module es2022 --outDir ./_esm && echo > ./_esm/package.json '{\"type\":\"module\",\"sideEffects\":false}'",
     "build:types": "tsc --project ./tsconfig.build.json --module esnext --declarationDir ./_types --emitDeclarationOnly --declaration --declarationMap",
