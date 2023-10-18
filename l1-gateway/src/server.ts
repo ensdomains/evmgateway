@@ -12,7 +12,7 @@ program.parse();
 
 const options = program.opts();
 const provider = new ethers.JsonRpcProvider(options.providerUrl);
-const proof = new EVMGateway(new L1ProofService(provider));
+const gateway = new EVMGateway(new L1ProofService(provider));
 const server = new Server();
 proof.add(server);
 const app = server.makeApp("/")

@@ -44,10 +44,10 @@ describe('L1Verifier', () => {
     // provider.on("debug", (x: any) => console.log(JSON.stringify(x, undefined, 2)));
     signer = await provider.getSigner(0);
 
-    const proof = makeL1Gateway(provider as unknown as JsonRpcProvider);
+    const gateway = makeL1Gateway(provider as unknown as JsonRpcProvider);
     const server = new Server()
     proof.add(server)
-    const gateway = server.makeApp('/')
+    const app = server.makeApp('/')
     const getUrl = FetchRequest.createGetUrlFunc();    
     ethers.FetchRequest.registerGetUrl(async (req: FetchRequest) => {
       if(req.url != "test:") return getUrl(req);

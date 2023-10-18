@@ -31,7 +31,7 @@ program.parse();
   const l1Provider = new JsonRpcProvider(options.l1ProviderUrl);
   const l2Provider = new JsonRpcProvider(options.l2ProviderUrl);
 
-  const proof = new EVMGateway(
+  const gateway = new EVMGateway(
     new OPProofService(
       l1Provider,
       l2Provider,
