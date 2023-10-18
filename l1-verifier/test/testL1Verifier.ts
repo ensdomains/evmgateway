@@ -46,13 +46,13 @@ describe('L1Verifier', () => {
 
     const gateway = makeL1Gateway(provider as unknown as JsonRpcProvider);
     const server = new Server()
-    proof.add(server)
+    gateway.add(server)
     const app = server.makeApp('/')
     const getUrl = FetchRequest.createGetUrlFunc();    
     ethers.FetchRequest.registerGetUrl(async (req: FetchRequest) => {
       if(req.url != "test:") return getUrl(req);
 
-      const r = request(gateway).post('/');
+      const r = request(app).post('/');
       if (req.hasBody()) {
         r.set('Content-Type', 'application/json').send(
           ethers.toUtf8String(req.body)

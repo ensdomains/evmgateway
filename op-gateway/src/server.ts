@@ -40,7 +40,7 @@ program.parse();
     )
   );
   const server = new Server();
-  proof.add(server);
+  gateway.add(server);
   const app = server.makeApp("/")
 
   const port = parseInt(options.port);

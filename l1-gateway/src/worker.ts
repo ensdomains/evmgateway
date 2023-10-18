@@ -16,9 +16,9 @@ async function fetch(request:Request, env:Env){
     const L1ProofService = (await import('./L1ProofService.js')).L1ProofService;
     const { WORKER_PROVIDER_URL } = env;
     const provider = new ethers.JsonRpcProvider(WORKER_PROVIDER_URL);
-    const proof = new EVMGateway(new L1ProofService(provider));
+    const gateway = new EVMGateway(new L1ProofService(provider));
     const server = new Server();
-    proof.add(server);
+    gateway.add(server);
     app = server.makeApp("/")  
   }
   return app.handle(request)

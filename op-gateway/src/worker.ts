@@ -22,7 +22,7 @@ async function fetch(request:Request, env:Env){
     const l2Provider = new ethers.JsonRpcProvider(L2_PROVIDER_URL);
   
     console.log({L1_PROVIDER_URL, L2_PROVIDER_URL, DELAY})
-    const proof = new EVMGateway(
+    const gateway = new EVMGateway(
       new OPProofService(
         l1Provider,
         l2Provider,
@@ -32,7 +32,7 @@ async function fetch(request:Request, env:Env){
     );
   
     const server = new Server();
-    proof.add(server);
+    gateway.add(server);
     app = server.makeApp("/")  
   }
   return app.handle(request)

@@ -1,4 +1,5 @@
 import { makeOPGateway } from '@ensdomains/op-gateway';
+import { Server } from '@chainlink/ccip-read-server';
 import { HardhatEthersProvider } from '@nomicfoundation/hardhat-ethers/internal/hardhat-ethers-provider';
 import type { HardhatEthersHelpers } from '@nomicfoundation/hardhat-ethers/types';
 import { expect } from 'chai';
@@ -44,20 +45,23 @@ describe('OPVerifier', () => {
 
     const opAddresses = await (await fetch("http://localhost:8080/addresses.json")).json();
 
-    const server = await makeOPGateway(
+    const gateway = await makeOPGateway(
       (hre.network.config as any).url,
       (hre.config.networks[hre.network.companionNetworks.l2] as any).url,
       opAddresses.L2OutputOracleProxy,
       5,
     );
-    gateway = server.makeApp('/');
+    const server = new Server()
+    gateway.add(server)
+    const app = server.makeApp('/')
+
 
     // Replace ethers' fetch function with one that calls the gateway directly.
     const getUrl = FetchRequest.createGetUrlFunc();
     ethers.FetchRequest.registerGetUrl(async (req: FetchRequest) => {
       if(req.url != "test:") return getUrl(req);
 
-      const r = request(gateway).post('/');
+      const r = request(app).post('/');
       if (req.hasBody()) {
         r.set('Content-Type', 'application/json').send(
           ethers.toUtf8String(req.body)
