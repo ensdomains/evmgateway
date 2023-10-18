@@ -1,12 +1,10 @@
 import { Server } from '@ensdomains/ccip-read-cf-worker';
+import type { Router } from '@ensdomains/evm-gateway'
 interface Env {
     L1_PROVIDER_URL: string
     L2_PROVIDER_URL: string
     L2_OUTPUT_ORACLE: string
     DELAY: number
-}
-interface Router{
-  handle:(request:Request)=> void
 }
 let app:Router  
 async function fetch(request:Request, env:Env){

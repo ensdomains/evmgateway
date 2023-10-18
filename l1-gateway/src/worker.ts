@@ -1,10 +1,7 @@
 import { Server } from '@ensdomains/ccip-read-cf-worker';
-
+import type { Router } from '@ensdomains/evm-gateway'
 interface Env {
   WORKER_PROVIDER_URL: string
-}
-interface Router{
-  handle:(request:Request)=> void
 }
 let app:Router
 async function fetch(request:Request, env:Env){
