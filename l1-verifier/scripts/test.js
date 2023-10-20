@@ -33,7 +33,7 @@ async function main() {
   //   );
   //   hh.on('close', (code) => resolve(code));
   // });
-  const code = await new Promise((resolve) => {
+  const code = await new Promise((resolve, reject) => {
     const hh = spawn(
       'hardhat',
       ['test', '--network', 'ganache'],
@@ -46,10 +46,14 @@ async function main() {
     );    
     hh.on('close', (code) => {
       console.log({code})
-      resolve(code)
       console.log('Shutting down');
       server.close();
-      process.exit(code);
+      if(code === 0){
+        resolve(code)
+        process.exit(code);
+      }else{
+        reject(code)
+      }
     });
   });
 }
@@ -57,6 +61,6 @@ async function main() {
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
 main().catch((error) => {
-  console.error(error);
+  console.error('***err', error);
   process.exitCode = 1;
 });
