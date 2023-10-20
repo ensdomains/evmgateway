@@ -9,11 +9,13 @@ const runScriptForWorkspace = (w: string) => {
     cmd: ['bun', 'run', script],
     cwd: `./${w}`,
     stdio: ['inherit', 'inherit', 'inherit'],
-    onExit(proc:any, exitCode:any, signalCode:any, error:any) {
-      console.log("onExit", {
-        proc, exitCode, signalCode, error
-      })
-      if(exitCode !== 0) throw('The script failed')
+    onExit(exitCode:any) {
+      if(exitCode.exitCode !== 0) {
+        console.log('The script failed', exitCode)
+        throw('The script failed')
+      }else{
+        console.log('The script ran successfully')
+      }
     }
   });
 };
