@@ -1,4 +1,5 @@
 const { fork, spawn, execSync } = require('node:child_process');
+const core = require('@actions/core');
 const ganache = require('ganache');
 const options = {
   logging: {
@@ -61,6 +62,7 @@ async function main() {
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
 main().catch((error) => {
-  console.error('***err', error);
+  console.error('***err', error); 
+  core.setFailed(`Action failed`);
   process.exit(error);
 });
