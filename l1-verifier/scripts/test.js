@@ -63,6 +63,5 @@ async function main() {
 // and properly handle errors.
 main().catch((error) => {
   console.error('***err', error); 
-  core.setFailed(`Action failed`);
   process.exit(error);
 });
