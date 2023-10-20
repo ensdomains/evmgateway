@@ -10,7 +10,6 @@ import {
   ethers as ethersT
 } from 'ethers';
 import { FetchRequest } from 'ethers';
-import express from 'express';
 import { ethers } from 'hardhat';
 import { EthereumProvider } from 'hardhat/types';
 import request from 'supertest';
@@ -29,12 +28,12 @@ declare module 'hardhat/types/runtime' {
   }
 }
 
-describe('L1Verifier', () => {
+describe('L1Resolver', () => {
   let provider: JsonRpcProvider;
   let signer: Signer;
   let verifier: Contract;
   let target: Contract;
-  let gateway: express.Application;
+  let l2contract: Contract;
 
   before(async () => {
     // Hack to get a 'real' ethers provider from hardhat. The default `HardhatProvider`
@@ -43,7 +42,6 @@ describe('L1Verifier', () => {
     provider = new ethers.JsonRpcProvider('http://localhost:8888')
     // provider.on("debug", (x: any) => console.log(JSON.stringify(x, undefined, 2)));
     signer = await provider.getSigner(0);
-
     const gateway = makeL1Gateway(provider as unknown as JsonRpcProvider);
     const server = new Server()
     gateway.add(server)
@@ -75,71 +73,32 @@ describe('L1Verifier', () => {
     verifier = await l1VerifierFactory.deploy(['test:']);
 
     const testL2Factory = await ethers.getContractFactory(
-      'TestL2',
+      'L2Resolver',
       signer
     );
-    const l2contract = await testL2Factory.deploy();
+    l2contract = await testL2Factory.deploy();
 
     const testL1Factory = await ethers.getContractFactory(
-      'TestL1',
+      'L1Resolver',
       signer
     );
     target = await testL1Factory.deploy(await verifier.getAddress(), await l2contract.getAddress());
+
     // Mine an empty block so we have something to prove against
     await provider.send('evm_mine', []);
   });
 
-  it('simple proofs for fixed values', async () => {
-    const result = await target.getLatest({ enableCcipRead: true });
-    expect(Number(result)).to.equal(42);
-  });
-
-  it('simple proofs for dynamic values', async () => {
-    const result = await target.getName({ enableCcipRead: true });
-    expect(result).to.equal('Satoshi');
-  });
-
-  it('nested proofs for dynamic values', async () => {
-    const result = await target.getHighscorer(42, { enableCcipRead: true });
-    expect(result).to.equal('Hal Finney');
-  });
-
-  it('nested proofs for long dynamic values', async () => {
-    const result = await target.getHighscorer(1, { enableCcipRead: true });
-    expect(result).to.equal(
-      'Hubert Blaine Wolfeschlegelsteinhausenbergerdorff Sr.'
-    );
-  });
-
-  it('nested proofs with lookbehind', async () => {
-    const result = await target.getLatestHighscore({ enableCcipRead: true });
-    expect(Number(result)).to.equal(12345);
-  });
-
-  it('nested proofs with lookbehind for dynamic values', async () => {
-    const result = await target.getLatestHighscorer({ enableCcipRead: true });
-    expect(result).to.equal('Hal Finney');
-  });
-
-  it('mappings with variable-length keys', async () => {
-    const result = await target.getNickname('Money Skeleton', {
-      enableCcipRead: true,
-    });
-    expect(result).to.equal('Vitalik Buterin');
-  });
-
-  it('nested proofs of mappings with variable-length keys', async () => {
-    const result = await target.getPrimaryNickname({ enableCcipRead: true });
-    expect(result).to.equal('Hal Finney');
-  });
-
-  it('treats uninitialized storage elements as zeroes', async () => {
-    const result = await target.getZero({ enableCcipRead: true });
-    expect(Number(result)).to.equal(0);
-  });
-
-  it('treats uninitialized dynamic values as empty strings', async () => {
-    const result = await target.getNickname('Santa', { enableCcipRead: true });
-    expect(result).to.equal("");
+  it.only("should test resolver", async() => {
+    const node = '0x80ee077a908dffcf32972ba13c2df16b42688e1de21bcf17d3469a8507895eae'
+    const addr = '0x5A384227B65FA093DEC03Ec34e111Db80A040615'
+    await l2contract.clearRecords(node)
+    await l2contract.setAddr(node, addr)
+    const result = await l2contract.addr(node)
+    console.log({result})
+    expect(result).to.equal(addr);
+    await provider.send("evm_mine", []);
+    const result2 = await target.getAddr(node, { enableCcipRead: true })
+    console.log({result2})
+    expect(result2).to.equal(addr);
   })
 });
