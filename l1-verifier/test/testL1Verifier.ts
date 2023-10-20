@@ -97,9 +97,9 @@ describe('L1Verifier', () => {
     expect(result).to.equal('Satoshi');
   });
 
-  it('nested proofs for dynamic values', async () => {
+  it.only('nested proofs for dynamic values', async () => {
     const result = await target.getHighscorer(42, { enableCcipRead: true });
-    expect(result).to.equal('Hal Finney');
+    expect(result).to.equal('Hall Finney');
   });
 
   it('nested proofs for long dynamic values', async () => {

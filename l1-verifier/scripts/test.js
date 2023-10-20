@@ -36,17 +36,14 @@ async function main() {
   const code = await new Promise((resolve) => {
     const hh = spawn(
       'hardhat',
-      // ['compile'],
       ['test', '--network', 'ganache'],
-      // {
-        // stdio: 'inherit',
+      {
+        stdio: 'inherit',
       //   env: {
       //     RPC_PORT: port.toString(),
       //   },
-      // }
+      }
     );    
-    hh.stdout.on('data', (data) => console.log('data', data.toString()));
-    hh.on('error', (error) => console.log({error}));
     hh.on('close', (code) => {
       console.log({code})
       resolve(code)
@@ -54,12 +51,7 @@ async function main() {
       server.close();
       process.exit(code);
     });
-    // hh.on('close', (code) => resolve(code));
   });
-
-  // console.log('Shutting down');
-  // server.close();
-  // process.exit(code);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
