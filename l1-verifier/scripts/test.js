@@ -1,4 +1,4 @@
-const { fork } = require('node:child_process');
+const { fork, spawn, execSync } = require('node:child_process');
 const ganache = require('ganache');
 const options = {
   logging: {
@@ -10,7 +10,7 @@ async function main() {
   const server = ganache.server(options);
   console.log('Starting server');
   const port = await new Promise((resolve, reject) => {
-    server.listen(0, async (err) => {
+    server.listen(8888, async (err) => {
       console.log(`Listening on port ${server.address().port}`);
       if (err) reject(err);
       resolve(server.address().port);
@@ -18,23 +18,48 @@ async function main() {
   });
 
   console.log('Starting hardhat');
+  // console.log(execSync('bun -h').toString())
+  console.log(2)
+  // const code = await new Promise((resolve) => {
+  //   const hh = fork(
+  //     '../../node_modules/.bin/hardhat',
+  //     ['test', '--network', 'ganache'],
+  //     {
+  //       stdio: 'inherit',
+  //       env: {
+  //         RPC_PORT: port.toString(),
+  //       },
+  //     }
+  //   );
+  //   hh.on('close', (code) => resolve(code));
+  // });
   const code = await new Promise((resolve) => {
-    const hh = fork(
-      'node_modules/.bin/hardhat',
+    const hh = spawn(
+      'hardhat',
+      // ['compile'],
       ['test', '--network', 'ganache'],
-      {
-        stdio: 'inherit',
-        env: {
-          RPC_PORT: port.toString(),
-        },
-      }
-    );
-    hh.on('close', (code) => resolve(code));
+      // {
+        // stdio: 'inherit',
+      //   env: {
+      //     RPC_PORT: port.toString(),
+      //   },
+      // }
+    );    
+    hh.stdout.on('data', (data) => console.log('data', data.toString()));
+    hh.on('error', (error) => console.log({error}));
+    hh.on('close', (code) => {
+      console.log({code})
+      resolve(code)
+      console.log('Shutting down');
+      server.close();
+      process.exit(code);
+    });
+    // hh.on('close', (code) => resolve(code));
   });
 
-  console.log('Shutting down');
-  server.close();
-  process.exit(code);
+  // console.log('Shutting down');
+  // server.close();
+  // process.exit(code);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
