@@ -41,9 +41,9 @@
     }
   },
   "scripts": {
-    "build:cjs": "bun tsc --project tsconfig.build.json --module commonjs --outDir ./_cjs --removeComments --verbatimModuleSyntax false && echo > ./_cjs/package.json '{\"type\":\"commonjs\"}'",
-    "build:esm": "bun tsc --project tsconfig.build.json --module es2022 --outDir ./_esm && echo > ./_esm/package.json '{\"type\":\"module\",\"sideEffects\":false}'",
-    "build:types": "bun tsc --project ./tsconfig.build.json --module esnext --declarationDir ./_types --emitDeclarationOnly --declaration --declarationMap",
+    "build:cjs": "yarn tsc --project tsconfig.build.json --module commonjs --outDir ./_cjs --removeComments --verbatimModuleSyntax false && echo > ./_cjs/package.json '{\"type\":\"commonjs\"}'",
+    "build:esm": "yarn tsc --project tsconfig.build.json --module es2022 --outDir ./_esm && echo > ./_esm/package.json '{\"type\":\"module\",\"sideEffects\":false}'",
+    "build:types": "yarn tsc --project ./tsconfig.build.json --module esnext --declarationDir ./_types --emitDeclarationOnly --declaration --declarationMap",
     "build": "echo 'building evm-gateway...' && bun run clean && bun run build:cjs && bun run build:esm && bun run build:types",
     "prepublishOnly": "bun ../scripts/prepublishOnly.ts",
     "lint": "eslint . --ext .ts",
