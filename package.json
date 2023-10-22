@@ -2,29 +2,18 @@
   "private": true,
   "type": "module",
   "description": "A generic gateway and smart contract library for cross-chain data retrieval",
-  "workspaces": {
-    "packages": [
-      "evm-gateway",
-      "l1-gateway",
-      "op-gateway",
-      "evm-verifier",
-      "l1-verifier",
-      "op-verifier"
-    ],
-    "nohoist": [
-      "**/@nomiclabs/**",
-      "**/typescript",
-      "**/ts-node",
-      "**/@typechain/**",
-      "hardhat",
-      "husky",
-      "**/@eth-optimism/**"
-    ]
-  },
+  "workspaces": [
+    "evm-gateway",
+    "l1-gateway",
+    "op-gateway",
+    "evm-verifier",
+    "l1-verifier",
+    "op-verifier"
+  ],
   "scripts": {
     "env": "env",
     "workspace": "bun ./scripts/workspace.ts",
-    "build": "bun run workspace evm-gateway build && bun run workspace -evm-gateway build",
+    "build": "bun run workspace -evm-gateway build",
     "test": "bun run workspace l1-verifier test",
     "lint": "bun run workspace all lint",
     "prepare": "husky install"
@@ -50,6 +39,7 @@
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^6.7.4",
     "@typescript-eslint/parser": "^6.7.4",
+    "bun-types": "^1.0.7",
     "eslint": "^8.50.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",

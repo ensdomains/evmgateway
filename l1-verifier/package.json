@@ -3,7 +3,7 @@
   "license": "MIT",
   "version": "0.1.0",
   "scripts": {
-    "build": "echo 'building l1-verifier...' && hardhat compile",
+    "build": "echo 'building l1-verifier...' && bun hardhat compile",
     "test": "node scripts/test.js",
     "hardhat1": "hardhat",
     "remote_test": "hardhat run scripts/remote.ts",
