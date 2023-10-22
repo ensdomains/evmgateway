@@ -1,6 +1,5 @@
-import ganache from 'ganache';
-import { spawn } from 'node:child_process';
-
+const { fork, spawn, execSync } = require('node:child_process');
+const ganache = require('ganache');
 const options = {
   logging: {
     quiet: true,
@@ -10,7 +9,7 @@ const options = {
 async function main() {
   const server = ganache.server(options);
   console.log('Starting server');
-  await new Promise((resolve, reject) => {
+  const port = await new Promise((resolve, reject) => {
     server.listen(8888, async (err) => {
       console.log(`Listening on port ${server.address().port}`);
       if (err) reject(err);
@@ -19,11 +18,30 @@ async function main() {
   });
 
   console.log('Starting hardhat');
-  await new Promise((resolve, reject) => {
+  // console.log(execSync('bun -h').toString())
+  console.log(2);
+  // const code = await new Promise((resolve) => {
+  //   const hh = fork(
+  //     '../../node_modules/.bin/hardhat',
+  //     ['test', '--network', 'ganache'],
+  //     {
+  //       stdio: 'inherit',
+  //       env: {
+  //         RPC_PORT: port.toString(),
+  //       },
+  //     }
+  //   );
+  //   hh.on('close', (code) => resolve(code));
+  // });
+  const code = await new Promise((resolve, reject) => {
     const hh = spawn('hardhat', ['test', '--network', 'ganache'], {
       stdio: 'inherit',
+      //   env: {
+      //     RPC_PORT: port.toString(),
+      //   },
     });
     hh.on('close', (code) => {
+      console.log({ code });
       console.log('Shutting down');
       server.close();
       if (code === 0) {

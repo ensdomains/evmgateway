@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "scripts": {
     "build": "echo 'building l1-verifier...' && bun hardhat compile",
-    "test": "bun ./scripts/test.ts",
+    "test": "node ./scripts/test.js",
     "hardhat1": "hardhat",
     "remote_test": "hardhat run scripts/remote.ts",
     "clean": "rm -fr artifacts cache node_modules typechain-types",
