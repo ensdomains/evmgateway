@@ -15,7 +15,7 @@ const provider = new ethers.JsonRpcProvider(options.providerUrl);
 const gateway = new EVMGateway(new L1ProofService(provider));
 const server = new Server();
 gateway.add(server);
-const app = server.makeApp("/")
+const app = server.makeApp('/');
 
 const port = parseInt(options.port);
 if (String(port) !== options.port) throw new Error('Invalid port');

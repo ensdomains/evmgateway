@@ -59,7 +59,6 @@
   },
   "dependencies": {
     "@ensdomains/ccip-read-cf-worker": "^0.0.1",
-    "tsc": "^2.0.4",
     "@eth-optimism/sdk": "^3.1.4"
   }
 }
