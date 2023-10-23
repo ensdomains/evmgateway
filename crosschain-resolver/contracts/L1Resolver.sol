@@ -79,6 +79,24 @@ contract L1Resolver is EVMFetchTarget {
         return string(values[1]);
     }
 
+    function contenthash(bytes32 node) public view returns (bytes memory) {
+        EVMFetcher
+            .newFetchRequest(verifier, target)
+            .getStatic(1)
+            .element(node)
+            .getDynamic(4)
+            .ref(0)
+            .element(node)
+            .fetch(this.contenthashCallback.selector, '');
+    }
+
+    function contenthashCallback(
+        bytes[] memory values,
+        bytes memory
+    ) public pure returns (bytes memory) {
+        return values[1];
+    }
+
     function bytesToAddress(
         bytes memory b
     ) internal pure returns (address payable a) {
