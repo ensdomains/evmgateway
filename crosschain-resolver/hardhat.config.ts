@@ -1,5 +1,6 @@
 import '@nomicfoundation/hardhat-toolbox';
 import { HardhatUserConfig } from 'hardhat/config';
+import "hardhat-storage-layout";
 
 const config: HardhatUserConfig = {
   solidity: '0.8.19',
