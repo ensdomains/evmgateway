@@ -93,11 +93,9 @@ describe('L1Resolver', () => {
     await l2contract.clearRecords(node)
     await l2contract['setAddr(bytes32,address)'](node, addr)
     const result = await l2contract['addr(bytes32)'](node)
-    console.log({result})
     expect(ethers.getAddress(result)).to.equal(addr);
     await provider.send("evm_mine", []);
     const result2 = await target['addr(bytes32)'](node, { enableCcipRead: true })
-    console.log({result2})
     expect(result2).to.equal(addr);
   })
   it("should test non ETH Address", async() => {
@@ -109,7 +107,6 @@ describe('L1Resolver', () => {
     expect(result).to.equal(addr);
     await provider.send("evm_mine", []);
     const result2 = await target['addr(bytes32,uint256)'](node, coinType, { enableCcipRead: true })
-    console.log({result2})
     expect(result2).to.equal(addr);
   })
 

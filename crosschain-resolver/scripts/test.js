@@ -25,9 +25,6 @@ async function main() {
       ['test', '--network', 'ganache'],
       {
         stdio: 'inherit',
-      //   env: {
-      //     RPC_PORT: port.toString(),
-      //   },
       }
     );    
     hh.on('close', (code) => {
