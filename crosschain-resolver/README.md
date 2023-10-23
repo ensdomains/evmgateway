@@ -1,6 +1,5 @@
-### @ensdomains/l1-verifier
-A complete Solidity library that facilitates sending CCIP-Read requests for L1 state, and verifying the responses.
+### @ensdomains/crosschain-resolver
 
-This repository also contains the end-to-end tests for the entire stack.
+A resolver contract that is built on top of evm-verifier.
 
 For a detailed readme and usage instructions, see the [monorepo readme](https://github.com/ensdomains/evmgateway/tree/main).
