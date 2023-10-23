@@ -85,6 +85,3 @@ bun run hardhat deploy --network goerli
 
 
 ## Deployments
-
-- L2 Resolver = 0x60BDFeF9ff7bB47d95d1658Be925587F046AE2C7
-- L1 Resolver = 0x2204a35EAEe8840D55333C6816F947499a4F8abE
