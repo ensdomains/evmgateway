@@ -29,7 +29,7 @@ declare module 'hardhat/types/runtime' {
   }
 }
 
-describe('L1Resolver', () => {
+describe('Crosschain Resolver', () => {
   let provider: JsonRpcProvider;
   let signer: Signer;
   let verifier: Contract;
