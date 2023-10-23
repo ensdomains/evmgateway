@@ -4,7 +4,9 @@ pragma solidity ^0.8.17;
 contract L2Resolver {
     mapping(bytes32 => uint64) public recordVersions; // Slot 0
     mapping(uint64 => mapping(bytes32 => mapping(uint256 => bytes))) versionable_addresses; // Slot 1
-    uint256 private constant COIN_TYPE_ETH = 60; // Slot 2
+    mapping(uint64 => mapping(bytes32 => mapping(string => string))) versionable_texts; // Slot 2
+
+    uint256 private constant COIN_TYPE_ETH = 60;
 
     function addr(
         bytes32 node,
@@ -19,6 +21,27 @@ contract L2Resolver {
 
     function setAddr(bytes32 node, uint256 coinType, bytes memory a) public {
         versionable_addresses[recordVersions[node]][node][coinType] = a;
+    }
+
+    function setText(
+        bytes32 node,
+        string calldata key,
+        string calldata value
+    ) public {
+        versionable_texts[recordVersions[node]][node][key] = value;
+    }
+
+    /**
+     * Returns the text data associated with an ENS node and key.
+     * @param node The ENS node to query.
+     * @param key The text data key to query.
+     * @return The associated text data.
+     */
+    function text(
+        bytes32 node,
+        string calldata key
+    ) public view returns (string memory) {
+        return versionable_texts[recordVersions[node]][node][key];
     }
 
     function clearRecords(bytes32 node) public {

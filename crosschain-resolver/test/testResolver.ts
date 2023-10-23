@@ -115,4 +115,17 @@ describe('L1Resolver', () => {
     expect(result2).to.equal(addr);
   })
 
+  it("should test text record", async() => {
+    const node = '0x80ee077a908dffcf32972ba13c2df16b42688e1de21bcf17d3469a8507895eae'
+    const key = 'name'
+    const value = 'nick.eth'
+    await l2contract.clearRecords(node)
+    await l2contract.setText(node, key, value)
+    await provider.send("evm_mine", []);
+    const result = await l2contract.text(node, key)
+    expect(result).to.equal(value);
+    await provider.send("evm_mine", []);
+    const result2 = await target.getText(node, key, { enableCcipRead: true })
+    expect(result2).to.equal(value);
+  })
 });

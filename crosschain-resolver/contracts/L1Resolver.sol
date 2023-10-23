@@ -28,6 +28,13 @@ contract L1Resolver is EVMFetchTarget {
             .fetch(this.getAddrCallback.selector, ''); // recordVersions
     }
 
+    function getAddrCallback(
+        bytes[] memory values,
+        bytes memory
+    ) public pure returns (address) {
+        return bytesToAddress(values[1]);
+    }
+
     function getAddr(
         bytes32 node,
         uint256 coinType
@@ -43,18 +50,33 @@ contract L1Resolver is EVMFetchTarget {
             .fetch(this.getAddrCoinTypeCallback.selector, ''); // recordVersions
     }
 
-    function getAddrCallback(
-        bytes[] memory values,
-        bytes memory
-    ) public pure returns (address) {
-        return bytesToAddress(values[1]);
-    }
-
     function getAddrCoinTypeCallback(
         bytes[] memory values,
         bytes memory
     ) public pure returns (bytes memory) {
         return values[1];
+    }
+
+    function getText(
+        bytes32 node,
+        string calldata key
+    ) public view returns (string memory) {
+        EVMFetcher
+            .newFetchRequest(verifier, target)
+            .getStatic(0)
+            .element(node)
+            .getDynamic(2)
+            .ref(0)
+            .element(node)
+            .element(key)
+            .fetch(this.getTextCallback.selector, '');
+    }
+
+    function getTextCallback(
+        bytes[] memory values,
+        bytes memory
+    ) public pure returns (string memory) {
+        return string(values[1]);
     }
 
     function bytesToAddress(
