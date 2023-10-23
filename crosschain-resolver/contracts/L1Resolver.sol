@@ -16,6 +16,11 @@ contract L1Resolver is EVMFetchTarget {
         target = _target;
     }
 
+    /**
+     * Returns the address associated with an ENS node.
+     * @param node The ENS node to query.
+     * @return The associated address.
+     */
     function addr(bytes32 node) public view returns (address) {
         EVMFetcher
             .newFetchRequest(verifier, target)
@@ -35,6 +40,12 @@ contract L1Resolver is EVMFetchTarget {
         return bytesToAddress(values[1]);
     }
 
+    /**
+     * Returns the address associated with an ENS node.
+     * @param node The ENS node to query.
+     * @param coinType The cointype to query
+     * @return The associated address.
+     */
     function addr(
         bytes32 node,
         uint256 coinType
@@ -57,6 +68,12 @@ contract L1Resolver is EVMFetchTarget {
         return values[1];
     }
 
+    /**
+     * Returns the text data associated with an ENS node and key.
+     * @param node The ENS node to query.
+     * @param key The text data key to query.
+     * @return The associated text data.
+     */
     function text(
         bytes32 node,
         string calldata key
@@ -79,6 +96,11 @@ contract L1Resolver is EVMFetchTarget {
         return string(values[1]);
     }
 
+    /**
+     * Returns the contenthash associated with an ENS node.
+     * @param node The ENS node to query.
+     * @return The associated contenthash.
+     */
     function contenthash(bytes32 node) public view returns (bytes memory) {
         EVMFetcher
             .newFetchRequest(verifier, target)
