@@ -18,7 +18,7 @@ When the resolver has the following storage layout,
     mapping(uint64 => mapping(bytes32 => mapping(uint256 => bytes))) versionable_addresses;
 ```
 
-Run `yarn storage` to find out storage slot for each variables
+Run `yarn storage` to find out storage slot for each variable
 
 ```
 // ┌─────────────────────┬──────────────────────────────┬──────────────┬
