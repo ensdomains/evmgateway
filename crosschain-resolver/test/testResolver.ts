@@ -88,17 +88,31 @@ describe('L1Resolver', () => {
     await provider.send('evm_mine', []);
   });
 
-  it.only("should test resolver", async() => {
+  it("should test ETH Address", async() => {
     const node = '0x80ee077a908dffcf32972ba13c2df16b42688e1de21bcf17d3469a8507895eae'
     const addr = '0x5A384227B65FA093DEC03Ec34e111Db80A040615'
     await l2contract.clearRecords(node)
-    await l2contract.setAddr(node, addr)
-    const result = await l2contract.addr(node)
+    await l2contract['setAddr(bytes32,address)'](node, addr)
+    const result = await l2contract.addr(node, 60)
     console.log({result})
-    expect(result).to.equal(addr);
+    expect(ethers.getAddress(result)).to.equal(addr);
     await provider.send("evm_mine", []);
-    const result2 = await target.getAddr(node, { enableCcipRead: true })
+    const result2 = await target['getAddr(bytes32)'](node, { enableCcipRead: true })
     console.log({result2})
     expect(result2).to.equal(addr);
   })
+  it("should test non ETH Address", async() => {
+    const node = '0x80ee077a908dffcf32972ba13c2df16b42688e1de21bcf17d3469a8507895eae'
+    const addr = '0x76a91462e907b15cbf27d5425399ebf6f0fb50ebb88f1888ac'
+    const coinType = 0 // BTC
+    await l2contract.clearRecords(node)
+    await l2contract['setAddr(bytes32,uint256,bytes)'](node, coinType, addr)
+    const result = await l2contract.addr(node, 0)
+    expect(result).to.equal(addr);
+    await provider.send("evm_mine", []);
+    const result2 = await target['getAddr(bytes32,uint256)'](node, coinType, { enableCcipRead: true })
+    console.log({result2})
+    expect(result2).to.equal(addr);
+  })
+
 });

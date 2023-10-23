@@ -3,17 +3,22 @@ pragma solidity ^0.8.17;
 
 contract L2Resolver {
     mapping(bytes32 => uint64) public recordVersions; // Slot 0
-    mapping(uint64 => mapping(bytes32 => bytes)) versionable_addresses; // Slot 1
+    mapping(uint64 => mapping(bytes32 => mapping(uint256 => bytes))) versionable_addresses; // Slot 1
+    uint256 private constant COIN_TYPE_ETH = 60; // Slot 2
 
-    function addr(bytes32 node) public view returns (address) {
-        return
-            bytesToAddress(versionable_addresses[recordVersions[node]][node]);
+    function addr(
+        bytes32 node,
+        uint256 coinType
+    ) public view returns (bytes memory) {
+        return versionable_addresses[recordVersions[node]][node][coinType];
     }
 
     function setAddr(bytes32 node, address _addr) public {
-        versionable_addresses[recordVersions[node]][node] = addressToBytes(
-            _addr
-        );
+        setAddr(node, COIN_TYPE_ETH, addressToBytes(_addr));
+    }
+
+    function setAddr(bytes32 node, uint256 coinType, bytes memory a) public {
+        versionable_addresses[recordVersions[node]][node][coinType] = a;
     }
 
     function clearRecords(bytes32 node) public {
