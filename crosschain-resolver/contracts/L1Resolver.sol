@@ -16,63 +16,63 @@ contract L1Resolver is EVMFetchTarget {
         target = _target;
     }
 
-    function getAddr(bytes32 node) public view returns (address) {
+    function addr(bytes32 node) public view returns (address) {
         EVMFetcher
             .newFetchRequest(verifier, target)
-            .getStatic(0)
+            .getStatic(1)
             .element(node)
-            .getDynamic(1)
+            .getDynamic(3)
             .ref(0)
             .element(node)
             .element(COIN_TYPE_ETH)
-            .fetch(this.getAddrCallback.selector, ''); // recordVersions
+            .fetch(this.addrCallback.selector, ''); // recordVersions
     }
 
-    function getAddrCallback(
+    function addrCallback(
         bytes[] memory values,
         bytes memory
     ) public pure returns (address) {
         return bytesToAddress(values[1]);
     }
 
-    function getAddr(
+    function addr(
         bytes32 node,
         uint256 coinType
     ) public view returns (bytes memory) {
         EVMFetcher
             .newFetchRequest(verifier, target)
-            .getStatic(0)
+            .getStatic(1)
             .element(node)
-            .getDynamic(1)
+            .getDynamic(3)
             .ref(0)
             .element(node)
             .element(coinType)
-            .fetch(this.getAddrCoinTypeCallback.selector, ''); // recordVersions
+            .fetch(this.addrCoinTypeCallback.selector, ''); // recordVersions
     }
 
-    function getAddrCoinTypeCallback(
+    function addrCoinTypeCallback(
         bytes[] memory values,
         bytes memory
     ) public pure returns (bytes memory) {
         return values[1];
     }
 
-    function getText(
+    function text(
         bytes32 node,
         string calldata key
     ) public view returns (string memory) {
         EVMFetcher
             .newFetchRequest(verifier, target)
-            .getStatic(0)
+            .getStatic(1)
             .element(node)
-            .getDynamic(2)
+            .getDynamic(11)
             .ref(0)
             .element(node)
             .element(key)
-            .fetch(this.getTextCallback.selector, '');
+            .fetch(this.textCallback.selector, '');
     }
 
-    function getTextCallback(
+    function textCallback(
         bytes[] memory values,
         bytes memory
     ) public pure returns (string memory) {

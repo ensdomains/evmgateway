@@ -73,7 +73,7 @@ describe('L1Resolver', () => {
     verifier = await l1VerifierFactory.deploy(['test:']);
 
     const testL2Factory = await ethers.getContractFactory(
-      'L2Resolver',
+      'OwnedResolver',
       signer
     );
     l2contract = await testL2Factory.deploy();
@@ -93,11 +93,11 @@ describe('L1Resolver', () => {
     const addr = '0x5A384227B65FA093DEC03Ec34e111Db80A040615'
     await l2contract.clearRecords(node)
     await l2contract['setAddr(bytes32,address)'](node, addr)
-    const result = await l2contract.addr(node, 60)
+    const result = await l2contract['addr(bytes32)'](node)
     console.log({result})
     expect(ethers.getAddress(result)).to.equal(addr);
     await provider.send("evm_mine", []);
-    const result2 = await target['getAddr(bytes32)'](node, { enableCcipRead: true })
+    const result2 = await target['addr(bytes32)'](node, { enableCcipRead: true })
     console.log({result2})
     expect(result2).to.equal(addr);
   })
@@ -107,10 +107,10 @@ describe('L1Resolver', () => {
     const coinType = 0 // BTC
     await l2contract.clearRecords(node)
     await l2contract['setAddr(bytes32,uint256,bytes)'](node, coinType, addr)
-    const result = await l2contract.addr(node, 0)
+    const result = await l2contract['addr(bytes32,uint256)'](node, 0)
     expect(result).to.equal(addr);
     await provider.send("evm_mine", []);
-    const result2 = await target['getAddr(bytes32,uint256)'](node, coinType, { enableCcipRead: true })
+    const result2 = await target['addr(bytes32,uint256)'](node, coinType, { enableCcipRead: true })
     console.log({result2})
     expect(result2).to.equal(addr);
   })
@@ -125,7 +125,7 @@ describe('L1Resolver', () => {
     const result = await l2contract.text(node, key)
     expect(result).to.equal(value);
     await provider.send("evm_mine", []);
-    const result2 = await target.getText(node, key, { enableCcipRead: true })
+    const result2 = await target.text(node, key, { enableCcipRead: true })
     expect(result2).to.equal(value);
   })
 });
