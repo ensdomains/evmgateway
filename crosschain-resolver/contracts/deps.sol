@@ -1,3 +1,4 @@
+import {L1Verifier} from '@ensdomains/l1-verifier/contracts/L1Verifier.sol';
 import '@ensdomains/ens-contracts/contracts/resolvers/OwnedResolver.sol';
 
 // Storage slot
