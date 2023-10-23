@@ -1,6 +1,6 @@
-import { AbiCoder, type AddressLike, JsonRpcProvider, Contract } from 'ethers';
 import { EVMProofHelper, type IProofService } from '@ensdomains/evm-gateway';
 import { type JsonRpcBlock } from '@ethereumjs/block';
+import { AbiCoder, Contract, JsonRpcProvider, type AddressLike } from 'ethers';
 
 export interface OPProvableBlock {
   number: number;
@@ -12,7 +12,8 @@ const L2_OUTPUT_ORACLE_ABI = [
   'function getL2Output(uint256 _l2OutputIndex) external view returns (tuple(bytes32 outputRoot, uint128 timestamp, uint128 l2BlockNumber))',
 ];
 
-const L2_TO_L1_MESSAGE_PASSER_ADDRESS = "0x4200000000000000000000000000000000000016";
+const L2_TO_L1_MESSAGE_PASSER_ADDRESS =
+  '0x4200000000000000000000000000000000000016';
 
 /**
  * The proofService class can be used to calculate proofs for a given target and slot on the Optimism Bedrock network.
@@ -34,7 +35,11 @@ export class OPProofService implements IProofService<OPProvableBlock> {
     this.l2Provider = l2Provider;
     this.helper = new EVMProofHelper(l2Provider);
     this.delay = delay;
-    this.l2OutputOracle = new Contract(l2OutputOracleAddress, L2_OUTPUT_ORACLE_ABI, l1Provider);
+    this.l2OutputOracle = new Contract(
+      l2OutputOracleAddress,
+      L2_OUTPUT_ORACLE_ABI,
+      l1Provider
+    );
   }
 
   /**
@@ -46,9 +51,8 @@ export class OPProofService implements IProofService<OPProvableBlock> {
      * We go a few batches backwards to avoid errors like delays between nodes
      *
      */
-    const l2OutputIndex = 
+    const l2OutputIndex =
       Number(await this.l2OutputOracle.latestOutputIndex()) - this.delay;
-    
 
     /**
      *    struct OutputProposal {
@@ -57,10 +61,7 @@ export class OPProofService implements IProofService<OPProvableBlock> {
      *       uint128 l2BlockNumber;
      *      }
      */
-    const outputProposal =
-      await this.l2OutputOracle.getL2Output(
-        l2OutputIndex
-      );
+    const outputProposal = await this.l2OutputOracle.getL2Output(l2OutputIndex);
 
     return {
       number: outputProposal.l2BlockNumber,
