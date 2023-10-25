@@ -1,6 +1,6 @@
 import { EVMGateway } from '@ensdomains/evm-gateway';
-import { OPProofService, type OPProvableBlock } from './OPProofService.js';
 import { JsonRpcProvider } from 'ethers';
+import { OPProofService, type OPProvableBlock } from './OPProofService.js';
 
 export type OPGateway = EVMGateway<OPProvableBlock>;
 
@@ -13,7 +13,12 @@ export async function makeOPGateway(
   const l1Provider = new JsonRpcProvider(l1providerUrl);
   const l2Provider = new JsonRpcProvider(l2providerUrl);
   return new EVMGateway(
-    await new OPProofService(l1Provider, l2Provider, l2OutputOracleAddress, delay)
+    await new OPProofService(
+      l1Provider,
+      l2Provider,
+      l2OutputOracleAddress,
+      delay
+    )
   );
 }
 

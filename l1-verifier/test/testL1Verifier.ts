@@ -1,17 +1,15 @@
-import { makeL1Gateway } from '@ensdomains/l1-gateway';
 import { Server } from '@chainlink/ccip-read-server';
+import { makeL1Gateway } from '@ensdomains/l1-gateway';
 import { HardhatEthersProvider } from '@nomicfoundation/hardhat-ethers/internal/hardhat-ethers-provider';
 import type { HardhatEthersHelpers } from '@nomicfoundation/hardhat-ethers/types';
 import { expect } from 'chai';
 import {
-  BrowserProvider,
   Contract,
+  FetchRequest,
   JsonRpcProvider,
   Signer,
-  ethers as ethersT
+  ethers as ethersT,
 } from 'ethers';
-import { FetchRequest } from 'ethers';
-import express from 'express';
 import { ethers } from 'hardhat';
 import { EthereumProvider } from 'hardhat/types';
 import request from 'supertest';
@@ -31,26 +29,24 @@ declare module 'hardhat/types/runtime' {
 }
 
 describe('L1Verifier', () => {
-  let provider: BrowserProvider;
+  let provider: JsonRpcProvider;
   let signer: Signer;
   let verifier: Contract;
   let target: Contract;
-  let gateway: express.Application;
 
   before(async () => {
     // Hack to get a 'real' ethers provider from hardhat. The default `HardhatProvider`
     // doesn't support CCIP-read.
-    provider = new ethers.BrowserProvider(ethers.provider._hardhatProvider);
+    provider = new ethers.JsonRpcProvider('http://localhost:8888');
     // provider.on("debug", (x: any) => console.log(JSON.stringify(x, undefined, 2)));
     signer = await provider.getSigner(0);
-
     const gateway = makeL1Gateway(provider as unknown as JsonRpcProvider);
-    const server = new Server()
-    gateway.add(server)
-    const app = server.makeApp('/')
-    const getUrl = FetchRequest.createGetUrlFunc();    
+    const server = new Server();
+    gateway.add(server);
+    const app = server.makeApp('/');
+    const getUrl = FetchRequest.createGetUrlFunc();
     ethers.FetchRequest.registerGetUrl(async (req: FetchRequest) => {
-      if(req.url != "test:") return getUrl(req);
+      if (req.url != 'test:') return getUrl(req);
 
       const r = request(app).post('/');
       if (req.hasBody()) {
@@ -74,17 +70,14 @@ describe('L1Verifier', () => {
     );
     verifier = await l1VerifierFactory.deploy(['test:']);
 
-    const testL2Factory = await ethers.getContractFactory(
-      'TestL2',
-      signer
-    );
+    const testL2Factory = await ethers.getContractFactory('TestL2', signer);
     const l2contract = await testL2Factory.deploy();
 
-    const testL1Factory = await ethers.getContractFactory(
-      'TestL1',
-      signer
+    const testL1Factory = await ethers.getContractFactory('TestL1', signer);
+    target = await testL1Factory.deploy(
+      await verifier.getAddress(),
+      await l2contract.getAddress()
     );
-    target = await testL1Factory.deploy(await verifier.getAddress(), await l2contract.getAddress());
     // Mine an empty block so we have something to prove against
     await provider.send('evm_mine', []);
   });
@@ -140,6 +133,6 @@ describe('L1Verifier', () => {
 
   it('treats uninitialized dynamic values as empty strings', async () => {
     const result = await target.getNickname('Santa', { enableCcipRead: true });
-    expect(result).to.equal("");
-  })
+    expect(result).to.equal('');
+  });
 });
