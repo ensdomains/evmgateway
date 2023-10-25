@@ -8,8 +8,13 @@ import {IEVMVerifier} from '@ensdomains/evm-verifier/contracts/IEVMVerifier.sol'
 contract L1Resolver is EVMFetchTarget {
     using EVMFetcher for EVMFetcher.EVMFetchRequest;
     uint256 private constant COIN_TYPE_ETH = 60;
-    IEVMVerifier verifier;
+    IEVMVerifier immutable verifier;
     address target;
+    const RECORD_VERSIONS_SLOT = 1;             .getStatic(RECORD_VERSIONS_SLOT)  // storage_slot of recordVersions
+    const RECORD_VERSIONS_REF = 0;
+    const VERSINABLE_ADDRESSES_SLOT = 3;
+    const VERSINABLE_HASHES_SLOT = 4;
+    const VERSINABLE_TEXTS_SLOT = 11;
 
     constructor(IEVMVerifier _verifier, address _target) {
         verifier = _verifier;
@@ -23,10 +28,10 @@ contract L1Resolver is EVMFetchTarget {
      */
     function addr(bytes32 node) public view returns (address) {
         EVMFetcher.newFetchRequest(verifier, target)
-            .getStatic(1)
+            .getStatic(RECORD_VERSIONS_SLOT)
               .element(node)
-            .getDynamic(3)
-              .ref(0)
+            .getDynamic(VERSINABLE_ADDRESSES_SLOT)
+              .ref(RECORD_VERSIONS_REF)
               .element(node)
               .element(COIN_TYPE_ETH)
             .fetch(this.addrCallback.selector, ''); // recordVersions
@@ -50,13 +55,13 @@ contract L1Resolver is EVMFetchTarget {
         uint256 coinType
     ) public view returns (bytes memory) {
         EVMFetcher.newFetchRequest(verifier, target)
-            .getStatic(1)
+            .getStatic(RECORD_VERSIONS_SLOT)
               .element(node)
-            .getDynamic(3)
-              .ref(0)
+            .getDynamic(VERSINABLE_ADDRESSES_SLOT)
+              .ref(RECORD_VERSIONS_REF)
               .element(node)
               .element(coinType)
-            .fetch(this.addrCoinTypeCallback.selector, ''); // recordVersions
+            .fetch(this.addrCoinTypeCallback.selector, '');
     }
 
     function addrCoinTypeCallback(
@@ -77,10 +82,10 @@ contract L1Resolver is EVMFetchTarget {
         string calldata key
     ) public view returns (string memory) {
         EVMFetcher.newFetchRequest(verifier, target)
-            .getStatic(1)
+            .getStatic(RECORD_VERSIONS_SLOT)
               .element(node)
-            .getDynamic(11)
-              .ref(0)
+            .getDynamic(VERSINABLE_TEXTS_SLOT)
+              .ref(RECORD_VERSIONS_REF)
               .element(node)
               .element(key)
             .fetch(this.textCallback.selector, '');
@@ -100,10 +105,10 @@ contract L1Resolver is EVMFetchTarget {
      */
     function contenthash(bytes32 node) public view returns (bytes memory) {
         EVMFetcher.newFetchRequest(verifier, target)
-            .getStatic(1)
+            .getStatic(RECORD_VERSIONS_SLOT)
               .element(node)
-            .getDynamic(4)
-              .ref(0)
+            .getDynamic(VERSINABLE_HASHES_SLOT)
+              .ref(RECORD_VERSIONS_REF)
               .element(node)
             .fetch(this.contenthashCallback.selector, '');
     }
