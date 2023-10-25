@@ -22,14 +22,13 @@ contract L1Resolver is EVMFetchTarget {
      * @return The associated address.
      */
     function addr(bytes32 node) public view returns (address) {
-        EVMFetcher
-            .newFetchRequest(verifier, target)
+        EVMFetcher.newFetchRequest(verifier, target)
             .getStatic(1)
-            .element(node)
+              .element(node)
             .getDynamic(3)
-            .ref(0)
-            .element(node)
-            .element(COIN_TYPE_ETH)
+              .ref(0)
+              .element(node)
+              .element(COIN_TYPE_ETH)
             .fetch(this.addrCallback.selector, ''); // recordVersions
     }
 
@@ -50,14 +49,13 @@ contract L1Resolver is EVMFetchTarget {
         bytes32 node,
         uint256 coinType
     ) public view returns (bytes memory) {
-        EVMFetcher
-            .newFetchRequest(verifier, target)
+        EVMFetcher.newFetchRequest(verifier, target)
             .getStatic(1)
-            .element(node)
+              .element(node)
             .getDynamic(3)
-            .ref(0)
-            .element(node)
-            .element(coinType)
+              .ref(0)
+              .element(node)
+              .element(coinType)
             .fetch(this.addrCoinTypeCallback.selector, ''); // recordVersions
     }
 
@@ -78,14 +76,13 @@ contract L1Resolver is EVMFetchTarget {
         bytes32 node,
         string calldata key
     ) public view returns (string memory) {
-        EVMFetcher
-            .newFetchRequest(verifier, target)
+        EVMFetcher.newFetchRequest(verifier, target)
             .getStatic(1)
-            .element(node)
+              .element(node)
             .getDynamic(11)
-            .ref(0)
-            .element(node)
-            .element(key)
+              .ref(0)
+              .element(node)
+              .element(key)
             .fetch(this.textCallback.selector, '');
     }
 
@@ -102,13 +99,12 @@ contract L1Resolver is EVMFetchTarget {
      * @return The associated contenthash.
      */
     function contenthash(bytes32 node) public view returns (bytes memory) {
-        EVMFetcher
-            .newFetchRequest(verifier, target)
+        EVMFetcher.newFetchRequest(verifier, target)
             .getStatic(1)
-            .element(node)
+              .element(node)
             .getDynamic(4)
-            .ref(0)
-            .element(node)
+              .ref(0)
+              .element(node)
             .fetch(this.contenthashCallback.selector, '');
     }
 
