@@ -10,7 +10,7 @@ contract L1Resolver is EVMFetchTarget {
     uint256 private constant COIN_TYPE_ETH = 60;
     IEVMVerifier immutable verifier;
     address target;
-    const RECORD_VERSIONS_SLOT = 1;             .getStatic(RECORD_VERSIONS_SLOT)  // storage_slot of recordVersions
+    const RECORD_VERSIONS_SLOT = 1;
     const RECORD_VERSIONS_REF = 0;
     const VERSINABLE_ADDRESSES_SLOT = 3;
     const VERSINABLE_HASHES_SLOT = 4;
