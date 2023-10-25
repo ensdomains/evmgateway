@@ -20,26 +20,20 @@ async function main() {
   console.log('Starting hardhat');
 
   const code = await new Promise((resolve, reject) => {
-    const hh = spawn(
-      'hardhat',
-      ['test', '--network', 'ganache'],
-      {
-        stdio: 'inherit',
-      //   env: {
-      //     RPC_PORT: port.toString(),
-      //   },
-      }
-    );    
+    const hh = spawn('hardhat', ['test', '--network', 'ganache'], {
+        stdio: 'inherit'
+    });
     hh.on('close', (code) => {
-      console.log({code})
       console.log('Shutting down');
       server.close();
-      if(code === 0){
-        resolve(code)
+
+      if (code === 0) {
+        resolve(code);
         process.exit(code);
-      }else{
-        reject(code)
+      } else {
+        reject(code);
       }
+
     });
   });
 }
@@ -47,6 +41,5 @@ async function main() {
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
 main().catch((error) => {
-  console.error('***err', error); 
   process.exit(error);
 });

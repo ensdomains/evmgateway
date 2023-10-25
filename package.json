@@ -2,26 +2,15 @@
   "private": true,
   "type": "module",
   "description": "A generic gateway and smart contract library for cross-chain data retrieval",
-  "workspaces": {
-    "packages": [
-      "evm-gateway",
-      "l1-gateway",
-      "op-gateway",
-      "evm-verifier",
-      "l1-verifier",
-      "op-verifier",
-      "crosschain-resolver"
-    ],
-    "nohoist": [
-      "**/@nomiclabs/**",
-      "**/typescript",
-      "**/ts-node",
-      "**/@typechain/**",
-      "hardhat",
-      "husky",
-      "**/@eth-optimism/**"
-    ]
-  },
+  "workspaces": [
+    "evm-gateway",
+    "l1-gateway",
+    "op-gateway",
+    "evm-verifier",
+    "l1-verifier",
+    "op-verifier",
+    "crosschain-resolver"
+  ],
   "scripts": {
     "env": "env",
     "workspace": "bun ./scripts/workspace.ts",
@@ -51,6 +40,7 @@
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^6.7.4",
     "@typescript-eslint/parser": "^6.7.4",
+    "bun-types": "^1.0.7",
     "eslint": "^8.50.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
@@ -60,7 +50,6 @@
   },
   "dependencies": {
     "@ensdomains/ccip-read-cf-worker": "^0.0.1",
-    "tsc": "^2.0.4",
     "@eth-optimism/sdk": "^3.1.4"
   }
 }

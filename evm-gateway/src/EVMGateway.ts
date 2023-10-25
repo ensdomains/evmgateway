@@ -1,3 +1,5 @@
+import type { HandlerDescription } from '@chainlink/ccip-read-server';
+import type { Fragment, Interface, JsonFragment } from '@ethersproject/abi';
 import {
   concat,
   dataSlice,
@@ -5,8 +7,6 @@ import {
   solidityPackedKeccak256,
   toBigInt,
 } from 'ethers';
-import type { Fragment, Interface, JsonFragment } from '@ethersproject/abi';
-import type { HandlerDescription } from '@ensdomains/ccip-read-cf-worker';
 
 import type { IProofService, ProvableBlock } from './IProofService.js';
 
@@ -31,7 +31,10 @@ interface StorageElement {
 }
 
 interface Server {
-  add:(abi: string | readonly (string | Fragment | JsonFragment)[] | Interface, handlers: HandlerDescription[]) => void;
+  add: (
+    abi: string | readonly (string | Fragment | JsonFragment)[] | Interface,
+    handlers: HandlerDescription[]
+  ) => void;
 }
 
 function memoize<T>(fn: () => Promise<T>): () => Promise<T> {
@@ -105,7 +108,7 @@ export class EVMGateway<T extends ProvableBlock> {
         },
       },
     ]);
-    return server
+    return server;
   }
 
   /**

@@ -1,3 +1,3 @@
-export interface Router{
-    handle:(request:Request)=> void
+export interface Router {
+  handle: (request: Request) => void;
 }
