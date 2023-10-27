@@ -17,7 +17,7 @@ async function main() {
     });
   });
 
-  console.log('Starting hardhat1');
+  console.log('Starting hardhat');
   const code = await new Promise((resolve) => {
     const hh = fork(
       '../node_modules/.bin/hardhat',

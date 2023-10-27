@@ -6,7 +6,6 @@
     "build": "echo 'building crosschain-resolver' && hardhat compile",
     "test": "node scripts/test.js",
     "storage": "hardhat check",
-    "remote_test": "hardhat run scripts/remote.ts",
     "clean": "rm -fr artifacts cache node_modules typechain-types",
     "lint": "exit 0"
   },
