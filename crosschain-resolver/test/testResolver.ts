@@ -89,6 +89,16 @@ describe('Crosschain Resolver', () => {
     await provider.send('evm_mine', []);
   });
 
+  it("should test empty ETH Address", async() => {
+    const addr = '0x0000000000000000000000000000000000000000'
+    await l2contract.clearRecords(node)
+    const result = await l2contract['addr(bytes32)'](node)
+    expect(ethers.getAddress(result)).to.equal(addr);
+    await provider.send("evm_mine", []);
+    const result2 = await target['addr(bytes32)'](node, { enableCcipRead: true })
+    expect(result2).to.equal(addr);
+  })
+
   it("should test ETH Address", async() => {
     const addr = '0x5A384227B65FA093DEC03Ec34e111Db80A040615'
     await l2contract.clearRecords(node)
