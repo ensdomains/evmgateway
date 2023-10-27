@@ -20,7 +20,7 @@ async function main() {
   console.log('Starting hardhat');
   const code = await new Promise((resolve) => {
     const hh = fork(
-      'node_modules/.bin/hardhat',
+      '../node_modules/.bin/hardhat',
       ['test', '--network', 'ganache'],
       {
         stdio: 'inherit',
