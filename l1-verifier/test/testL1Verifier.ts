@@ -4,6 +4,7 @@ import { HardhatEthersProvider } from '@nomicfoundation/hardhat-ethers/internal/
 import type { HardhatEthersHelpers } from '@nomicfoundation/hardhat-ethers/types';
 import { expect } from 'chai';
 import {
+  BrowserProvider,
   Contract,
   FetchRequest,
   JsonRpcProvider,
@@ -29,7 +30,7 @@ declare module 'hardhat/types/runtime' {
 }
 
 describe('L1Verifier', () => {
-  let provider: JsonRpcProvider;
+  let provider: BrowserProvider;
   let signer: Signer;
   let verifier: Contract;
   let target: Contract;
@@ -37,7 +38,7 @@ describe('L1Verifier', () => {
   before(async () => {
     // Hack to get a 'real' ethers provider from hardhat. The default `HardhatProvider`
     // doesn't support CCIP-read.
-    provider = new ethers.JsonRpcProvider('http://localhost:8888');
+    provider = new ethers.BrowserProvider(ethers.provider._hardhatProvider);
     // provider.on("debug", (x: any) => console.log(JSON.stringify(x, undefined, 2)));
     signer = await provider.getSigner(0);
     const gateway = makeL1Gateway(provider as unknown as JsonRpcProvider);
