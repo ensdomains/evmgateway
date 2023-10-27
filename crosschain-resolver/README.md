@@ -37,14 +37,13 @@ Then define the l1 function
         bytes32 node,
         uint256 coinType
     ) public view returns (bytes memory) {
-        EVMFetcher
-            .newFetchRequest(verifier, target)
+        EVMFetcher.newFetchRequest(verifier, target)
             .getStatic(1)  // storage_slot of recordVersions
-            .element(node)
+              .element(node)
             .getDynamic(3) // storage_slot of versionable_addresses
-            .ref(0)        // Referencing the result of `.getStatic(0)`
-            .element(node)
-            .element(coinType)
+              .ref(0)        // Referencing the result of `.getStatic(0)`
+              .element(node)
+              .element(coinType)
             .fetch(this.addrCoinTypeCallback.selector, ''); // recordVersions
 ```
 
