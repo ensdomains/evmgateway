@@ -1,11 +1,11 @@
 {
-  "name": "@ensdomains/l1-verifier",
+  "name": "@ensdomains/crosschain-resolver",
   "license": "MIT",
   "version": "0.1.0",
   "scripts": {
-    "build": "echo 'building l1-verifier...' && bun hardhat compile",
-    "test": "node ./scripts/test.js",
-    "remote_test": "hardhat run scripts/remote.ts",
+    "build": "echo 'building crosschain-resolver' && hardhat compile",
+    "test": "node scripts/test.js",
+    "storage": "hardhat check",
     "clean": "rm -fr artifacts cache node_modules typechain-types",
     "lint": "exit 0"
   },
@@ -28,7 +28,10 @@
     "express": "^4.18.2",
     "ganache": "^7.9.1",
     "hardhat": "^2.17.4",
+    "hardhat-deploy": "^0.11.43",
+    "hardhat-deploy-ethers": "^0.4.1",
     "hardhat-gas-reporter": "^1.0.8",
+    "hardhat-storage-layout": "^0.1.7",
     "solidity-bytes-utils": "^0.8.0",
     "solidity-coverage": "^0.8.1",
     "supertest": "^6.3.3",
@@ -37,8 +40,8 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@eth-optimism/contracts": "^0.6.0",
-    "@eth-optimism/contracts-bedrock": "^0.16.2",
-    "@ensdomains/evm-verifier": "^0.1.0"
+    "@ensdomains/ens-contracts": "^0.0.22",
+    "@ensdomains/evm-verifier": "^0.1.0",
+    "@eth-optimism/contracts": "^0.6.0"
   }
 }
