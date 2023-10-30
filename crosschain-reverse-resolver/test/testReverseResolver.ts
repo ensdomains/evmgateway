@@ -80,7 +80,7 @@ describe('Crosschain Resolver', () => {
     l2contract = await testL2Factory.deploy();
 
     const testL1Factory = await ethers.getContractFactory(
-      'L1Resolver',
+      'L1ReverseResolver',
       signer
     );
     target = await testL1Factory.deploy(await verifier.getAddress(), await l2contract.getAddress());

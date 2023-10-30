@@ -12,11 +12,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const OwnedResolver = await hre.companionNetworks['l2'].deployments.get('OwnedResolver');
   if(!OP_VERIFIER_ADDRESS) throw ('Set $OP_VERIFIER_ADDRESS')
   console.log({OP_VERIFIER_ADDRESS, OWNED_RESOLVER_ADDRESS:OwnedResolver.address})
-  await deploy('L1Resolver', {
+  await deploy('L1ReverseResolver', {
     from: deployer,
     args: [OP_VERIFIER_ADDRESS, OwnedResolver.address],
     log: true,
   });
 };
 export default func;
-func.tags = ['L1Resolver'];
+func.tags = ['L1ReverseResolver'];

@@ -5,7 +5,7 @@ import {EVMFetcher} from '@ensdomains/evm-verifier/contracts/EVMFetcher.sol';
 import {EVMFetchTarget} from '@ensdomains/evm-verifier/contracts/EVMFetchTarget.sol';
 import {IEVMVerifier} from '@ensdomains/evm-verifier/contracts/IEVMVerifier.sol';
 
-contract L1Resolver is EVMFetchTarget {
+contract L1ReverseResolver is EVMFetchTarget {
     using EVMFetcher for EVMFetcher.EVMFetchRequest;
     IEVMVerifier immutable verifier;
     address immutable target;
