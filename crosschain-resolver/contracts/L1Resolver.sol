@@ -14,7 +14,6 @@ contract L1Resolver is EVMFetchTarget {
     uint256 constant VERSINABLE_ADDRESSES_SLOT = 3;
     uint256 constant VERSINABLE_HASHES_SLOT = 4;
     uint256 constant VERSINABLE_TEXTS_SLOT = 11;
-    uint8   constant RECORD_VERSIONS_REF = 0;
 
     constructor(IEVMVerifier _verifier, address _target) {
         verifier = _verifier;
@@ -31,7 +30,7 @@ contract L1Resolver is EVMFetchTarget {
             .getStatic(RECORD_VERSIONS_SLOT)
               .element(node)
             .getDynamic(VERSINABLE_ADDRESSES_SLOT)
-              .ref(RECORD_VERSIONS_REF)
+              .ref(0)
               .element(node)
               .element(COIN_TYPE_ETH)
             .fetch(this.addrCallback.selector, ''); // recordVersions
@@ -58,7 +57,7 @@ contract L1Resolver is EVMFetchTarget {
             .getStatic(RECORD_VERSIONS_SLOT)
               .element(node)
             .getDynamic(VERSINABLE_ADDRESSES_SLOT)
-              .ref(RECORD_VERSIONS_REF)
+              .ref(0)
               .element(node)
               .element(coinType)
             .fetch(this.addrCoinTypeCallback.selector, '');
@@ -85,7 +84,7 @@ contract L1Resolver is EVMFetchTarget {
             .getStatic(RECORD_VERSIONS_SLOT)
               .element(node)
             .getDynamic(VERSINABLE_TEXTS_SLOT)
-              .ref(RECORD_VERSIONS_REF)
+              .ref(0)
               .element(node)
               .element(key)
             .fetch(this.textCallback.selector, '');
@@ -108,7 +107,7 @@ contract L1Resolver is EVMFetchTarget {
             .getStatic(RECORD_VERSIONS_SLOT)
               .element(node)
             .getDynamic(VERSINABLE_HASHES_SLOT)
-              .ref(RECORD_VERSIONS_REF)
+              .ref(0)
               .element(node)
             .fetch(this.contenthashCallback.selector, '');
     }
