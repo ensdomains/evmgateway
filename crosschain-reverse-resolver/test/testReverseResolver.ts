@@ -30,7 +30,7 @@ declare module 'hardhat/types/runtime' {
   }
 }
 
-describe('Crosschain Resolver', () => {
+describe('Crosschain Reverse Resolver', () => {
   let provider: BrowserProvider;
   let signer: Signer;
   let verifier: Contract;
@@ -89,36 +89,13 @@ describe('Crosschain Resolver', () => {
     await provider.send('evm_mine', []);
   });
 
-  it("should test empty ETH Address", async() => {
-    const addr = '0x0000000000000000000000000000000000000000'
+  it("should test name", async() => {
+    const name = 'vitalik.eth'
     await l2contract.clearRecords(node)
-    const result = await l2contract['addr(bytes32)'](node)
-    expect(ethers.getAddress(result)).to.equal(addr);
+    await l2contract.setName(node, name)
     await provider.send("evm_mine", []);
-    const result2 = await target['addr(bytes32)'](node, { enableCcipRead: true })
-    expect(result2).to.equal(addr);
-  })
-
-  it("should test ETH Address", async() => {
-    const addr = '0x5A384227B65FA093DEC03Ec34e111Db80A040615'
-    await l2contract.clearRecords(node)
-    await l2contract['setAddr(bytes32,address)'](node, addr)
-    const result = await l2contract['addr(bytes32)'](node)
-    expect(ethers.getAddress(result)).to.equal(addr);
-    await provider.send("evm_mine", []);
-    const result2 = await target['addr(bytes32)'](node, { enableCcipRead: true })
-    expect(result2).to.equal(addr);
-  })
-  it("should test non ETH Address", async() => {
-    const addr = '0x76a91462e907b15cbf27d5425399ebf6f0fb50ebb88f1888ac'
-    const coinType = 0 // BTC
-    await l2contract.clearRecords(node)
-    await l2contract['setAddr(bytes32,uint256,bytes)'](node, coinType, addr)
-    const result = await l2contract['addr(bytes32,uint256)'](node, 0)
-    expect(result).to.equal(addr);
-    await provider.send("evm_mine", []);
-    const result2 = await target['addr(bytes32,uint256)'](node, coinType, { enableCcipRead: true })
-    expect(result2).to.equal(addr);
+    const result2 = await target.name(node, { enableCcipRead: true })
+    expect(result2).to.equal(name);
   })
 
   it("should test text record", async() => {
@@ -133,14 +110,4 @@ describe('Crosschain Resolver', () => {
     expect(result2).to.equal(value);
   })
 
-  it("should test contenthash", async() => {
-    const contenthash = '0xe3010170122029f2d17be6139079dc48696d1f582a8530eb9805b561eda517e22a892c7e3f1f'
-    await l2contract.clearRecords(node)
-    await l2contract.setContenthash(node, contenthash)
-    await provider.send("evm_mine", []);
-    const result = await l2contract.contenthash(node)
-    expect(result).to.equal(contenthash);
-    const result2 = await target.contenthash(node, { enableCcipRead: true })
-    expect(result2).to.equal(contenthash);
-  })
 });

@@ -11,8 +11,7 @@ contract L1ReverseResolver is EVMFetchTarget {
     address immutable target;
     uint256 constant COIN_TYPE_ETH = 60;
     uint256 constant RECORD_VERSIONS_SLOT = 1;
-    uint256 constant VERSINABLE_ADDRESSES_SLOT = 3;
-    uint256 constant VERSINABLE_HASHES_SLOT = 4;
+    uint256 constant VERSINABLE_NAME_SLOT = 9;
     uint256 constant VERSINABLE_TEXTS_SLOT = 11;
 
     constructor(IEVMVerifier _verifier, address _target) {
@@ -23,51 +22,24 @@ contract L1ReverseResolver is EVMFetchTarget {
     /**
      * Returns the address associated with an ENS node.
      * @param node The ENS node to query.
-     * @return The associated address.
+     * @return The associated name.
      */
-    function addr(bytes32 node) public view returns (address) {
+            //  return versionable_names[recordVersions[node]][node];
+    function name(bytes32 node) public view returns (string memory) {
         EVMFetcher.newFetchRequest(verifier, target)
             .getStatic(RECORD_VERSIONS_SLOT)
               .element(node)
-            .getDynamic(VERSINABLE_ADDRESSES_SLOT)
+            .getDynamic(VERSINABLE_NAME_SLOT)
               .ref(0)
               .element(node)
-              .element(COIN_TYPE_ETH)
-            .fetch(this.addrCallback.selector, ''); // recordVersions
+            .fetch(this.nameCallback.selector, ''); // recordVersions
     }
 
-    function addrCallback(
+    function nameCallback(
         bytes[] memory values,
         bytes memory
-    ) public pure returns (address) {
-        return address(bytes20(values[1]));
-    }
-
-    /**
-     * Returns the address associated with an ENS node.
-     * @param node The ENS node to query.
-     * @param coinType The cointype to query
-     * @return The associated address.
-     */
-    function addr(
-        bytes32 node,
-        uint256 coinType
-    ) public view returns (bytes memory) {
-        EVMFetcher.newFetchRequest(verifier, target)
-            .getStatic(RECORD_VERSIONS_SLOT)
-              .element(node)
-            .getDynamic(VERSINABLE_ADDRESSES_SLOT)
-              .ref(0)
-              .element(node)
-              .element(coinType)
-            .fetch(this.addrCoinTypeCallback.selector, '');
-    }
-
-    function addrCoinTypeCallback(
-        bytes[] memory values,
-        bytes memory
-    ) public pure returns (bytes memory) {
-        return values[1];
+    ) public pure returns (string memory) {
+        return string(values[1]);
     }
 
     /**
@@ -95,28 +67,6 @@ contract L1ReverseResolver is EVMFetchTarget {
         bytes memory
     ) public pure returns (string memory) {
         return string(values[1]);
-    }
-
-    /**
-     * Returns the contenthash associated with an ENS node.
-     * @param node The ENS node to query.
-     * @return The associated contenthash.
-     */
-    function contenthash(bytes32 node) public view returns (bytes memory) {
-        EVMFetcher.newFetchRequest(verifier, target)
-            .getStatic(RECORD_VERSIONS_SLOT)
-              .element(node)
-            .getDynamic(VERSINABLE_HASHES_SLOT)
-              .ref(0)
-              .element(node)
-            .fetch(this.contenthashCallback.selector, '');
-    }
-
-    function contenthashCallback(
-        bytes[] memory values,
-        bytes memory
-    ) public pure returns (bytes memory) {
-        return values[1];
     }
 
 }
