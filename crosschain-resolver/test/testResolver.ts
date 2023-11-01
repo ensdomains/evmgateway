@@ -73,20 +73,29 @@ describe('Crosschain Resolver', () => {
     );
     verifier = await l1VerifierFactory.deploy(['test:']);
 
-    const testL2Factory = await ethers.getContractFactory(
-      'OwnedResolver',
+    const impl = await ethers.getContractFactory(
+      'DelegatableResolver',
       signer
     );
-    l2contract = await testL2Factory.deploy();
-
+    const implContract = await impl.deploy();
+    const testL2Factory = await ethers.getContractFactory(
+      'DelegatableResolverFactory',
+      signer
+    );
+    const l2factoryContract = await testL2Factory.deploy(await implContract.getAddress());
+    const tx = await l2factoryContract.create(await signer.getAddress());
+    await provider.send('evm_mine', []);
+    await tx.wait()
+    const logs = await l2factoryContract.queryFilter("NewDelegatableResolver")
+    const [resolver, owner] = logs[0].args
     const testL1Factory = await ethers.getContractFactory(
       'L1Resolver',
       signer
     );
-    target = await testL1Factory.deploy(await verifier.getAddress(), await l2contract.getAddress());
-
+    target = await testL1Factory.deploy(await verifier.getAddress(), resolver);
     // Mine an empty block so we have something to prove against
     await provider.send('evm_mine', []);
+    l2contract = impl.attach(resolver)
   });
 
   it("should test empty ETH Address", async() => {

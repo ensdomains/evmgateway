@@ -10,10 +10,10 @@ contract L1Resolver is EVMFetchTarget {
     IEVMVerifier immutable verifier;
     address immutable target;
     uint256 constant COIN_TYPE_ETH = 60;
-    uint256 constant RECORD_VERSIONS_SLOT = 1;
-    uint256 constant VERSINABLE_ADDRESSES_SLOT = 3;
-    uint256 constant VERSINABLE_HASHES_SLOT = 4;
-    uint256 constant VERSINABLE_TEXTS_SLOT = 11;
+    uint256 constant RECORD_VERSIONS_SLOT = 0;
+    uint256 constant VERSINABLE_ADDRESSES_SLOT = 2;
+    uint256 constant VERSINABLE_HASHES_SLOT = 3;
+    uint256 constant VERSINABLE_TEXTS_SLOT = 10;
 
     constructor(IEVMVerifier _verifier, address _target) {
         verifier = _verifier;
