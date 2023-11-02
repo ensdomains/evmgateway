@@ -19,6 +19,8 @@ contract L1Resolver is EVMFetchTarget {
     uint256 constant VERSINABLE_HASHES_SLOT = 3;
     uint256 constant VERSINABLE_TEXTS_SLOT = 10;
 
+    event TargetSet(bytes32 indexed node, address target);
+
     function isAuthorised(bytes32 node) internal view returns (bool) {
         // TODO: Add support for
         // trustedETHController
@@ -54,15 +56,7 @@ contract L1Resolver is EVMFetchTarget {
      */
     function setTarget(bytes32 node, address _target) public authorised(node){
       targets[node] = _target;
-    }
-
-    /**
-     * Returns the address associated with an ENS node.
-     * @param node The ENS node to query.
-     * @return _target The L2 resolver address to verify against.
-     */
-    function getTarget(bytes32 node) public view returns(address) {
-      return targets[node];
+      emit TargetSet(node, _target);
     }
 
     /**

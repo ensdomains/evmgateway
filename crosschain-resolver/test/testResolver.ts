@@ -126,7 +126,7 @@ describe('Crosschain Resolver', () => {
       await target.setTarget(incorrectnode, resolverAddress)
     }catch(e){
     }
-    expect(await target.getTarget(incorrectnode)).to.equal(EMPTY_ADDRESS);
+    expect(await target.targets(incorrectnode)).to.equal(EMPTY_ADDRESS);
   })
 
   it("should test empty ETH Address", async() => {
