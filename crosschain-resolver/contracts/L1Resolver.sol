@@ -8,16 +8,33 @@ import {IEVMVerifier} from '@ensdomains/evm-verifier/contracts/IEVMVerifier.sol'
 contract L1Resolver is EVMFetchTarget {
     using EVMFetcher for EVMFetcher.EVMFetchRequest;
     IEVMVerifier immutable verifier;
-    address immutable target;
+    mapping(bytes32 => address) public targets;
     uint256 constant COIN_TYPE_ETH = 60;
     uint256 constant RECORD_VERSIONS_SLOT = 0;
     uint256 constant VERSINABLE_ADDRESSES_SLOT = 2;
     uint256 constant VERSINABLE_HASHES_SLOT = 3;
     uint256 constant VERSINABLE_TEXTS_SLOT = 10;
 
-    constructor(IEVMVerifier _verifier, address _target) {
+    constructor(IEVMVerifier _verifier) {
         verifier = _verifier;
-        target = _target;
+    }
+
+    /**
+     * Set target address to verify aagainst
+     * @param node The ENS node to query.
+     * @param _target The L2 resolver address to verify against.
+     */
+    function setTarget(bytes32 node, address _target) public {
+      targets[node] = _target;
+    }
+
+    /**
+     * Returns the address associated with an ENS node.
+     * @param node The ENS node to query.
+     * @return _target The L2 resolver address to verify against.
+     */
+    function getTarget(bytes32 node) public view returns(address) {
+      return targets[node];
     }
 
     /**
@@ -26,7 +43,7 @@ contract L1Resolver is EVMFetchTarget {
      * @return The associated address.
      */
     function addr(bytes32 node) public view returns (address) {
-        EVMFetcher.newFetchRequest(verifier, target)
+        EVMFetcher.newFetchRequest(verifier, targets[node])
             .getStatic(RECORD_VERSIONS_SLOT)
               .element(node)
             .getDynamic(VERSINABLE_ADDRESSES_SLOT)
@@ -53,7 +70,7 @@ contract L1Resolver is EVMFetchTarget {
         bytes32 node,
         uint256 coinType
     ) public view returns (bytes memory) {
-        EVMFetcher.newFetchRequest(verifier, target)
+        EVMFetcher.newFetchRequest(verifier, targets[node])
             .getStatic(RECORD_VERSIONS_SLOT)
               .element(node)
             .getDynamic(VERSINABLE_ADDRESSES_SLOT)
@@ -80,7 +97,7 @@ contract L1Resolver is EVMFetchTarget {
         bytes32 node,
         string calldata key
     ) public view returns (string memory) {
-        EVMFetcher.newFetchRequest(verifier, target)
+        EVMFetcher.newFetchRequest(verifier, targets[node])
             .getStatic(RECORD_VERSIONS_SLOT)
               .element(node)
             .getDynamic(VERSINABLE_TEXTS_SLOT)
@@ -103,7 +120,7 @@ contract L1Resolver is EVMFetchTarget {
      * @return The associated contenthash.
      */
     function contenthash(bytes32 node) public view returns (bytes memory) {
-        EVMFetcher.newFetchRequest(verifier, target)
+        EVMFetcher.newFetchRequest(verifier, targets[node])
             .getStatic(RECORD_VERSIONS_SLOT)
               .element(node)
             .getDynamic(VERSINABLE_HASHES_SLOT)
