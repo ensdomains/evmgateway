@@ -44,6 +44,9 @@ contract L1Resolver is EVMFetchTarget {
       ENS _ens
       ,INameWrapper wrapperAddress
     ){
+      require(address(wrapperAddress) != address(0), "Name Wrapper address must be set");
+      require(address(_verifier) != address(0), "Verifier address must be set");
+      require(address(_ens)  != address(0), "Registry address must be set");
       verifier = _verifier;
       ens = _ens;
       nameWrapper = wrapperAddress;

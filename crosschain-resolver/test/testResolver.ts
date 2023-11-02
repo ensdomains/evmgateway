@@ -42,7 +42,8 @@ describe('Crosschain Resolver', () => {
   let target: Contract;
   let l2contract: Contract;
   let ens: Contract;
-  let signerAddress, resolverAddress
+  let wrapper: Contract;
+  let signerAddress, resolverAddress, wrapperAddress, metaDataserviceAddress
 
   before(async () => {
     // Hack to get a 'real' ethers provider from hardhat. The default `HardhatProvider`
@@ -75,12 +76,43 @@ describe('Crosschain Resolver', () => {
         },
       };
     });
-    const ensFactory = await ethers.getContractFactory(
-      'ENSRegistry',
-      signer
-    );
+    const ensFactory = await ethers.getContractFactory('ENSRegistry',signer);
     ens = await ensFactory.deploy();
     const ensAddress = await ens.getAddress()
+    const baseRegistrarFactory = await ethers.getContractFactory('BaseRegistrarImplementation',signer);
+    const baseRegistrar = await baseRegistrarFactory.deploy(ensAddress,ethers.namehash('eth'))
+    const baseRegistrarAddress = await baseRegistrar.getAddress()
+    await baseRegistrar.addController(signerAddress)
+    const metaDataserviceFactory = await ethers.getContractFactory('StaticMetadataService',signer);
+    const metaDataservice = await metaDataserviceFactory.deploy('https://ens.domains')
+    const metaDataserviceAddress = await metaDataservice.getAddress()
+    const wrapperFactory = await ethers.getContractFactory('NameWrapper',signer);
+    const reverseRegistrarFactory = await ethers.getContractFactory('ReverseRegistrar',signer);
+    const reverseRegistrar = await reverseRegistrarFactory.deploy(ensAddress)
+    const reverseRegistrarAddress = await reverseRegistrar.getAddress()
+    await ens.setSubnodeOwner(EMPTY_BYTES32, labelhash('reverse'), signerAddress)
+    await ens.setSubnodeOwner(ethers.namehash('reverse'),labelhash('addr'), reverseRegistrarAddress)
+    await ens.setSubnodeOwner(EMPTY_BYTES32, labelhash('eth'), signerAddress)
+    await ens.setSubnodeOwner(ethers.namehash('eth'), labelhash('foo'), signerAddress)
+    const publicResolverFactory = await ethers.getContractFactory('PublicResolver',signer);
+    const publicResolver = await publicResolverFactory.deploy(
+      ensAddress,
+      '0x0000000000000000000000000000000000000000',
+      '0x0000000000000000000000000000000000000000',
+      reverseRegistrarAddress,
+    )
+    const publicResolverAddress = await publicResolver.getAddress()
+    await reverseRegistrar.setDefaultResolver(publicResolverAddress)
+
+    console.log(4, {ensAddress,baseRegistrarAddress, metaDataserviceAddress})
+    wrapper = await wrapperFactory.deploy(
+      ensAddress,
+      baseRegistrarAddress,
+      metaDataserviceAddress
+    );
+    console.log(5)
+    wrapperAddress = await wrapper.getAddress()
+
     const l1VerifierFactory = await ethers.getContractFactory(
       'L1Verifier',
       signer
@@ -109,8 +141,6 @@ describe('Crosschain Resolver', () => {
     );
     const verifierAddress = await verifier.getAddress()
     target = await testL1Factory.deploy(verifierAddress, ensAddress, EMPTY_ADDRESS);
-    await ens.setSubnodeOwner(EMPTY_BYTES32, labelhash('eth'), signerAddress)
-    await ens.setSubnodeOwner(ethers.namehash('eth'), labelhash('foo'), signerAddress)
 
     // Mine an empty block so we have something to prove against
     await provider.send('evm_mine', []);
@@ -126,6 +156,7 @@ describe('Crosschain Resolver', () => {
       await target.setTarget(incorrectnode, resolverAddress)
     }catch(e){
     }
+
     expect(await target.targets(incorrectnode)).to.equal(EMPTY_ADDRESS);
   })
 

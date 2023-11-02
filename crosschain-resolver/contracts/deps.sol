@@ -1,8 +1,10 @@
-import {ENSRegistry} from "@ensdomains/ens-contracts/contracts/registry/ENSRegistry.sol";
-import {NameWrapper} from "@ensdomains/ens-contracts/contracts/wrapper/NameWrapper.sol";
-import {L1Verifier} from '@ensdomains/l1-verifier/contracts/L1Verifier.sol';
-import '@ensdomains/ens-contracts/contracts/resolvers/DelegatableResolverFactory.sol';
-import '@ensdomains/ens-contracts/contracts/resolvers/DelegatableResolver.sol';
+import "@ensdomains/ens-contracts/contracts/registry/ENSRegistry.sol";
+import "@ensdomains/ens-contracts/contracts/wrapper/NameWrapper.sol";
+import "@ensdomains/ens-contracts/contracts/ethregistrar/BaseRegistrarImplementation.sol";
+import "@ensdomains/ens-contracts/contracts/wrapper/StaticMetadataService.sol";
+import "@ensdomains/l1-verifier/contracts/L1Verifier.sol";
+import {ReverseRegistrar} from "@ensdomains/ens-contracts/contracts/reverseRegistrar/ReverseRegistrar.sol";
+import {PublicResolver} from "@ensdomains/ens-contracts/contracts/resolvers/PublicResolver.sol";
 
 // Storage slot
 // ┌────────────────────────────┬──────────────────────────────┬──────────────┬
