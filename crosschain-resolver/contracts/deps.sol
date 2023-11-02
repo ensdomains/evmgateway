@@ -1,3 +1,5 @@
+import {ENSRegistry} from "@ensdomains/ens-contracts/contracts/registry/ENSRegistry.sol";
+import {NameWrapper} from "@ensdomains/ens-contracts/contracts/wrapper/NameWrapper.sol";
 import {L1Verifier} from '@ensdomains/l1-verifier/contracts/L1Verifier.sol';
 import '@ensdomains/ens-contracts/contracts/resolvers/DelegatableResolverFactory.sol';
 import '@ensdomains/ens-contracts/contracts/resolvers/DelegatableResolver.sol';

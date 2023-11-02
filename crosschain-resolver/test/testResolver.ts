@@ -14,7 +14,12 @@ import { FetchRequest } from 'ethers';
 import { ethers } from 'hardhat';
 import { EthereumProvider } from 'hardhat/types';
 import request from 'supertest';
-const node = '0x80ee077a908dffcf32972ba13c2df16b42688e1de21bcf17d3469a8507895eae'
+const node = ethers.namehash('foo.eth')
+const EMPTY_ADDRESS = '0x0000000000000000000000000000000000000000'
+const EMPTY_BYTES32 =
+  '0x0000000000000000000000000000000000000000000000000000000000000000'
+
+const labelhash = (label) => ethers.keccak256(ethers.toUtf8Bytes(label))
 
 type ethersObj = typeof ethersT &
   Omit<HardhatEthersHelpers, 'provider'> & {
@@ -36,6 +41,7 @@ describe('Crosschain Resolver', () => {
   let verifier: Contract;
   let target: Contract;
   let l2contract: Contract;
+  let signerAddress
 
   before(async () => {
     // Hack to get a 'real' ethers provider from hardhat. The default `HardhatProvider`
@@ -43,6 +49,7 @@ describe('Crosschain Resolver', () => {
     provider = new ethers.BrowserProvider(ethers.provider._hardhatProvider);
     // provider.on("debug", (x: any) => console.log(JSON.stringify(x, undefined, 2)));
     signer = await provider.getSigner(0);
+    signerAddress = await signer.getAddress()
     const gateway = makeL1Gateway(provider as unknown as JsonRpcProvider);
     const server = new Server()
     gateway.add(server)
@@ -67,6 +74,12 @@ describe('Crosschain Resolver', () => {
         },
       };
     });
+    const ensFactory = await ethers.getContractFactory(
+      'ENSRegistry',
+      signer
+    );
+    const ens = await ensFactory.deploy();
+    const ensAddress = await ens.getAddress()
     const l1VerifierFactory = await ethers.getContractFactory(
       'L1Verifier',
       signer
@@ -92,8 +105,11 @@ describe('Crosschain Resolver', () => {
       'L1Resolver',
       signer
     );
-    const verifierAddress =  await verifier.getAddress()
-    target = await testL1Factory.deploy(verifierAddress);
+    const verifierAddress = await verifier.getAddress()
+    target = await testL1Factory.deploy(verifierAddress, ensAddress, EMPTY_ADDRESS);
+    await ens.setSubnodeOwner(EMPTY_BYTES32, labelhash('eth'), signerAddress)
+    await ens.setSubnodeOwner(ethers.namehash('eth'), labelhash('foo'), signerAddress)
+
     // Mine an empty block so we have something to prove against
     await provider.send('evm_mine', []);
     l2contract = impl.attach(resolver)

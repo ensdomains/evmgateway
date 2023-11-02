@@ -4,10 +4,14 @@ pragma solidity ^0.8.17;
 import {EVMFetcher} from '@ensdomains/evm-verifier/contracts/EVMFetcher.sol';
 import {EVMFetchTarget} from '@ensdomains/evm-verifier/contracts/EVMFetchTarget.sol';
 import {IEVMVerifier} from '@ensdomains/evm-verifier/contracts/IEVMVerifier.sol';
+import "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
+import {INameWrapper} from "@ensdomains/ens-contracts/contracts/wrapper/INameWrapper.sol";
 
 contract L1Resolver is EVMFetchTarget {
     using EVMFetcher for EVMFetcher.EVMFetchRequest;
     IEVMVerifier immutable verifier;
+    ENS immutable ens;
+    INameWrapper immutable nameWrapper;
     mapping(bytes32 => address) public targets;
     uint256 constant COIN_TYPE_ETH = 60;
     uint256 constant RECORD_VERSIONS_SLOT = 0;
@@ -15,8 +19,32 @@ contract L1Resolver is EVMFetchTarget {
     uint256 constant VERSINABLE_HASHES_SLOT = 3;
     uint256 constant VERSINABLE_TEXTS_SLOT = 10;
 
-    constructor(IEVMVerifier _verifier) {
-        verifier = _verifier;
+    function isAuthorised(bytes32 node) internal view returns (bool) {
+        // TODO: Add support for
+        // trustedETHController
+        // trustedReverseRegistrar
+        // isApprovedForAll
+        // isApprovedFor
+        address owner = ens.owner(node);
+        if (owner == address(nameWrapper)) {
+            owner = nameWrapper.ownerOf(uint256(node));
+        }
+        return owner == msg.sender;
+    }
+
+    modifier authorised(bytes32 node) {
+        require(isAuthorised(node));
+        _;
+    }
+
+    constructor(
+      IEVMVerifier _verifier,
+      ENS _ens
+      ,INameWrapper wrapperAddress
+    ){
+      verifier = _verifier;
+      ens = _ens;
+      nameWrapper = wrapperAddress;
     }
 
     /**
@@ -24,7 +52,7 @@ contract L1Resolver is EVMFetchTarget {
      * @param node The ENS node to query.
      * @param _target The L2 resolver address to verify against.
      */
-    function setTarget(bytes32 node, address _target) public {
+    function setTarget(bytes32 node, address _target) public authorised(node){
       targets[node] = _target;
     }
 
