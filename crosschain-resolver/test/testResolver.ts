@@ -41,7 +41,8 @@ describe('Crosschain Resolver', () => {
   let verifier: Contract;
   let target: Contract;
   let l2contract: Contract;
-  let signerAddress
+  let ens: Contract;
+  let signerAddress, resolverAddress
 
   before(async () => {
     // Hack to get a 'real' ethers provider from hardhat. The default `HardhatProvider`
@@ -78,7 +79,7 @@ describe('Crosschain Resolver', () => {
       'ENSRegistry',
       signer
     );
-    const ens = await ensFactory.deploy();
+    ens = await ensFactory.deploy();
     const ensAddress = await ens.getAddress()
     const l1VerifierFactory = await ethers.getContractFactory(
       'L1Verifier',
@@ -101,6 +102,7 @@ describe('Crosschain Resolver', () => {
     await tx.wait()
     const logs = await l2factoryContract.queryFilter("NewDelegatableResolver")
     const [resolver] = logs[0].args
+    resolverAddress = resolver
     const testL1Factory = await ethers.getContractFactory(
       'L1Resolver',
       signer
@@ -112,9 +114,20 @@ describe('Crosschain Resolver', () => {
 
     // Mine an empty block so we have something to prove against
     await provider.send('evm_mine', []);
-    l2contract = impl.attach(resolver)
-    await target.setTarget(node, resolver)
+    l2contract = impl.attach(resolverAddress)
+    await target.setTarget(node, resolverAddress)
   });
+
+  it("should not allow non owner to set target", async() => {
+    const incorrectnode = ethers.namehash('notowned.eth')
+    // For some reason expect().to.be.reverted isn't working
+    // Throwing Error: missing revert data (action="estimateGas"...
+    try{
+      await target.setTarget(incorrectnode, resolverAddress)
+    }catch(e){
+    }
+    expect(await target.getTarget(incorrectnode)).to.equal(EMPTY_ADDRESS);
+  })
 
   it("should test empty ETH Address", async() => {
     const addr = '0x0000000000000000000000000000000000000000'
