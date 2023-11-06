@@ -21,13 +21,13 @@ When the resolver has the following storage layout,
 Run `yarn storage` to find out storage slot for each variable
 
 ```
-// Storage slot
-// ┌────────────────────────────┬──────────────────────────────┬──────────────┬
-// │      contract              │        state_variable        │ storage_slot │ 
-// ├────────────────────────────┼──────────────────────────────┼──────────────┼
-// │    DelegatableResolver     │        recordVersions        │      0       │
-// │    DelegatableResolver     │       versionable_abis       │      1       │
-// │    DelegatableResolver     │    versionable_addresses     │      2       │
+// ┌─────────────────────┬──────────────────────────────┬──────────────┬
+// │      contract       │        state_variable        │ storage_slot │
+// ├─────────────────────┼──────────────────────────────┼──────────────┼
+// |    OwnedResolver    │            _owner            │      0       │
+// │    OwnedResolver    │        recordVersions        │      1       │
+// │    OwnedResolver    │       versionable_abis       │      2       │
+// │    OwnedResolver    │    versionable_addresses     │      3       │
 ```
 
 Then define the l1 function
@@ -38,9 +38,9 @@ Then define the l1 function
         uint256 coinType
     ) public view returns (bytes memory) {
         EVMFetcher.newFetchRequest(verifier, target)
-            .getStatic(0)  // storage_slot of recordVersions
+            .getStatic(1)  // storage_slot of recordVersions
               .element(node)
-            .getDynamic(2) // storage_slot of versionable_addresses
+            .getDynamic(3) // storage_slot of versionable_addresses
               .ref(0)        // Referencing the result of `.getStatic(0)`
               .element(node)
               .element(coinType)

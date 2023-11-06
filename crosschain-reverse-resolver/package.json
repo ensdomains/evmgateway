@@ -1,9 +1,9 @@
 {
-  "name": "@ensdomains/crosschain-resolver",
+  "name": "@ensdomains/crosschain-reverse-resolver",
   "license": "MIT",
   "version": "0.1.0",
   "scripts": {
-    "build": "echo 'building crosschain-resolver' && hardhat compile",
+    "build": "echo 'building crosschain-reverse-resolver' && hardhat compile",
     "test": "node scripts/test.js",
     "storage": "hardhat check",
     "clean": "rm -fr artifacts cache node_modules typechain-types",
