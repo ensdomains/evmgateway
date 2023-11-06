@@ -28,7 +28,7 @@ contract L1Resolver is EVMFetchTarget {
         // isApprovedForAll
         // isApprovedFor
         address owner = ens.owner(node);
-        if (owner != address(0) && owner == address(nameWrapper)) {
+        if (owner == address(nameWrapper)) {
           owner = nameWrapper.ownerOf(uint256(node));
         }
         return owner == msg.sender;

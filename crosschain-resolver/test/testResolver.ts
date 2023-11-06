@@ -104,21 +104,19 @@ describe('Crosschain Resolver', () => {
     const publicResolverAddress = await publicResolver.getAddress()
     await reverseRegistrar.setDefaultResolver(publicResolverAddress)
 
-    console.log(4, {ensAddress,baseRegistrarAddress, metaDataserviceAddress})
-    wrapper = await wrapperFactory.deploy(
-      ensAddress,
-      baseRegistrarAddress,
-      metaDataserviceAddress
-    );
-    console.log(5)
-    wrapperAddress = await wrapper.getAddress()
+    console.log({ensAddress,baseRegistrarAddress, metaDataserviceAddress})
+    // wrapper = await wrapperFactory.deploy(
+    //   ensAddress,
+    //   baseRegistrarAddress,
+    //   metaDataserviceAddress
+    // );
+    // wrapperAddress = await wrapper.getAddress()
 
     const l1VerifierFactory = await ethers.getContractFactory(
       'L1Verifier',
       signer
     );
     verifier = await l1VerifierFactory.deploy(['test:']);
-
     const impl = await ethers.getContractFactory(
       'DelegatableResolver',
       signer
@@ -140,12 +138,14 @@ describe('Crosschain Resolver', () => {
       signer
     );
     const verifierAddress = await verifier.getAddress()
-    target = await testL1Factory.deploy(verifierAddress, ensAddress, EMPTY_ADDRESS);
+    const wrapperAddress = verifierAddress // TODO: Fix wrapper deployment
+    target = await testL1Factory.deploy(verifierAddress, ensAddress, wrapperAddress);
 
     // Mine an empty block so we have something to prove against
     await provider.send('evm_mine', []);
     l2contract = impl.attach(resolverAddress)
     await target.setTarget(node, resolverAddress)
+
   });
 
   it("should not allow non owner to set target", async() => {
