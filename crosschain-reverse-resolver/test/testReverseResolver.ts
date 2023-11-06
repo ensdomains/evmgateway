@@ -83,7 +83,6 @@ describe('Crosschain Reverse Resolver', () => {
       signer
     );
     target = await testL1Factory.deploy(await verifier.getAddress(), await l2contract.getAddress());
-
     // Mine an empty block so we have something to prove against
     await provider.send('evm_mine', []);
   });
@@ -93,13 +92,10 @@ describe('Crosschain Reverse Resolver', () => {
     const node = await l2contract.node(
       await signer.getAddress(),
     )
+    await l2contract.clearRecords(await  signer.getAddress())
     await l2contract.setName(name)
     await provider.send("evm_mine", []);
-    console.log(1, {name, node})
-    console.log(2, await await l2contract.name(node))
-    await provider.send("evm_mine", []);
     const result2 = await target.name(node, { enableCcipRead: true })
-    console.log(3, {result2})
     expect(result2).to.equal(name);
   })
 
@@ -109,6 +105,7 @@ describe('Crosschain Reverse Resolver', () => {
     const node = await l2contract.node(
       await signer.getAddress(),
     )
+    await l2contract.clearRecords(await  signer.getAddress())
     await l2contract.setText(key, value)
     await provider.send("evm_mine", []);
     const result = await l2contract.text(node, key)

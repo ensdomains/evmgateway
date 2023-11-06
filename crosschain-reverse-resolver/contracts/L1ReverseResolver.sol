@@ -10,8 +10,8 @@ contract L1ReverseResolver is EVMFetchTarget {
     IEVMVerifier immutable verifier;
     address immutable target;
     uint256 constant RECORD_VERSIONS_SLOT = 1;
-    uint256 constant VERSINABLE_TEXTS_SLOT = 3;
-    uint256 constant VERSINABLE_NAME_SLOT = 4;
+    uint256 constant VERSIONABLE_TEXTS_SLOT = 3;
+    uint256 constant VERSIONABLE_NAME_SLOT = 4;
 
     constructor(IEVMVerifier _verifier, address _target) {
         verifier = _verifier;
@@ -28,7 +28,7 @@ contract L1ReverseResolver is EVMFetchTarget {
         EVMFetcher.newFetchRequest(verifier, target)
             .getStatic(RECORD_VERSIONS_SLOT)
               .element(node)
-            .getDynamic(VERSINABLE_NAME_SLOT)
+            .getDynamic(VERSIONABLE_NAME_SLOT)
               .ref(0)
               .element(node)
             .fetch(this.nameCallback.selector, ''); // recordVersions
@@ -54,7 +54,7 @@ contract L1ReverseResolver is EVMFetchTarget {
         EVMFetcher.newFetchRequest(verifier, target)
             .getStatic(RECORD_VERSIONS_SLOT)
               .element(node)
-            .getDynamic(VERSINABLE_TEXTS_SLOT)
+            .getDynamic(VERSIONABLE_TEXTS_SLOT)
               .ref(0)
               .element(node)
               .element(key)
