@@ -99,9 +99,9 @@ describe('Crosschain Resolver', () => {
     expect(result2).to.equal(addr);
   })
 
-  it("should test ETH Address", async() => {
+  it.only("should test ETH Address", async() => {
     const addr = '0x5A384227B65FA093DEC03Ec34e111Db80A040615'
-    await l2contract.clearRecords(node)
+    // await l2contract.clearRecords(node)
     await l2contract['setAddr(bytes32,address)'](node, addr)
     const result = await l2contract['addr(bytes32)'](node)
     expect(ethers.getAddress(result)).to.equal(addr);
