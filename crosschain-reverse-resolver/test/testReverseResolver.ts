@@ -97,7 +97,8 @@ describe('Crosschain Reverse Resolver', () => {
     await provider.send("evm_mine", []);
     console.log(1, {name, node})
     console.log(2, await await l2contract.name(node))
-    const result2 = await target.name(node, { enableCcipRead: false })
+    await provider.send("evm_mine", []);
+    const result2 = await target.name(node, { enableCcipRead: true })
     console.log(3, {result2})
     expect(result2).to.equal(name);
   })
