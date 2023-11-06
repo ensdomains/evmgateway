@@ -9,10 +9,9 @@ contract L1ReverseResolver is EVMFetchTarget {
     using EVMFetcher for EVMFetcher.EVMFetchRequest;
     IEVMVerifier immutable verifier;
     address immutable target;
-    uint256 constant COIN_TYPE_ETH = 60;
     uint256 constant RECORD_VERSIONS_SLOT = 1;
-    uint256 constant VERSINABLE_NAME_SLOT = 9;
-    uint256 constant VERSINABLE_TEXTS_SLOT = 11;
+    uint256 constant VERSINABLE_TEXTS_SLOT = 3;
+    uint256 constant VERSINABLE_NAME_SLOT = 4;
 
     constructor(IEVMVerifier _verifier, address _target) {
         verifier = _verifier;
