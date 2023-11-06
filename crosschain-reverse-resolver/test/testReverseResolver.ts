@@ -14,7 +14,7 @@ import { FetchRequest } from 'ethers';
 import { ethers } from 'hardhat';
 import { EthereumProvider } from 'hardhat/types';
 import request from 'supertest';
-const node = '0x80ee077a908dffcf32972ba13c2df16b42688e1de21bcf17d3469a8507895eae'
+const NAMESPACE = 2147483658 // OP
 
 type ethersObj = typeof ethersT &
   Omit<HardhatEthersHelpers, 'provider'> & {
@@ -72,37 +72,38 @@ describe('Crosschain Reverse Resolver', () => {
       signer
     );
     verifier = await l1VerifierFactory.deploy(['test:']);
-
     const testL2Factory = await ethers.getContractFactory(
-      'OwnedResolver',
+      'L2ReverseRegistrar',
       signer
     );
-    l2contract = await testL2Factory.deploy();
-
+    l2contract = await testL2Factory.deploy(ethers.namehash(`${NAMESPACE}.reverse`));
     const testL1Factory = await ethers.getContractFactory(
       'L1ReverseResolver',
       signer
     );
     target = await testL1Factory.deploy(await verifier.getAddress(), await l2contract.getAddress());
-
     // Mine an empty block so we have something to prove against
     await provider.send('evm_mine', []);
   });
 
   it("should test name", async() => {
     const name = 'vitalik.eth'
-    await l2contract.clearRecords(node)
-    await l2contract.setName(node, name)
+    const node = await l2contract.node(
+      await signer.getAddress(),
+    )
+    await l2contract.setName(name)
     await provider.send("evm_mine", []);
     const result2 = await target.name(node, { enableCcipRead: true })
     expect(result2).to.equal(name);
   })
 
   it("should test text record", async() => {
+    const node = await l2contract.node(
+      await signer.getAddress(),
+    )
     const key = 'name'
     const value = 'nick.eth'
-    await l2contract.clearRecords(node)
-    await l2contract.setText(node, key, value)
+    await l2contract.setText(key, value)
     await provider.send("evm_mine", []);
     const result = await l2contract.text(node, key)
     expect(result).to.equal(value);

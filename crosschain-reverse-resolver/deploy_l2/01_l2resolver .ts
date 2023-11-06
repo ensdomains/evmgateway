@@ -7,11 +7,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const {deployer} = await getNamedAccounts();
   console.log({deployer})
-  await deploy('OwnedResolver', {
+  await deploy('L2ReverseRegistrar', {
     from: deployer,
     args: [],
     log: true,
   });
 };
 export default func;
-func.tags = ['OwnedResolver'];
+func.tags = ['L2ReverseRegistrar'];
