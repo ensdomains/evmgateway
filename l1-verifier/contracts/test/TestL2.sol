@@ -12,6 +12,7 @@ contract TestL2 {
     constructor() {
         latest = 42;
         name = "Satoshi";
+        highscores[0] = 1;
         highscores[latest] = 12345;
         highscorers[latest] = "Hal Finney";
         highscorers[1] = "Hubert Blaine Wolfeschlegelsteinhausenbergerdorff Sr.";

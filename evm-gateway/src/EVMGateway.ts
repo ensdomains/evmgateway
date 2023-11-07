@@ -6,6 +6,7 @@ import {
   getBytes,
   solidityPackedKeccak256,
   toBigInt,
+  zeroPadValue,
 } from 'ethers';
 
 import type { IProofService, ProvableBlock } from './IProofService.js';
@@ -246,8 +247,11 @@ export class EVMGateway<T extends ProvableBlock> {
       return {
         slots: [slot],
         isDynamic,
-        value: memoize(() =>
-          this.proofService.getStorageAt(block, address, slot)
+        value: memoize(async () =>
+          zeroPadValue(
+            await this.proofService.getStorageAt(block, address, slot),
+            32
+          )
         ),
       };
     } else {
