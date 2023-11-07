@@ -248,7 +248,10 @@ export class EVMGateway<T extends ProvableBlock> {
         slots: [slot],
         isDynamic,
         value: memoize(async () =>
-          zeroPadValue(await this.proofService.getStorageAt(block, address, slot), 32)
+          zeroPadValue(
+            await this.proofService.getStorageAt(block, address, slot),
+            32
+          )
         ),
       };
     } else {
