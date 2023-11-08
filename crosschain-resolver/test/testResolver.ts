@@ -105,13 +105,12 @@ describe('Crosschain Resolver', () => {
     await reverseRegistrar.setDefaultResolver(publicResolverAddress)
 
     console.log({ensAddress,baseRegistrarAddress, metaDataserviceAddress})
-    // wrapper = await wrapperFactory.deploy(
-    //   ensAddress,
-    //   baseRegistrarAddress,
-    //   metaDataserviceAddress
-    // );
-    // wrapperAddress = await wrapper.getAddress()
-
+    wrapper = await wrapperFactory.deploy(
+      ensAddress,
+      baseRegistrarAddress,
+      metaDataserviceAddress
+    );
+    wrapperAddress = await wrapper.getAddress()
     const l1VerifierFactory = await ethers.getContractFactory(
       'L1Verifier',
       signer
@@ -138,7 +137,6 @@ describe('Crosschain Resolver', () => {
       signer
     );
     const verifierAddress = await verifier.getAddress()
-    const wrapperAddress = verifierAddress // TODO: Fix wrapper deployment
     target = await testL1Factory.deploy(verifierAddress, ensAddress, wrapperAddress);
 
     // Mine an empty block so we have something to prove against
