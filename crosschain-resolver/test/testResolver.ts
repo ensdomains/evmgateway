@@ -84,8 +84,10 @@ describe('Crosschain Resolver', () => {
     console.log({ensAddress, namehash:ethers.namehash('eth')})
     baseRegistrar = await baseRegistrarFactory.deploy(ensAddress,ethers.namehash('eth'))
     const baseRegistrarAddress = await baseRegistrar.getAddress()
-    console.log({baseRegistrarAddress, signerAddress})
+    console.log(111, {baseRegistrarAddress, signerAddress})
     await baseRegistrar.addController(signerAddress)
+    console.log(112)
+    console.log(113)
     const metaDataserviceFactory = await ethers.getContractFactory('StaticMetadataService',signer);
     const metaDataservice = await metaDataserviceFactory.deploy('https://ens.domains')
     const metaDataserviceAddress = await metaDataservice.getAddress()
@@ -95,9 +97,14 @@ describe('Crosschain Resolver', () => {
     const reverseRegistrarAddress = await reverseRegistrar.getAddress()
     console.log({reverseRegistrarAddress})
     await ens.setSubnodeOwner(EMPTY_BYTES32, labelhash('reverse'), signerAddress)
+    console.log(114)
     await ens.setSubnodeOwner(ethers.namehash('reverse'),labelhash('addr'), reverseRegistrarAddress)
-    await ens.setSubnodeOwner(EMPTY_BYTES32, labelhash('eth'), signerAddress)
-    await ens.setSubnodeOwner(ethers.namehash('eth'), labelhash('foo'), signerAddress)
+    console.log(115)
+    await ens.setSubnodeOwner(EMPTY_BYTES32, labelhash('eth'), baseRegistrarAddress)
+    console.log(116)
+    await baseRegistrar.register(labelhash('foo'), signerAddress, 100000000)
+    // await ens.setSubnodeOwner(ethers.namehash('eth'), labelhash('foo'), signerAddress)
+    console.log(11789, await ens.owner(node), signerAddress)
     const publicResolverFactory = await ethers.getContractFactory('PublicResolver',signer);
     const publicResolver = await publicResolverFactory.deploy(
       ensAddress,
@@ -164,7 +171,6 @@ describe('Crosschain Resolver', () => {
     console.log(18)
     l2contract = impl.attach(resolverAddress)
     console.log(19)
-    await target.setTarget(node, resolverAddress)
   });
 
   it("should not allow non owner to set target", async() => {
@@ -179,14 +185,19 @@ describe('Crosschain Resolver', () => {
     expect(await target.targets(incorrectnode)).to.equal(EMPTY_ADDRESS);
   })
 
+  it("should allow owner to set target", async() => {
+    await target.setTarget(node, signerAddress)
+    expect(await target.targets(node)).to.equal(signerAddress);
+  })
+
   it("should allow wrapped owner to set target", async() => {
     console.log(20)
     const label = 'wrapped'
     const tokenId = labelhash(label)
     console.log(21, {tokenId, label, signerAddress})
-    await baseRegistrar.register(tokenId, signerAddress, 100000000)
-    console.log(22, {wrapperAddress})
     await baseRegistrar.setApprovalForAll(wrapperAddress, true)
+    console.log(22, {wrapperAddress})    
+    await baseRegistrar.register(tokenId, signerAddress, 100000000)
     console.log(23)
     await wrapper.wrapETH2LD(
       label,
@@ -204,6 +215,7 @@ describe('Crosschain Resolver', () => {
 
 
   it("should test empty ETH Address", async() => {
+    await target.setTarget(node, resolverAddress)
     const addr = '0x0000000000000000000000000000000000000000'
     await l2contract.clearRecords(node)
     const result = await l2contract['addr(bytes32)'](node)
@@ -214,6 +226,7 @@ describe('Crosschain Resolver', () => {
   })
 
   it("should test ETH Address", async() => {
+    await target.setTarget(node, resolverAddress)
     const addr = '0x5A384227B65FA093DEC03Ec34e111Db80A040615'
     await l2contract.clearRecords(node)
     await l2contract['setAddr(bytes32,address)'](node, addr)
@@ -221,9 +234,11 @@ describe('Crosschain Resolver', () => {
     expect(ethers.getAddress(result)).to.equal(addr);
     await provider.send("evm_mine", []);
     const result2 = await target['addr(bytes32)'](node, { enableCcipRead: true })
+    console.log(111,{result, result2, addr})
     expect(result2).to.equal(addr);
   })
   it("should test non ETH Address", async() => {
+    await target.setTarget(node, resolverAddress)
     const addr = '0x76a91462e907b15cbf27d5425399ebf6f0fb50ebb88f1888ac'
     const coinType = 0 // BTC
     await l2contract.clearRecords(node)
@@ -232,10 +247,12 @@ describe('Crosschain Resolver', () => {
     expect(result).to.equal(addr);
     await provider.send("evm_mine", []);
     const result2 = await target['addr(bytes32,uint256)'](node, coinType, { enableCcipRead: true })
+    console.log(112,{result, result2, addr})
     expect(result2).to.equal(addr);
   })
 
   it("should test text record", async() => {
+    await target.setTarget(node, resolverAddress)
     const key = 'name'
     const value = 'nick.eth'
     await l2contract.clearRecords(node)
@@ -248,6 +265,7 @@ describe('Crosschain Resolver', () => {
   })
 
   it("should test contenthash", async() => {
+    await target.setTarget(node, resolverAddress)
     const contenthash = '0xe3010170122029f2d17be6139079dc48696d1f582a8530eb9805b561eda517e22a892c7e3f1f'
     await l2contract.clearRecords(node)
     await l2contract.setContenthash(node, contenthash)
