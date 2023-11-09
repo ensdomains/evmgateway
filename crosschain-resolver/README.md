@@ -64,13 +64,12 @@ Storage verificaton can only verify the data of l2. When the function result nee
 
 Create `.env` and set the following variables
 
-
 - DEPLOYER_PRIVATE_KEY
 - L1_PROVIDER_URL
 - L2_PROVIDER_URL
 - L1_ETHERSCAN_API_KEY
 - L2_ETHERSCAN_API_KEY
-- OP_VERIFIER_ADDRESS=0x0c2746F20C9c97DBf718de10c04943cf408230A3
+- VERIFIER_ADDRESS
 
 ```
 bun run hardhat deploy --network optimismGoerli
@@ -81,6 +80,5 @@ Followed by the L1 contract:
 ```
 bun run hardhat deploy --network goerli
 ```
-
 
 ## Deployments

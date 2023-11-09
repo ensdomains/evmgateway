@@ -8,13 +8,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const {deployer} = await getNamedAccounts();
 
-  const OP_VERIFIER_ADDRESS = process.env.OP_VERIFIER_ADDRESS
-  const OwnedResolver = await hre.companionNetworks['l2'].deployments.get('OwnedResolver');
-  if(!OP_VERIFIER_ADDRESS) throw ('Set $OP_VERIFIER_ADDRESS')
-  console.log({OP_VERIFIER_ADDRESS, OWNED_RESOLVER_ADDRESS:OwnedResolver.address})
+  const VERIFIER_ADDRESS = process.env.VERIFIER_ADDRESS
+  const L2ReverseRegistrar = await hre.companionNetworks['l2'].deployments.get('L2ReverseRegistrar');
+  if(!VERIFIER_ADDRESS) throw ('Set $VERIFIER_ADDRESS')
+  console.log({VERIFIER_ADDRESS, TARGET_ADDRESS:L2ReverseRegistrar.address})
   await deploy('L1ReverseResolver', {
     from: deployer,
-    args: [OP_VERIFIER_ADDRESS, OwnedResolver.address],
+    args: [VERIFIER_ADDRESS, L2ReverseRegistrar.address],
     log: true,
   });
 };

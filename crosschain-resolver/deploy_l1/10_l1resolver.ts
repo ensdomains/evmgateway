@@ -8,12 +8,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const {deployer} = await getNamedAccounts();
 
-  const OP_VERIFIER_ADDRESS = process.env.OP_VERIFIER_ADDRESS
-  if(!OP_VERIFIER_ADDRESS) throw ('Set $OP_VERIFIER_ADDRESS')
-  console.log({OP_VERIFIER_ADDRESS})
+  const VERIFIER_ADDRESS = process.env.VERIFIER_ADDRESS
+  if(!VERIFIER_ADDRESS) throw ('Set $VERIFIER_ADDRESS')
+  console.log({VERIFIER_ADDRESS})
   await deploy('L1Resolver', {
     from: deployer,
-    args: [OP_VERIFIER_ADDRESS],
+    args: [VERIFIER_ADDRESS],
     log: true,
   });
 };

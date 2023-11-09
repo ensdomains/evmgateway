@@ -7,11 +7,17 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const {deployer} = await getNamedAccounts();
   console.log({deployer})
-  await deploy('OwnedResolver', {
+    const REVERSE_NAMESPACE = process.env.REVERSE_NAMESPACE
+  if(!REVERSE_NAMESPACE) throw ('Set $REVERSE_NAMESPACE')
+  console.log({REVERSE_NAMESPACE})
+
+  // eg: `${opcointype}.reverse`
+  const reversenode = ethers.namehash(REVERSE_NAMESPACE)
+  await deploy('L2ReverseRegistrar', {
     from: deployer,
-    args: [],
+    args: [reversenode],
     log: true,
   });
 };
 export default func;
-func.tags = ['OwnedResolver'];
+func.tags = ['L2ReverseRegistrar'];

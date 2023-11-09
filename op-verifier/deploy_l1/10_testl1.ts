@@ -9,6 +9,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const {deployer} = await getNamedAccounts();
 
   const OPVerifier = await deployments.get('OPVerifier');
+  console.log(1, hre.companionNetworks)
+  throw(2)
   const TestL2 = await hre.companionNetworks['l2'].deployments.get('TestL2');
 
   await deploy('TestL1', {
