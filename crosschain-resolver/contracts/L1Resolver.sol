@@ -101,10 +101,10 @@ contract L1Resolver is EVMFetchTarget {
      * @dev Resolve and verify a record stored in l2 target address. It supports subname by fetching target recursively to the nearlest parent.
      * @param name DNS encoded ENS name to query
      * @param data The actual calldata
-     * @return the result of the call
+     * @return result result of the call
      */
-    function resolve(bytes calldata name, bytes calldata data) external view returns (bytes memory) {
-        (bytes32 _node, address target) = getTarget(name, 0);
+    function resolve(bytes calldata name, bytes calldata data) external view returns (bytes memory result) {
+        (, address target) = getTarget(name, 0);
         bytes4 seletor = bytes4(data);
         if (seletor == 0x3b3b57de) {
             (bytes32 node) = abi.decode(data[4:], (bytes32));
