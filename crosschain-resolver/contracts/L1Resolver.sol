@@ -15,9 +15,9 @@ contract L1Resolver is EVMFetchTarget {
     mapping(bytes32 => address) public targets;
     uint256 constant COIN_TYPE_ETH = 60;
     uint256 constant RECORD_VERSIONS_SLOT = 0;
-    uint256 constant VERSINABLE_ADDRESSES_SLOT = 2;
-    uint256 constant VERSINABLE_HASHES_SLOT = 3;
-    uint256 constant VERSINABLE_TEXTS_SLOT = 10;
+    uint256 constant VERSIONABLE_ADDRESSES_SLOT = 2;
+    uint256 constant VERSIONABLE_HASHES_SLOT = 3;
+    uint256 constant VERSIONABLE_TEXTS_SLOT = 10;
 
     event TargetSet(bytes32 indexed node, address target);
 
@@ -41,25 +41,25 @@ contract L1Resolver is EVMFetchTarget {
 
     constructor(
       IEVMVerifier _verifier,
-      ENS _ens
-      ,INameWrapper wrapperAddress
+      ENS _ens,
+      INameWrapper _nameWrapper
     ){
-      require(address(wrapperAddress) != address(0), "Name Wrapper address must be set");
+      require(address(_nameWrapper) != address(0), "Name Wrapper address must be set");
       require(address(_verifier) != address(0), "Verifier address must be set");
       require(address(_ens)  != address(0), "Registry address must be set");
       verifier = _verifier;
       ens = _ens;
-      nameWrapper = wrapperAddress;
+      nameWrapper = _nameWrapper;
     }
 
     /**
      * Set target address to verify aagainst
      * @param node The ENS node to query.
-     * @param _target The L2 resolver address to verify against.
+     * @param target The L2 resolver address to verify against.
      */
-    function setTarget(bytes32 node, address _target) public authorised(node){
-      targets[node] = _target;
-      emit TargetSet(node, _target);
+    function setTarget(bytes32 node, address target) public authorised(node){
+      targets[node] = target;
+      emit TargetSet(node, target);
     }
 
     /**
@@ -71,7 +71,7 @@ contract L1Resolver is EVMFetchTarget {
         EVMFetcher.newFetchRequest(verifier, targets[node])
             .getStatic(RECORD_VERSIONS_SLOT)
               .element(node)
-            .getDynamic(VERSINABLE_ADDRESSES_SLOT)
+            .getDynamic(VERSIONABLE_ADDRESSES_SLOT)
               .ref(0)
               .element(node)
               .element(COIN_TYPE_ETH)
@@ -98,7 +98,7 @@ contract L1Resolver is EVMFetchTarget {
         EVMFetcher.newFetchRequest(verifier, targets[node])
             .getStatic(RECORD_VERSIONS_SLOT)
               .element(node)
-            .getDynamic(VERSINABLE_ADDRESSES_SLOT)
+            .getDynamic(VERSIONABLE_ADDRESSES_SLOT)
               .ref(0)
               .element(node)
               .element(coinType)
@@ -125,7 +125,7 @@ contract L1Resolver is EVMFetchTarget {
         EVMFetcher.newFetchRequest(verifier, targets[node])
             .getStatic(RECORD_VERSIONS_SLOT)
               .element(node)
-            .getDynamic(VERSINABLE_TEXTS_SLOT)
+            .getDynamic(VERSIONABLE_TEXTS_SLOT)
               .ref(0)
               .element(node)
               .element(key)
@@ -148,7 +148,7 @@ contract L1Resolver is EVMFetchTarget {
         EVMFetcher.newFetchRequest(verifier, targets[node])
             .getStatic(RECORD_VERSIONS_SLOT)
               .element(node)
-            .getDynamic(VERSINABLE_HASHES_SLOT)
+            .getDynamic(VERSIONABLE_HASHES_SLOT)
               .ref(0)
               .element(node)
             .fetch(this.contenthashCallback.selector, '');
