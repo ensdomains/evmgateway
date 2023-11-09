@@ -223,6 +223,25 @@ describe('Crosschain Resolver', () => {
     expect(decoded[0]).to.equal(addr);
   })
 
+  it("should resolve ETH Address for subname", async() => {
+    await target.setTarget(node, resolverAddress)
+    const addr = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
+    await l2contract.clearRecords(node)
+    const subname = 'd.fo.eth'
+    const subnode = ethers.namehash(subname)
+    const encodedsubname = encodeName(subname)
+    await l2contract['setAddr(bytes32,address)'](subnode, addr)
+    const result = await l2contract['addr(bytes32)'](subnode)
+    expect(ethers.getAddress(result)).to.equal(addr);
+    await provider.send("evm_mine", []);
+    const i = new ethers.Interface(["function addr(bytes32) returns(address)"])
+    const calldata = i.encodeFunctionData("addr", [subnode])
+    
+    const result2 = await target.resolve(encodedsubname, calldata, { enableCcipRead: true })
+    const decoded = i.decodeFunctionResult("addr", result2)
+    expect(decoded[0]).to.equal(addr);
+  })
+
   it("should resolve non ETH Address", async() => {
     await target.setTarget(node, resolverAddress)
     const addr = '0x76a91462e907b15cbf27d5425399ebf6f0fb50ebb88f1888ac'
