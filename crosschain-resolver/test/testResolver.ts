@@ -15,7 +15,8 @@ import { ethers } from 'hardhat';
 import { EthereumProvider } from 'hardhat/types';
 import request from 'supertest';
 import packet from 'dns-packet';
-const node = ethers.namehash('fo.eth')
+const name = 'fo.eth'
+const node = ethers.namehash(name)
 const EMPTY_ADDRESS = '0x0000000000000000000000000000000000000000'
 const EMPTY_BYTES32 =
   '0x0000000000000000000000000000000000000000000000000000000000000000'
@@ -166,8 +167,11 @@ describe('Crosschain Resolver', () => {
   it("subname should have target of their parent", async() => {
     const subname = 'd.fo.eth'
     const encodedsubname = encodeName(subname)
+    const subnode = ethers.namehash(subname)
     await target.setTarget(node, signerAddress)
-    expect((await target.getTarget(encodedsubname, 0))[1]).to.equal(signerAddress);
+    const result = await target.getTarget(encodedsubname, 0)
+    expect(result[0]).to.equal(subnode);
+    expect(result[1]).to.equal(signerAddress);
   })
 
   it("should allow wrapped owner to set target", async() => {
@@ -186,18 +190,23 @@ describe('Crosschain Resolver', () => {
     expect(await target.targets(wrappedtnode)).to.equal(resolverAddress);
   })
 
-  it("should test empty ETH Address", async() => {
+  it("should resolve empty ETH Address", async() => {
     await target.setTarget(node, resolverAddress)
     const addr = '0x0000000000000000000000000000000000000000'
     await l2contract.clearRecords(node)
     const result = await l2contract['addr(bytes32)'](node)
     expect(ethers.getAddress(result)).to.equal(addr);
     await provider.send("evm_mine", []);
-    const result2 = await target['addr(bytes32)'](node, { enableCcipRead: true })
-    expect(result2).to.equal(addr);
+
+    const i = new ethers.Interface(["function addr(bytes32) returns(address)"])
+    const calldata = i.encodeFunctionData("addr", [node])
+    const encodedname = encodeName(name)
+    const result2 = await target.resolve(encodedname, calldata, { enableCcipRead: true })
+    const decoded = i.decodeFunctionResult("addr", result2)
+    expect(decoded[0]).to.equal(addr);
   })
 
-  it("should test ETH Address", async() => {
+  it("should resolve ETH Address", async() => {
     await target.setTarget(node, resolverAddress)
     const addr = '0x5A384227B65FA093DEC03Ec34e111Db80A040615'
     await l2contract.clearRecords(node)
@@ -205,33 +214,45 @@ describe('Crosschain Resolver', () => {
     const result = await l2contract['addr(bytes32)'](node)
     expect(ethers.getAddress(result)).to.equal(addr);
     await provider.send("evm_mine", []);
-    const result2 = await target['addr(bytes32)'](node, { enableCcipRead: true })
-    expect(result2).to.equal(addr);
+    
+    const i = new ethers.Interface(["function addr(bytes32) returns(address)"])
+    const calldata = i.encodeFunctionData("addr", [node])
+    const encodedname = encodeName(name)
+    const result2 = await target.resolve(encodedname, calldata, { enableCcipRead: true })
+    const decoded = i.decodeFunctionResult("addr", result2)
+    expect(decoded[0]).to.equal(addr);
   })
-  it("should test non ETH Address", async() => {
+
+  it("should resolve non ETH Address", async() => {
     await target.setTarget(node, resolverAddress)
     const addr = '0x76a91462e907b15cbf27d5425399ebf6f0fb50ebb88f1888ac'
     const coinType = 0 // BTC
     await l2contract.clearRecords(node)
     await l2contract['setAddr(bytes32,uint256,bytes)'](node, coinType, addr)
-    const result = await l2contract['addr(bytes32,uint256)'](node, 0)
-    expect(result).to.equal(addr);
     await provider.send("evm_mine", []);
-    const result2 = await target['addr(bytes32,uint256)'](node, coinType, { enableCcipRead: true })
-    expect(result2).to.equal(addr);
+
+    const i = new ethers.Interface(["function addr(bytes32,uint256) returns(bytes)"])
+    const calldata = i.encodeFunctionData("addr", [node, coinType])
+    const encodedname = encodeName(name)
+    const result2 = await target.resolve(encodedname, calldata, { enableCcipRead: true })
+    const decoded = i.decodeFunctionResult("addr", result2)
+    expect(decoded[0]).to.equal(addr);
   })
 
-  it("should test text record", async() => {
+  it("should resolve text record", async() => {
     await target.setTarget(node, resolverAddress)
     const key = 'name'
     const value = 'nick.eth'
     await l2contract.clearRecords(node)
     await l2contract.setText(node, key, value)
     await provider.send("evm_mine", []);
-    const result = await l2contract.text(node, key)
-    expect(result).to.equal(value);
-    const result2 = await target.text(node, key, { enableCcipRead: true })
-    expect(result2).to.equal(value);
+
+    const i = new ethers.Interface(["function text(bytes32,string) returns(string)"])
+    const calldata = i.encodeFunctionData("text", [node, key])
+    const encodedname = encodeName(name)
+    const result2 = await target.resolve(encodedname, calldata, { enableCcipRead: true })
+    const decoded = i.decodeFunctionResult("text", result2)
+    expect(decoded[0]).to.equal(value);
   })
 
   it("should test contenthash", async() => {
@@ -240,9 +261,12 @@ describe('Crosschain Resolver', () => {
     await l2contract.clearRecords(node)
     await l2contract.setContenthash(node, contenthash)
     await provider.send("evm_mine", []);
-    const result = await l2contract.contenthash(node)
-    expect(result).to.equal(contenthash);
-    const result2 = await target.contenthash(node, { enableCcipRead: true })
-    expect(result2).to.equal(contenthash);
+
+    const i = new ethers.Interface(["function contenthash(bytes32) returns(bytes)"])
+    const calldata = i.encodeFunctionData("contenthash", [node])
+    const encodedname = encodeName(name)
+    const result2 = await target.resolve(encodedname, calldata, { enableCcipRead: true })
+    const decoded = i.decodeFunctionResult("contenthash", result2)
+    expect(decoded[0]).to.equal(contenthash);
   })
 });

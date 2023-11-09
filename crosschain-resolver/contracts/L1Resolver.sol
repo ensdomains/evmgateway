@@ -65,6 +65,12 @@ contract L1Resolver is EVMFetchTarget {
       emit TargetSet(node, target);
     }
 
+    /**
+     * @dev Query the target address that is verifiable against the name
+     * @param name DNS encoded ENS name to query
+     * @param offset The offset of the label to query recursively. Start from the 0 position and kepp adding the length of each label as it traverse. The function exits when len is 0.
+     * @return target The L2 resolver address to verify against.
+     */
     function getTarget(
         bytes memory name,
         uint256 offset
@@ -91,12 +97,40 @@ contract L1Resolver is EVMFetchTarget {
     }
 
     /**
+     * @dev Resolve and verify a record stored in l2 target address. It supports subname by fetching target recursively to the nearlest parent.
+     * @param name DNS encoded ENS name to query
+     * @param calldata The actual calldata
+     * @return the result of the call
+     */
+    function resolve(bytes calldata name, bytes calldata data) external view returns (bytes memory) {
+        (bytes32 _node, address target) = getTarget(name, 0);
+        bytes4 seletor = bytes4(data);
+        if (seletor == 0x3b3b57de) {
+            (bytes32 node) = abi.decode(data[4:], (bytes32));
+            return addr(node, target);
+        }
+        if (bytes4(data) == 0xf1cb7e06) {
+            (bytes32 node, uint256 cointype) = abi.decode(data[4:], (bytes32, uint256));
+            return addr(node, cointype, target);
+        }
+
+        if (bytes4(data) == 0x59d1d43c) {
+            (bytes32 node, string memory key) = abi.decode(data[4:], (bytes32, string));
+            return bytes(text(node, key, target));
+        }
+        if (bytes4(data) == 0xbc1c58d1) {
+            (bytes32 node) = abi.decode(data[4:], (bytes32));
+            return contenthash(node, target);
+        }
+    }
+
+    /**
      * Returns the address associated with an ENS node.
      * @param node The ENS node to query.
      * @return The associated address.
      */
-    function addr(bytes32 node) public view returns (address) {
-        EVMFetcher.newFetchRequest(verifier, targets[node])
+    function addr(bytes32 node, address target) public view returns (bytes memory) {
+        EVMFetcher.newFetchRequest(verifier, target)
             .getStatic(RECORD_VERSIONS_SLOT)
               .element(node)
             .getDynamic(VERSIONABLE_ADDRESSES_SLOT)
@@ -109,8 +143,8 @@ contract L1Resolver is EVMFetchTarget {
     function addrCallback(
         bytes[] memory values,
         bytes memory
-    ) public pure returns (address) {
-        return address(bytes20(values[1]));
+    ) public pure returns (bytes memory) {
+      return abi.encode(address(bytes20(values[1])));
     }
 
     /**
@@ -121,9 +155,10 @@ contract L1Resolver is EVMFetchTarget {
      */
     function addr(
         bytes32 node,
-        uint256 coinType
+        uint256 coinType,
+        address target
     ) public view returns (bytes memory) {
-        EVMFetcher.newFetchRequest(verifier, targets[node])
+        EVMFetcher.newFetchRequest(verifier, target)
             .getStatic(RECORD_VERSIONS_SLOT)
               .element(node)
             .getDynamic(VERSIONABLE_ADDRESSES_SLOT)
@@ -137,7 +172,7 @@ contract L1Resolver is EVMFetchTarget {
         bytes[] memory values,
         bytes memory
     ) public pure returns (bytes memory) {
-        return values[1];
+        return abi.encode(values[1]);
     }
 
     /**
@@ -148,9 +183,10 @@ contract L1Resolver is EVMFetchTarget {
      */
     function text(
         bytes32 node,
-        string calldata key
-    ) public view returns (string memory) {
-        EVMFetcher.newFetchRequest(verifier, targets[node])
+        string memory key,
+        address target
+    ) public view returns (bytes memory) {
+        EVMFetcher.newFetchRequest(verifier, target)
             .getStatic(RECORD_VERSIONS_SLOT)
               .element(node)
             .getDynamic(VERSIONABLE_TEXTS_SLOT)
@@ -163,8 +199,8 @@ contract L1Resolver is EVMFetchTarget {
     function textCallback(
         bytes[] memory values,
         bytes memory
-    ) public pure returns (string memory) {
-        return string(values[1]);
+    ) public pure returns (bytes memory) {
+        return abi.encode(string(values[1]));
     }
 
     /**
@@ -172,8 +208,8 @@ contract L1Resolver is EVMFetchTarget {
      * @param node The ENS node to query.
      * @return The associated contenthash.
      */
-    function contenthash(bytes32 node) public view returns (bytes memory) {
-        EVMFetcher.newFetchRequest(verifier, targets[node])
+    function contenthash(bytes32 node, address target) public view returns (bytes memory) {
+        EVMFetcher.newFetchRequest(verifier, target)
             .getStatic(RECORD_VERSIONS_SLOT)
               .element(node)
             .getDynamic(VERSIONABLE_HASHES_SLOT)
@@ -186,7 +222,7 @@ contract L1Resolver is EVMFetchTarget {
         bytes[] memory values,
         bytes memory
     ) public pure returns (bytes memory) {
-        return values[1];
+        return abi.encode(values[1]);
     }
 
 }
