@@ -167,7 +167,7 @@ describe('Crosschain Resolver', () => {
     const subname = 'd.fo.eth'
     const encodedsubname = encodeName(subname)
     await target.setTarget(node, signerAddress)
-    expect((await target.getTarget(encodedsubname, 0, 0))[1]).to.equal(signerAddress);
+    expect((await target.getTarget(encodedsubname, 0))[1]).to.equal(signerAddress);
   })
 
   it("should allow wrapped owner to set target", async() => {
