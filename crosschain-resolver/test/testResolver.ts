@@ -15,7 +15,7 @@ import { ethers } from 'hardhat';
 import { EthereumProvider } from 'hardhat/types';
 import request from 'supertest';
 import packet from 'dns-packet';
-const name = 'fo.eth'
+const name = 'foo.eth'
 const node = ethers.namehash(name)
 const EMPTY_ADDRESS = '0x0000000000000000000000000000000000000000'
 const EMPTY_BYTES32 =
@@ -96,7 +96,7 @@ describe('Crosschain Resolver', () => {
     await ens.setSubnodeOwner(EMPTY_BYTES32, labelhash('reverse'), signerAddress)
     await ens.setSubnodeOwner(ethers.namehash('reverse'),labelhash('addr'), reverseRegistrarAddress)
     await ens.setSubnodeOwner(EMPTY_BYTES32, labelhash('eth'), baseRegistrarAddress)
-    await baseRegistrar.register(labelhash('fo'), signerAddress, 100000000)
+    await baseRegistrar.register(labelhash('foo'), signerAddress, 100000000)
     const publicResolverFactory = await ethers.getContractFactory('PublicResolver',signer);
     const publicResolver = await publicResolverFactory.deploy(
       ensAddress,
@@ -168,7 +168,7 @@ describe('Crosschain Resolver', () => {
   })
 
   it("subname should have target of their parent", async() => {
-    const subname = 'd.fo.eth'
+    const subname = 'd.foo.eth'
     const encodedsubname = encodeName(subname)
     const subnode = ethers.namehash(subname)
     await target.setTarget(node, signerAddress)
@@ -232,7 +232,7 @@ describe('Crosschain Resolver', () => {
     await target.setTarget(node, resolverAddress)
     const addr = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
     await l2contract.clearRecords(node)
-    const subname = 'd.fo.eth'
+    const subname = 'd.foo.eth'
     const subnode = ethers.namehash(subname)
     const encodedsubname = encodeName(subname)
     await l2contract['setAddr(bytes32,address)'](subnode, addr)
