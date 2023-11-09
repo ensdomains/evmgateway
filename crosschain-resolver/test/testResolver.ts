@@ -15,6 +15,8 @@ import { ethers } from 'hardhat';
 import { EthereumProvider } from 'hardhat/types';
 import request from 'supertest';
 import packet from 'dns-packet';
+const labelhash = (label) => ethers.keccak256(ethers.toUtf8Bytes(label))
+const encodeName = (name) => '0x' + packet.name.encode(name).toString('hex')
 const name = 'foo.eth'
 const node = ethers.namehash(name)
 const encodedname = encodeName(name)
@@ -23,8 +25,6 @@ const EMPTY_ADDRESS = '0x0000000000000000000000000000000000000000'
 const EMPTY_BYTES32 =
   '0x0000000000000000000000000000000000000000000000000000000000000000'
 
-const labelhash = (label) => ethers.keccak256(ethers.toUtf8Bytes(label))
-const encodeName = (name) => '0x' + packet.name.encode(name).toString('hex')
 
 type ethersObj = typeof ethersT &
   Omit<HardhatEthersHelpers, 'provider'> & {
