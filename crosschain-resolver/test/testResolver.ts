@@ -17,6 +17,8 @@ import request from 'supertest';
 import packet from 'dns-packet';
 const name = 'foo.eth'
 const node = ethers.namehash(name)
+const encodedname = encodeName(name)
+
 const EMPTY_ADDRESS = '0x0000000000000000000000000000000000000000'
 const EMPTY_BYTES32 =
   '0x0000000000000000000000000000000000000000000000000000000000000000'
@@ -167,7 +169,7 @@ describe('Crosschain Resolver', () => {
     expect(result[1]).to.equal(signerAddress);
   })
 
-  it("subname should have target of their parent", async() => {
+  it("subname should get target of its parent", async() => {
     const subname = 'd.foo.eth'
     const encodedsubname = encodeName(subname)
     const subnode = ethers.namehash(subname)
@@ -205,7 +207,6 @@ describe('Crosschain Resolver', () => {
 
     const i = new ethers.Interface(["function addr(bytes32) returns(address)"])
     const calldata = i.encodeFunctionData("addr", [node])
-    const encodedname = encodeName(name)
     const result2 = await target.resolve(encodedname, calldata, { enableCcipRead: true })
     const decoded = i.decodeFunctionResult("addr", result2)
     expect(decoded[0]).to.equal(addr);
@@ -222,7 +223,6 @@ describe('Crosschain Resolver', () => {
     
     const i = new ethers.Interface(["function addr(bytes32) returns(address)"])
     const calldata = i.encodeFunctionData("addr", [node])
-    const encodedname = encodeName(name)
     const result2 = await target.resolve(encodedname, calldata, { enableCcipRead: true })
     const decoded = i.decodeFunctionResult("addr", result2)
     expect(decoded[0]).to.equal(addr);
@@ -257,7 +257,6 @@ describe('Crosschain Resolver', () => {
 
     const i = new ethers.Interface(["function addr(bytes32,uint256) returns(bytes)"])
     const calldata = i.encodeFunctionData("addr", [node, coinType])
-    const encodedname = encodeName(name)
     const result2 = await target.resolve(encodedname, calldata, { enableCcipRead: true })
     const decoded = i.decodeFunctionResult("addr", result2)
     expect(decoded[0]).to.equal(addr);
@@ -273,7 +272,6 @@ describe('Crosschain Resolver', () => {
 
     const i = new ethers.Interface(["function text(bytes32,string) returns(string)"])
     const calldata = i.encodeFunctionData("text", [node, key])
-    const encodedname = encodeName(name)
     const result2 = await target.resolve(encodedname, calldata, { enableCcipRead: true })
     const decoded = i.decodeFunctionResult("text", result2)
     expect(decoded[0]).to.equal(value);
@@ -288,7 +286,6 @@ describe('Crosschain Resolver', () => {
 
     const i = new ethers.Interface(["function contenthash(bytes32) returns(bytes)"])
     const calldata = i.encodeFunctionData("contenthash", [node])
-    const encodedname = encodeName(name)
     const result2 = await target.resolve(encodedname, calldata, { enableCcipRead: true })
     const decoded = i.decodeFunctionResult("contenthash", result2)
     expect(decoded[0]).to.equal(contenthash);

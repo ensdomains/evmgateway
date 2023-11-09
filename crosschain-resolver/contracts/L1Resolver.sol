@@ -140,7 +140,7 @@ contract L1Resolver is EVMFetchTarget {
         bytes[] memory values,
         bytes memory
     ) public pure returns (bytes memory) {
-      return abi.encode(address(bytes20(values[1])));
+        return abi.encode(address(bytes20(values[1])));
     }
 
     function addr(
