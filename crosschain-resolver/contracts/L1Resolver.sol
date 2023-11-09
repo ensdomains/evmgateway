@@ -125,12 +125,7 @@ contract L1Resolver is EVMFetchTarget {
         }
     }
 
-    /**
-     * Returns the address associated with an ENS node.
-     * @param node The ENS node to query.
-     * @return The associated address.
-     */
-    function addr(bytes32 node, address target) public view returns (bytes memory) {
+    function addr(bytes32 node, address target) private view returns (bytes memory) {
         EVMFetcher.newFetchRequest(verifier, target)
             .getStatic(RECORD_VERSIONS_SLOT)
               .element(node)
@@ -148,17 +143,11 @@ contract L1Resolver is EVMFetchTarget {
       return abi.encode(address(bytes20(values[1])));
     }
 
-    /**
-     * Returns the address associated with an ENS node.
-     * @param node The ENS node to query.
-     * @param coinType The cointype to query
-     * @return The associated address.
-     */
     function addr(
         bytes32 node,
         uint256 coinType,
         address target
-    ) public view returns (bytes memory) {
+    ) private view returns (bytes memory) {
         EVMFetcher.newFetchRequest(verifier, target)
             .getStatic(RECORD_VERSIONS_SLOT)
               .element(node)
@@ -176,17 +165,11 @@ contract L1Resolver is EVMFetchTarget {
         return abi.encode(values[1]);
     }
 
-    /**
-     * Returns the text data associated with an ENS node and key.
-     * @param node The ENS node to query.
-     * @param key The text data key to query.
-     * @return The associated text data.
-     */
     function text(
         bytes32 node,
         string memory key,
         address target
-    ) public view returns (bytes memory) {
+    ) private view returns (bytes memory) {
         EVMFetcher.newFetchRequest(verifier, target)
             .getStatic(RECORD_VERSIONS_SLOT)
               .element(node)
@@ -204,12 +187,7 @@ contract L1Resolver is EVMFetchTarget {
         return abi.encode(string(values[1]));
     }
 
-    /**
-     * Returns the contenthash associated with an ENS node.
-     * @param node The ENS node to query.
-     * @return The associated contenthash.
-     */
-    function contenthash(bytes32 node, address target) public view returns (bytes memory) {
+    function contenthash(bytes32 node, address target) private view returns (bytes memory) {
         EVMFetcher.newFetchRequest(verifier, target)
             .getStatic(RECORD_VERSIONS_SLOT)
               .element(node)
