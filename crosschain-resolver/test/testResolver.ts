@@ -149,6 +149,7 @@ describe('Crosschain Resolver', () => {
 
   it("should not allow non owner to set target", async() => {
     const incorrectnode = ethers.namehash('notowned.eth')
+    const incorrectname = encodeName('notowned.eth')
     // For some reason expect().to.be.reverted isn't working
     // Throwing Error: missing revert data (action="estimateGas"...
     try{
@@ -156,12 +157,14 @@ describe('Crosschain Resolver', () => {
     }catch(e){
     }
 
-    expect(await target.targets(incorrectnode)).to.equal(EMPTY_ADDRESS);
+    const result = await target.getTarget(incorrectname, 0)
+    expect(result[1]).to.equal(EMPTY_ADDRESS);
   })
 
   it("should allow owner to set target", async() => {
     await target.setTarget(node, signerAddress)
-    expect(await target.targets(node)).to.equal(signerAddress);
+    const result = await target.getTarget(encodeName(name), 0)
+    expect(result[1]).to.equal(signerAddress);
   })
 
   it("subname should have target of their parent", async() => {
@@ -187,7 +190,9 @@ describe('Crosschain Resolver', () => {
     )
     const wrappedtnode = ethers.namehash(`${label}.eth`)
     await target.setTarget(wrappedtnode, resolverAddress)
-    expect(await target.targets(wrappedtnode)).to.equal(resolverAddress);
+    const encodedname = encodeName(`${label}.eth`)
+    const result = await target.getTarget(encodedname, 0)
+    expect(result[1]).to.equal(resolverAddress);
   })
 
   it("should resolve empty ETH Address", async() => {

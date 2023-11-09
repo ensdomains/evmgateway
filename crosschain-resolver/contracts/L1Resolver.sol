@@ -15,7 +15,7 @@ contract L1Resolver is EVMFetchTarget {
     IEVMVerifier immutable verifier;
     ENS immutable ens;
     INameWrapper immutable nameWrapper;
-    mapping(bytes32 => address) public targets;
+    mapping(bytes32 => address) targets;
     uint256 constant COIN_TYPE_ETH = 60;
     uint256 constant RECORD_VERSIONS_SLOT = 0;
     uint256 constant VERSIONABLE_ADDRESSES_SLOT = 2;
