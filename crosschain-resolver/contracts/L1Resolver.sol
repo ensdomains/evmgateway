@@ -6,9 +6,12 @@ import {EVMFetchTarget} from '@ensdomains/evm-verifier/contracts/EVMFetchTarget.
 import {IEVMVerifier} from '@ensdomains/evm-verifier/contracts/IEVMVerifier.sol';
 import "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
 import {INameWrapper} from "@ensdomains/ens-contracts/contracts/wrapper/INameWrapper.sol";
+import {BytesUtils} from "@ensdomains/ens-contracts/contracts/dnssec-oracle/BytesUtils.sol";
+
 
 contract L1Resolver is EVMFetchTarget {
     using EVMFetcher for EVMFetcher.EVMFetchRequest;
+    using BytesUtils for bytes;
     IEVMVerifier immutable verifier;
     ENS immutable ens;
     INameWrapper immutable nameWrapper;
@@ -60,6 +63,44 @@ contract L1Resolver is EVMFetchTarget {
     function setTarget(bytes32 node, address target) public authorised(node){
       targets[node] = target;
       emit TargetSet(node, target);
+    }
+
+    function getLen(
+        bytes memory name,
+        uint256 offset
+    ) public view returns (uint256, bytes32) {
+        uint256 len = name.readUint8(offset);
+        bytes32 label = name.keccak(offset + 1, len);
+        return (len, label);
+    }
+
+    function getTarget(
+        bytes memory name,
+        uint256 offset,
+        uint256 c
+    ) public view returns (bytes32 node, address target, uint256) {
+        c = c + 1;
+        uint256 len = name.readUint8(offset);
+        node = bytes32(0);
+        if (len > 0) {
+            bytes32 label = name.keccak(offset + 1, len);
+            (node, target, c) = getTarget(
+                name,
+                offset + len + 1,
+                c
+            );
+            node = keccak256(abi.encodePacked(node, label));
+            if(targets[node] != address(0)){
+              target = targets[node];
+            }
+        } else {
+            return (
+                node,
+                target,
+                c
+            );
+        }
+        return (node, target, c);
     }
 
     /**

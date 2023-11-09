@@ -14,12 +14,14 @@ import { FetchRequest } from 'ethers';
 import { ethers } from 'hardhat';
 import { EthereumProvider } from 'hardhat/types';
 import request from 'supertest';
-const node = ethers.namehash('foo.eth')
+import packet from 'dns-packet';
+const node = ethers.namehash('fo.eth')
 const EMPTY_ADDRESS = '0x0000000000000000000000000000000000000000'
 const EMPTY_BYTES32 =
   '0x0000000000000000000000000000000000000000000000000000000000000000'
 
 const labelhash = (label) => ethers.keccak256(ethers.toUtf8Bytes(label))
+const encodeName = (name) => '0x' + packet.name.encode(name).toString('hex')
 
 type ethersObj = typeof ethersT &
   Omit<HardhatEthersHelpers, 'provider'> & {
@@ -93,7 +95,7 @@ describe('Crosschain Resolver', () => {
     await ens.setSubnodeOwner(EMPTY_BYTES32, labelhash('reverse'), signerAddress)
     await ens.setSubnodeOwner(ethers.namehash('reverse'),labelhash('addr'), reverseRegistrarAddress)
     await ens.setSubnodeOwner(EMPTY_BYTES32, labelhash('eth'), baseRegistrarAddress)
-    await baseRegistrar.register(labelhash('foo'), signerAddress, 100000000)
+    await baseRegistrar.register(labelhash('fo'), signerAddress, 100000000)
     const publicResolverFactory = await ethers.getContractFactory('PublicResolver',signer);
     const publicResolver = await publicResolverFactory.deploy(
       ensAddress,
@@ -159,6 +161,13 @@ describe('Crosschain Resolver', () => {
   it("should allow owner to set target", async() => {
     await target.setTarget(node, signerAddress)
     expect(await target.targets(node)).to.equal(signerAddress);
+  })
+
+  it("subname should have target of their parent", async() => {
+    const subname = 'd.fo.eth'
+    const encodedsubname = encodeName(subname)
+    await target.setTarget(node, signerAddress)
+    expect((await target.getTarget(encodedsubname, 0, 0))[1]).to.equal(signerAddress);
   })
 
   it("should allow wrapped owner to set target", async() => {
