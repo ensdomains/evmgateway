@@ -67,5 +67,4 @@ contract L1ReverseResolver is EVMFetchTarget {
     ) public pure returns (string memory) {
         return string(values[1]);
     }
-
 }

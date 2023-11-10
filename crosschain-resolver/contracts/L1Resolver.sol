@@ -210,5 +210,4 @@ contract L1Resolver is EVMFetchTarget {
     ) public pure returns (bytes memory) {
         return abi.encode(values[1]);
     }
-
 }
