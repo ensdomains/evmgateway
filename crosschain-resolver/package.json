@@ -24,6 +24,7 @@
     "@types/mocha": ">=9.1.0",
     "@types/supertest": "^2.0.14",
     "chai": "^4.2.0",
+    "dns-packet": "^5.6.1",
     "ethers": "^6.8.0",
     "express": "^4.18.2",
     "ganache": "^7.9.1",
@@ -40,7 +41,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@ensdomains/ens-contracts": "^0.0.22",
+    "@ensdomains/ens-contracts": "ensdomains/ens-contracts#delegatable-resolver-with-factory",
     "@ensdomains/evm-verifier": "^0.1.0",
     "@eth-optimism/contracts": "^0.6.0"
   }
