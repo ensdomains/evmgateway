@@ -1,19 +1,26 @@
-import {L1Verifier} from '@ensdomains/l1-verifier/contracts/L1Verifier.sol';
-import '@ensdomains/ens-contracts/contracts/resolvers/OwnedResolver.sol';
-
+import "@ensdomains/ens-contracts/contracts/registry/ENSRegistry.sol";
+import "@ensdomains/ens-contracts/contracts/wrapper/NameWrapper.sol";
+import "@ensdomains/ens-contracts/contracts/ethregistrar/BaseRegistrarImplementation.sol";
+import "@ensdomains/ens-contracts/contracts/wrapper/StaticMetadataService.sol";
+import "@ensdomains/l1-verifier/contracts/L1Verifier.sol";
+import {ReverseRegistrar} from "@ensdomains/ens-contracts/contracts/reverseRegistrar/ReverseRegistrar.sol";
+import {PublicResolver} from "@ensdomains/ens-contracts/contracts/resolvers/PublicResolver.sol";
+import {DelegatableResolver} from "@ensdomains/ens-contracts/contracts/resolvers/DelegatableResolver.sol";
+import {DelegatableResolverFactory} from "@ensdomains/ens-contracts/contracts/resolvers/DelegatableResolverFactory.sol";
 // Storage slot
-// ┌─────────────────────┬──────────────────────────────┬──────────────┬
-// │      contract       │        state_variable        │ storage_slot │
-// ├─────────────────────┼──────────────────────────────┼──────────────┼
-// |    OwnedResolver    │            _owner            │      0       │
-// │    OwnedResolver    │        recordVersions        │      1       │
-// │    OwnedResolver    │       versionable_abis       │      2       │
-// │    OwnedResolver    │    versionable_addresses     │      3       │
-// │    OwnedResolver    │      versionable_hashes      │      4       │
-// │    OwnedResolver    │    versionable_zonehashes    │      5       │
-// │    OwnedResolver    │     versionable_records      │      6       │
-// │    OwnedResolver    │ versionable_nameEntriesCount │      7       │
-// │    OwnedResolver    │    versionable_interfaces    │      8       │
-// │    OwnedResolver    │      versionable_names       │      9       │
-// │    OwnedResolver    │     versionable_pubkeys      │      10      │
-// │    OwnedResolver    │      versionable_texts       │      11      │
+// ┌────────────────────────────┬──────────────────────────────┬──────────────┬
+// │      contract              │        state_variable        │ storage_slot │ 
+// ├────────────────────────────┼──────────────────────────────┼──────────────┼
+// │    DelegatableResolver     │        recordVersions        │      0       │
+// │    DelegatableResolver     │       versionable_abis       │      1       │
+// │    DelegatableResolver     │    versionable_addresses     │      2       │
+// │    DelegatableResolver     │      versionable_hashes      │      3       │
+// │    DelegatableResolver     │    versionable_zonehashes    │      4       │
+// │    DelegatableResolver     │     versionable_records      │      5       │
+// │    DelegatableResolver     │ versionable_nameEntriesCount │      6       │
+// │    DelegatableResolver     │    versionable_interfaces    │      7       │
+// │    DelegatableResolver     │      versionable_names       │      8       │
+// │    DelegatableResolver     │     versionable_pubkeys      │      9       │
+// │    DelegatableResolver     │      versionable_texts       │      10      │
+// │    DelegatableResolver     │          operators           │      11      │
+// │ DelegatableResolverFactory │        implementation        │      0       │
