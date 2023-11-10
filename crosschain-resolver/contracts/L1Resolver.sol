@@ -86,12 +86,15 @@ contract L1Resolver is EVMFetchTarget {
             );
             node = keccak256(abi.encodePacked(node, label));
             if(targets[node] != address(0)){
-              target = targets[node];
+                return (
+                    node,
+                    targets[node]
+                );
             }
         } else {
             return (
-                node,
-                target
+                bytes32(0),
+                address(0)
             );
         }
         return (node, target);
@@ -106,7 +109,7 @@ contract L1Resolver is EVMFetchTarget {
     function resolve(bytes calldata name, bytes calldata data) external view returns (bytes memory result) {
         (, address target) = getTarget(name, 0);
         bytes4 selector = bytes4(data);
-        if (seletor == 0x3b3b57de) {
+        if (selector == 0x3b3b57de) {
             (bytes32 node) = abi.decode(data[4:], (bytes32));
             return addr(node, target);
         }
