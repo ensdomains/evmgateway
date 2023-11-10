@@ -7,6 +7,10 @@ import {IEVMVerifier} from '@ensdomains/evm-verifier/contracts/IEVMVerifier.sol'
 import "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
 import {INameWrapper} from "@ensdomains/ens-contracts/contracts/wrapper/INameWrapper.sol";
 import {BytesUtils} from "@ensdomains/ens-contracts/contracts/dnssec-oracle/BytesUtils.sol";
+import {IAddrResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profiles/IAddrResolver.sol";
+import {IAddressResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profiles/IAddressResolver.sol";
+import {ITextResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profiles/ITextResolver.sol";
+import {IContentHashResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profiles/IContentHashResolver.sol";
 
 
 contract L1Resolver is EVMFetchTarget {
@@ -110,19 +114,19 @@ contract L1Resolver is EVMFetchTarget {
         (, address target) = getTarget(name, 0);
         bytes4 selector = bytes4(data);
 
-        if (selector == bytes4(keccak256("addr(bytes32)"))) {
+        if (selector == IAddrResolver.addr.selector) {
             (bytes32 node) = abi.decode(data[4:], (bytes32));
             return _addr(node, target);
         }
-        if (selector == bytes4(keccak256("addr(bytes32,uint256)"))) {
+        if (selector == IAddressResolver.addr.selector) {
             (bytes32 node, uint256 cointype) = abi.decode(data[4:], (bytes32, uint256));
             return _addr(node, cointype, target);
         }
-        if (selector == bytes4(keccak256("text(bytes32,string)"))) {
+        if (selector == ITextResolver.text.selector) {
             (bytes32 node, string memory key) = abi.decode(data[4:], (bytes32, string));
             return bytes(_text(node, key, target));
         }
-        if (selector == bytes4(keccak256("contenthash(bytes32)"))) {
+        if (selector == IContentHashResolver.contenthash.selector) {
             (bytes32 node) = abi.decode(data[4:], (bytes32));
             return _contenthash(node, target);
         }
