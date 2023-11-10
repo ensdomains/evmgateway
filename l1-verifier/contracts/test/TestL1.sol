@@ -103,4 +103,16 @@ contract TestL1 is EVMFetchTarget {
     function getZeroCallback(bytes[] memory values, bytes memory) public pure returns (uint256) {
         return abi.decode(values[0], (uint256));
     }
+
+    function getZeroIndex() public view returns(uint256) {
+        EVMFetcher.newFetchRequest(verifier, target)
+            .getStatic(5)
+            .getStatic(2)
+                .ref(0)
+            .fetch(this.getZeroIndexCallback.selector, "");
+    }
+
+    function getZeroIndexCallback(bytes[] memory values, bytes memory) public pure returns(uint256) {
+        return abi.decode(values[1], (uint256));
+    }
 }

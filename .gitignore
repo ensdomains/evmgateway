@@ -8,3 +8,8 @@ _cjs
 .dev.vars
 op-verifier/deployments/opDevnetL1
 op-verifier/deployments/opDevnetL2
+artifacts
+deployments
+cache
+.env
+typechain-types

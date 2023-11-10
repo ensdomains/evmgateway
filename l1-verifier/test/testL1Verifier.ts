@@ -136,4 +136,9 @@ describe('L1Verifier', () => {
     const result = await target.getNickname('Santa', { enableCcipRead: true });
     expect(result).to.equal('');
   });
+
+  it('will index on uninitialized values', async () => {
+    const result = await target.getZeroIndex({ enableCcipRead: true });
+    expect(Number(result)).to.equal(1);
+  })
 });

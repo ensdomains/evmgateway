@@ -9,7 +9,16 @@ const L1_ETHERSCAN_API_KEY = process.env.L1_ETHERSCAN_API_KEY || '';
 const L2_ETHERSCAN_API_KEY = process.env.L2_ETHERSCAN_API_KEY || '';
 
 const config: HardhatUserConfig = {
-  solidity: '0.8.19',
+  solidity: {
+    version: "0.8.19",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 1200
+      },
+      viaIR: true,
+    },
+  },
   networks: {
     ganache: {
       url: `http://localhost:${parseInt(process.env['RPC_PORT'] || '8545')}`,
