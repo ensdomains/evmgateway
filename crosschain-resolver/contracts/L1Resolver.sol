@@ -66,9 +66,9 @@ contract L1Resolver is EVMFetchTarget {
     }
 
     /**
-     * Query the target address that is verifiable against the name
+     * @dev Returns the L2 target address that can answer queries for `name`.
      * @param name DNS encoded ENS name to query
-     * @param offset The offset of the label to query recursively. Start from the 0 position and kepp adding the length of each label as it traverse. The function exits when len is 0.
+     * @param offset The offset of the label to query recursively.
      * @return node The node of the name
      * @return target The L2 resolver address to verify against.
      */
@@ -105,7 +105,7 @@ contract L1Resolver is EVMFetchTarget {
      */
     function resolve(bytes calldata name, bytes calldata data) external view returns (bytes memory result) {
         (, address target) = getTarget(name, 0);
-        bytes4 seletor = bytes4(data);
+        bytes4 selector = bytes4(data);
         if (seletor == 0x3b3b57de) {
             (bytes32 node) = abi.decode(data[4:], (bytes32));
             return addr(node, target);
