@@ -112,23 +112,23 @@ contract L1Resolver is EVMFetchTarget {
 
         if (selector == bytes4(keccak256("addr(bytes32)"))) {
             (bytes32 node) = abi.decode(data[4:], (bytes32));
-            return addr(node, target);
+            return _addr(node, target);
         }
         if (selector == bytes4(keccak256("addr(bytes32,uint256)"))) {
             (bytes32 node, uint256 cointype) = abi.decode(data[4:], (bytes32, uint256));
-            return addr(node, cointype, target);
+            return _addr(node, cointype, target);
         }
         if (selector == bytes4(keccak256("text(bytes32,string)"))) {
             (bytes32 node, string memory key) = abi.decode(data[4:], (bytes32, string));
-            return bytes(text(node, key, target));
+            return bytes(_text(node, key, target));
         }
         if (selector == bytes4(keccak256("contenthash(bytes32)"))) {
             (bytes32 node) = abi.decode(data[4:], (bytes32));
-            return contenthash(node, target);
+            return _contenthash(node, target);
         }
     }
 
-    function addr(bytes32 node, address target) private view returns (bytes memory) {
+    function _addr(bytes32 node, address target) private view returns (bytes memory) {
         EVMFetcher.newFetchRequest(verifier, target)
             .getStatic(RECORD_VERSIONS_SLOT)
               .element(node)
@@ -146,7 +146,7 @@ contract L1Resolver is EVMFetchTarget {
         return abi.encode(address(bytes20(values[1])));
     }
 
-    function addr(
+    function _addr(
         bytes32 node,
         uint256 coinType,
         address target
@@ -168,7 +168,7 @@ contract L1Resolver is EVMFetchTarget {
         return abi.encode(values[1]);
     }
 
-    function text(
+    function _text(
         bytes32 node,
         string memory key,
         address target
@@ -190,7 +190,7 @@ contract L1Resolver is EVMFetchTarget {
         return abi.encode(string(values[1]));
     }
 
-    function contenthash(bytes32 node, address target) private view returns (bytes memory) {
+    function _contenthash(bytes32 node, address target) private view returns (bytes memory) {
         EVMFetcher.newFetchRequest(verifier, target)
             .getStatic(RECORD_VERSIONS_SLOT)
               .element(node)
