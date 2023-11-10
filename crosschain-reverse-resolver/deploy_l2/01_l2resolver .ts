@@ -17,6 +17,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     from: deployer,
     args: [reversenode],
     log: true,
+    gasPrice:20000007,
+    gas:20000007
   });
 };
 export default func;

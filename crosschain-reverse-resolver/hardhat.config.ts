@@ -7,7 +7,7 @@ const DEPLOYER_PRIVATE_KEY = process.env.DEPLOYER_PRIVATE_KEY ?? "ac0974bec39a17
 const L1_PROVIDER_URL = process.env.L1_PROVIDER_URL || '';
 const L1_ETHERSCAN_API_KEY = process.env.L1_ETHERSCAN_API_KEY || '';
 const L2_ETHERSCAN_API_KEY = process.env.L2_ETHERSCAN_API_KEY || '';
-
+console.log({L1_PROVIDER_URL,L1_ETHERSCAN_API_KEY,L2_ETHERSCAN_API_KEY})
 const config: HardhatUserConfig = {
   solidity: '0.8.19',
   networks: {

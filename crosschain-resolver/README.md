@@ -70,7 +70,8 @@ Create `.env` and set the following variables
 - L1_ETHERSCAN_API_KEY
 - L2_ETHERSCAN_API_KEY
 - VERIFIER_ADDRESS
-
+- ENS_ADDRESS
+- WRAPPER_ADDRESS
 ```
 bun run hardhat deploy --network optimismGoerli
 ```
@@ -82,3 +83,10 @@ bun run hardhat deploy --network goerli
 ```
 
 ## Deployments
+
+### OP
+#### L2
+- DelegatableResolver = [0xE00739Fc93e27aBf44343fD5FAA151c67C0A0Aa3](https://goerli-optimism.etherscan.io/address/0xE00739Fc93e27aBf44343fD5FAA151c67C0A0Aa3)
+- DelegatableResolverFactory = [0xacB9771923873614d77C914D716d8E25dAF09b8d](https://goerli-optimism.etherscan.io/address/0xacB9771923873614d77C914D716d8E25dAF09b8d)
+#### L1
+- L1Resolver = [0x65a0963A2941A13a96FcDCfE36c94c6a341f26E5](https://goerli.etherscan.io/address/0x65a0963A2941A13a96FcDCfE36c94c6a341f26E5)
