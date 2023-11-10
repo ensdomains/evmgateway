@@ -109,20 +109,20 @@ contract L1Resolver is EVMFetchTarget {
     function resolve(bytes calldata name, bytes calldata data) external view returns (bytes memory result) {
         (, address target) = getTarget(name, 0);
         bytes4 selector = bytes4(data);
-        if (selector == 0x3b3b57de) {
+
+        if (selector == bytes4(keccak256("addr(bytes32)"))) {
             (bytes32 node) = abi.decode(data[4:], (bytes32));
             return addr(node, target);
         }
-        if (bytes4(data) == 0xf1cb7e06) {
+        if (selector == bytes4(keccak256("addr(bytes32,uint256)"))) {
             (bytes32 node, uint256 cointype) = abi.decode(data[4:], (bytes32, uint256));
             return addr(node, cointype, target);
         }
-
-        if (bytes4(data) == 0x59d1d43c) {
+        if (selector == bytes4(keccak256("text(bytes32,string)"))) {
             (bytes32 node, string memory key) = abi.decode(data[4:], (bytes32, string));
             return bytes(text(node, key, target));
         }
-        if (bytes4(data) == 0xbc1c58d1) {
+        if (selector == bytes4(keccak256("contenthash(bytes32)"))) {
             (bytes32 node) = abi.decode(data[4:], (bytes32));
             return contenthash(node, target);
         }
