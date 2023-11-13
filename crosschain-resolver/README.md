@@ -108,8 +108,17 @@ const l2resolverAddress = await DelegatableResolverFactory.predictAddress(OWNER_
 await DelegatableResolverFactory.create(OWNER_ADDRESS)
 await DelegatableResolverFactory['setAddr(bytes32,address)'](node, OWNER_ADDRESS)
 // On L1
-await L1Resolver['addr(bytes32)'](node, {enableCcipRead:true})
+const abi = [
+  "function addr(bytes32) view returns (address)",
+  "function resolve(bytes,bytes) view returns (bytes)",
+]
+const i = new ethers.Interface(abi)
+const calldata = i.encodeFunctionData("addr", [node])
+const result2 = await l1resolver.resolve(encodedname, calldata, { enableCcipRead: true })
+const address = i.decodeFunctionResult("addr", result2)[0]
 ```
+
+NOTE: The l1 resolver must be queried through `resolve` function to handle subnames
 
 Or run the script
 
@@ -119,6 +128,10 @@ DEPLOYER_PRIVATE_KEY=$DEPLOYER_PRIVATE_KEY L1_PROVIDER_URL=$L1_PROVIDER_URL L2_P
 
 ```
 DEPLOYER_PRIVATE_KEY=$DEPLOYER_PRIVATE_KEY L1_PROVIDER_URL=$L1_PROVIDER_URL L2_PROVIDER_URL=$L2_PROVIDER_URL L1_ETHERSCAN_API_KEY=$L1_ETHERSCAN_API_KEY L2_ETHERSCAN_API_KEY=$L2_ETHERSCAN_API_KEY L2_PROVIDER_URL=$L2_PROVIDER_URL L2_RESOLVER_FACTORY_ADDRESS=$L2_RESOLVER_FACTORY_ADDRESS ENS_NAME=$ENS_NAME yarn setupl2
+```
+
+```
+L1_PROVIDER_URL=$L1_PROVIDER_URL L1_ETHERSCAN_API_KEY=$L1_ETHERSCAN_API_KEY L2_ETHERSCAN_API_KEY=$L2_ETHERSCAN_API_KEY L2_PROVIDER_URL=$L2_PROVIDER_URL  ENS_NAME=$ENS_NAME yarn getaddr
 ```
 
 ### Issue subname to L2
