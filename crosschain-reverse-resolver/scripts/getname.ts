@@ -7,7 +7,7 @@ export const main = async () => {
   if (!process.env.L1_PROVIDER_URL || !process.env.ETH_ADDRESS)
     throw 'Set L1_PROVIDER_URL and ETH_ADDRESS';
 
-  const namespace = 'op.reverse.evmgateway.eth' // 2147484068 is the coinType of Optimism Goerli (420)
+  const namespace = 'op.reverse.evmgateway.eth'
   const L1_PROVIDER_URL = process.env.L1_PROVIDER_URL;
   const ETH_ADDRESS     = process.env.ETH_ADDRESS;
   const provider        = new ethers.JsonRpcProvider(L1_PROVIDER_URL);

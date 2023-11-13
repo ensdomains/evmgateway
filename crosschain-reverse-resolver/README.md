@@ -40,10 +40,17 @@ After deployment is complete, set the rersolver of $REVERSE_NAMESPACE to L1Rever
 ## Usage
 
 ### Set Primary name on L2
+
 ```
-const name = 'vitalik.eth'
+const name = 'foo.op.evmgateway.eth'
 const registrar = registrar.setName(name)
 ```
+
+, try it directly from [etherscan](https://goerli.etherscan.io/address/0xeEB5832Ea8732f7EF06d468E40F562c9D7347795), or run the script
+```
+L2_PROVIDER_URL=$L2_PROVIDER_URL L2_REVERSE_REGISTRAR_ADDRESS=$L2_REVERSE_REGISTRAR_ADDRESS ENS_NAME='foo.op.evmgateway.eth' yarn setname
+```
+
 ### Query Primary name on L1
 
 

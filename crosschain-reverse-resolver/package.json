@@ -6,6 +6,7 @@
     "build": "echo 'building crosschain-reverse-resolver' && hardhat compile",
     "test": "node scripts/test.js",
     "storage": "hardhat check",
+    "setname": "hardhat run scripts/setname.ts --network optimismGoerli",
     "getname": "hardhat run scripts/getname.ts --network goerli",
     "clean": "rm -fr artifacts cache node_modules typechain-types",
     "lint": "exit 0"
