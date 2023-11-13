@@ -1,6 +1,4 @@
-import hre from 'hardhat';
 import packet from 'dns-packet';
-const abi = ['function name(bytes32) view returns(string)'];
 const encodeName = (name) => '0x' + packet.name.encode(name).toString('hex')
 const l1abi = [
   "function getTarget(bytes,uint256) view returns (bytes32, address)",
@@ -25,7 +23,14 @@ export const main = async () => {
 
   const l1provider      = new ethers.JsonRpcProvider(L1_PROVIDER_URL);
   const l2provider      = new ethers.JsonRpcProvider(L2_PROVIDER_URL);
-  const resolver        = await l1provider.getResolver(ENS_NAME)
+  let resolver          = await l1provider.getResolver(ENS_NAME)
+  // Wildcard seems not working. A workaround for now
+  if(!resolver){
+    const parentName    = ENS_NAME.split('.').slice(1).join('.')
+    console.log(`Resolver not found on ${ENS_NAME}. Looking up ${parentName}`)
+    resolver            = await l1provider.getResolver(parentName)
+  }
+  console.log({ENS_NAME, resolver, encodedname, node})
   const l1resolver      = new ethers.Contract(resolver.address, l1abi, l1provider);
   const target          = await l1resolver.getTarget(encodedname, 0)
   const l2resolverAddress = target[1]
