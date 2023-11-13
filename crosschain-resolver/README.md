@@ -106,7 +106,7 @@ await L1Resolver.setTarget(node, l2resolverAddress)
 // On L2
 const l2resolverAddress = await DelegatableResolverFactory.predictAddress(OWNER_ADDRESS)
 await DelegatableResolverFactory.create(OWNER_ADDRESS)
-await DelegatableResolverFactory['setAddr(bytes32,address)'](node, OWNER_ADDRESS)
+await DelegatableResolver['setAddr(bytes32,address)'](node, OWNER_ADDRESS)
 // On L1
 const abi = [
   "function addr(bytes32) view returns (address)",
@@ -120,7 +120,7 @@ const address = i.decodeFunctionResult("addr", result2)[0]
 
 NOTE: The l1 resolver must be queried through `resolve` function to handle subnames
 
-Or run the script
+Using the scripts
 
 ```
 DEPLOYER_PRIVATE_KEY=$DEPLOYER_PRIVATE_KEY L1_PROVIDER_URL=$L1_PROVIDER_URL L2_PROVIDER_URL=$L2_PROVIDER_URL L1_ETHERSCAN_API_KEY=$L1_ETHERSCAN_API_KEY L2_ETHERSCAN_API_KEY=$L2_ETHERSCAN_API_KEY L2_PROVIDER_URL=$L2_PROVIDER_URL L2_RESOLVER_FACTORY_ADDRESS=$L2_RESOLVER_FACTORY_ADDRESS L1_RESOLVER_ADDRESS=$L1_RESOLVER_ADDRESS ENS_NAME=$ENS_NAME yarn setupl1
@@ -135,3 +135,27 @@ L1_PROVIDER_URL=$L1_PROVIDER_URL L1_ETHERSCAN_API_KEY=$L1_ETHERSCAN_API_KEY L2_E
 ```
 
 ### Issue subname to L2
+
+Assuming you have already moved the parent name to a l2, 
+
+
+```js
+// On L2
+const OPERATOR_ADDRESS = ''
+const PARENT_NAME = 'op.evmgateway.eth'
+const SUBNAME = `${SUBNAME}.${PARENT_NAME}`
+const l2resolverAddress = await DelegatableResolverFactory.predictAddress(OWNER_ADDRESS)
+const DelegatableResolver = new ethers.Contract(l2resolverAddress, abi, l2provider);
+await DelegatableResolver.approve(encodedname, OWNER_ADDRESS, true)
+```
+
+Using the script
+
+```
+OPERATOR_ADDRESS=0x5A384227B65FA093DEC03Ec34e111Db80A040615
+DEPLOYER_PRIVATE_KEY=$DEPLOYER_PRIVATE_KEY L1_PROVIDER_URL=$L1_PROVIDER_URL L2_PROVIDER_URL=$L2_PROVIDER_URL L1_ETHERSCAN_API_KEY=$L1_ETHERSCAN_API_KEY L2_ETHERSCAN_API_KEY=$L2_ETHERSCAN_API_KEY L2_PROVIDER_URL=$L2_PROVIDER_URL L2_RESOLVER_FACTORY_ADDRESS=$L2_RESOLVER_FACTORY_ADDRESS ENS_SUBNAME=$ENS_SUBNAME yarn approve
+```
+
+Once done, set addrss of the subname from the operator, wait 10~20 min, then query the subname on L1
+
+

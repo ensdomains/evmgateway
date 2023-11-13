@@ -74,7 +74,7 @@ const l1resolver = new ethers.Contract(reverseresolver.address, abi, provider);
 console.log(await l1resolver.name(reversenode, {enableCcipRead:true}))
 ```
 
-or run the script
+Using the script
 
 ```
 L1_PROVIDER_URL=$L1_PROVIDER_URL L2_REVERSE_REGISTRAR_ADDRESS=$L2_REVERSE_REGISTRAR_ADDRESS ETH_ADDRESS=$ETH_ADDRESS yarn getname

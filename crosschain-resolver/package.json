@@ -10,6 +10,7 @@
     "setupl1": "hardhat run scripts/setupl1.ts --network goerli",
     "setupl2": "hardhat run scripts/setupl2.ts --network optimismGoerli",
     "getaddr": "hardhat run scripts/getaddr.ts --network goerli",
+    "approve": "hardhat run scripts/approve.ts --network optimismGoerli",
     "lint": "exit 0"
   },
   "devDependencies": {
