@@ -46,10 +46,29 @@ const registrar = registrar.setName(name)
 ```
 ### Query Primary name on L1
 
-The current goerli primary namespace is set at 'op.reverse.evmgateway.eth'. Once the ENS DAO approves it, it will be put under `${cointype}.ververse`
+
+The current goerli primary namespace is set at `op.reverse.evmgateway.eth` for Optimism Goerli. Once the ENS DAO approves it, it will be put under `${cointype}.ververse`
+
+- 2147484068 is the coin type of Optimism Goerli (420)
+- 2147568179 is the coin type of Base Goerli (84531)
+
+```js
+import packet from 'dns-packet';
+import {ethers} from 'ethers';
+const abi = ['function name(bytes32) view returns(string)'];
+const encodeName = (name) => '0x' + packet.name.encode(name).toString('hex')
+const namespace       = 'op.reverse.evmgateway.eth' // 2147484068. is the coinType of Optimism Goerli (420)
+const name            = ETH_ADDRESS.substring(2).toLowerCase() + "." + namespace
+const encodedname     = encodeName(name);
+const reversenode     = ethers.namehash(name);
+const reverseresolver = await provider.getResolver(namespace);
+const provider        = new ethers.JsonRpcProvider(L1_PROVIDER_URL);
+const l1resolver = new ethers.Contract(reverseresolver.address, abi, provider);
+console.log(await l1resolver.name(reversenode, {enableCcipRead:true}))
+```
+
+or run the script
 
 ```
-const namespace = 'op.reverse.evmgateway.eth'
-const reverseResolver = ens.resolver(namespace)
-const primaryName = resolver.name(namehash(`${namehash(YOURADDRESS).${NAMESPACE}}`), { enableCcipRead: true })
+L1_PROVIDER_URL=$L1_PROVIDER_URL L2_REVERSE_REGISTRAR_ADDRESS=$L2_REVERSE_REGISTRAR_ADDRESS ETH_ADDRESS=$ETH_ADDRESS yarn getname
 ```
