@@ -94,4 +94,31 @@ bun run hardhat deploy --network goerli
 
 ## Usage
 
-TODO
+### Move resolver to L2
+
+On L1
+
+```js
+// On L1
+await ENS.setResolver(l1lresolver)
+const l2resolverAddress = await DelegatableResolverFactory.predictAddress(OWNER_ADDRESS)
+await L1Resolver.setTarget(node, l2resolverAddress)
+// On L2
+const l2resolverAddress = await DelegatableResolverFactory.predictAddress(OWNER_ADDRESS)
+await DelegatableResolverFactory.create(OWNER_ADDRESS)
+await DelegatableResolverFactory['setAddr(bytes32,address)'](node, OWNER_ADDRESS)
+// On L1
+await L1Resolver['addr(bytes32)'](node, {enableCcipRead:true})
+```
+
+Or run the script
+
+```
+DEPLOYER_PRIVATE_KEY=$DEPLOYER_PRIVATE_KEY L1_PROVIDER_URL=$L1_PROVIDER_URL L2_PROVIDER_URL=$L2_PROVIDER_URL L1_ETHERSCAN_API_KEY=$L1_ETHERSCAN_API_KEY L2_ETHERSCAN_API_KEY=$L2_ETHERSCAN_API_KEY L2_PROVIDER_URL=$L2_PROVIDER_URL L2_RESOLVER_FACTORY_ADDRESS=$L2_RESOLVER_FACTORY_ADDRESS L1_RESOLVER_ADDRESS=$L1_RESOLVER_ADDRESS ENS_NAME=$ENS_NAME yarn setupl1
+```
+
+```
+DEPLOYER_PRIVATE_KEY=$DEPLOYER_PRIVATE_KEY L1_PROVIDER_URL=$L1_PROVIDER_URL L2_PROVIDER_URL=$L2_PROVIDER_URL L1_ETHERSCAN_API_KEY=$L1_ETHERSCAN_API_KEY L2_ETHERSCAN_API_KEY=$L2_ETHERSCAN_API_KEY L2_PROVIDER_URL=$L2_PROVIDER_URL L2_RESOLVER_FACTORY_ADDRESS=$L2_RESOLVER_FACTORY_ADDRESS ENS_NAME=$ENS_NAME yarn setupl2
+```
+
+### Issue subname to L2
