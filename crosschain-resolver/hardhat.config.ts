@@ -27,12 +27,14 @@ const config: HardhatUserConfig = {
       url: L1_PROVIDER_URL,
       accounts: [DEPLOYER_PRIVATE_KEY],
       deploy: [ "deploy_l1/" ],
-      companionNetworks: {
-        l2: "optimismGoerli",
-      },
     },
     optimismGoerli: {
       url: "https://goerli.optimism.io",
+      accounts: [DEPLOYER_PRIVATE_KEY],
+      deploy: [ "deploy_l2/" ],
+    },
+    baseGoerli: {
+      url: "https://goerli.base.org",
       accounts: [DEPLOYER_PRIVATE_KEY],
       deploy: [ "deploy_l2/" ],
     }
@@ -40,7 +42,8 @@ const config: HardhatUserConfig = {
   etherscan: {
     apiKey: {
         goerli: L1_ETHERSCAN_API_KEY,
-        optimismGoerli: L2_ETHERSCAN_API_KEY
+        optimismGoerli: L2_ETHERSCAN_API_KEY,
+        baseGoerli: L2_ETHERSCAN_API_KEY
     },
     customChains: [
       {
@@ -49,6 +52,14 @@ const config: HardhatUserConfig = {
         urls: {
             apiURL: "https://api-goerli-optimism.etherscan.io/api",
             browserURL: "https://goerli-optimism.etherscan.io"
+        }
+      },
+      {
+        network: "baseGoerli",
+        chainId: 84531,
+        urls: {
+          browserURL: "https://goerli.basescan.org",
+          apiURL: "https://api-goerli.basescan.org/api",
         }
       }
     ]

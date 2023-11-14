@@ -23,7 +23,7 @@ export const main = async () => {
   const l2provider        = new ethers.JsonRpcProvider(L2_PROVIDER_URL);
   const l2FactoryRead = new ethers.Contract(L2_RESOLVER_FACTORY_ADDRESS, abi, l2provider);
   const l2resolverAddress = await l2FactoryRead.predictAddress(ETH_ADDRESS)
-  console.log(`l2 resolver address for ${ETH_ADDRESS} is https://goerli-optimism.etherscan.io/${l2resolverAddress}`)
+  console.log(`l2 resolver address for ${ETH_ADDRESS} is ${l2resolverAddress}`)
   const l2Resolver   = (await ethers.getContractFactory('DelegatableResolver', signer)).attach(l2resolverAddress);
   const tx2 = await l2Resolver.approve(encodedName, OPERATOR_ADDRESS, true, {
     gasPrice: "900000",

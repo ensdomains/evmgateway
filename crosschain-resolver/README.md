@@ -86,10 +86,18 @@ bun run hardhat deploy --network goerli
 
 ### OP
 #### L2
-- DelegatableResolver = [0xE00739Fc93e27aBf44343fD5FAA151c67C0A0Aa3](https://goerli-optimism.etherscan.io/address/0xE00739Fc93e27aBf44343fD5FAA151c67C0A0Aa3)
+- DelegatableResolver = [0xE00739Fc93e27aBf44343fD5FAA151c67C0A0Aa3](https://goerli-optimism.etherscan.io/address/0xE00739Fc93e27aBf44343fD5FAA151c67C0A0Aa3) = this is used as a template so cannot interact directly
 - DelegatableResolverFactory = [0xacB9771923873614d77C914D716d8E25dAF09b8d](https://goerli-optimism.etherscan.io/address/0xacB9771923873614d77C914D716d8E25dAF09b8d)
 #### L1
 - L1Resolver = [0x65a0963A2941A13a96FcDCfE36c94c6a341f26E5](https://goerli.etherscan.io/address/0x65a0963A2941A13a96FcDCfE36c94c6a341f26E5) = Currently `op.evmgateway.eth` is set to the resolver
+
+### Base
+
+#### L2
+- DelegatableResolver = [0x60BDFeF9ff7bB47d95d1658Be925587F046AE2C7](https://goerli.basescan.org/address/0x7d56Bc48F0802319CB7C79B421Fa5661De905AF7) = this is used as a template so cannot interact directly
+- DelegatableResolverFactory = [0x7d56Bc48F0802319CB7C79B421Fa5661De905AF7](https://goerli.basescan.org/address/0x7d56Bc48F0802319CB7C79B421Fa5661De905AF7)
+#### L1
+- L1Resolver = [0x052D7E10D55Ae12b4F62cdE18dBb7E938efa230D](https://goerli.etherscan.io/address/0x052D7E10D55Ae12b4F62cdE18dBb7E938efa230D) = Currently `base.evmgateway.eth` is set to the resolver
 
 
 ## Usage

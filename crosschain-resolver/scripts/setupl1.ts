@@ -23,7 +23,7 @@ export const main = async () => {
   const provider        = new ethers.JsonRpcProvider(L1_PROVIDER_URL);
   const currentResolver = await provider.getResolver(ENS_NAME)
   if(currentResolver.address !== L1_RESOLVER_ADDRESS){
-    console.log({ENS_NAME, node, L1_RESOLVER_ADDRESS})
+    console.log({ENS_NAME, node, CURRENT_RESOLVER_ADDRESS:currentResolver.address, L1_RESOLVER_ADDRESS})
     throw(`Set the resolver of the parent name to ${L1_RESOLVER_ADDRESS}`)
   }else{
     console.log(`The resolver of ${ENS_NAME} is set to ${L1_RESOLVER_ADDRESS}`)
