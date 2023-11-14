@@ -88,6 +88,9 @@ bun run hardhat deploy --network goerli
 #### L2
 - DelegatableResolver = [0xE00739Fc93e27aBf44343fD5FAA151c67C0A0Aa3](https://goerli-optimism.etherscan.io/address/0xE00739Fc93e27aBf44343fD5FAA151c67C0A0Aa3) = this is used as a template so cannot interact directly
 - DelegatableResolverFactory = [0xacB9771923873614d77C914D716d8E25dAF09b8d](https://goerli-optimism.etherscan.io/address/0xacB9771923873614d77C914D716d8E25dAF09b8d)
+
+- DelegatableResolverRegistrar = [DelegatableResolverRegistrar](https://goerli-optimism.etherscan.io/address/0x2b07cf3ef421a5ff1cb6f437036bdef132eea37b#writeContract) = Demo contract that allow anyone to register subname under `op.evmgateway.eth` on  [L2 resolver on `op.evmgateway.eth`](https://goerli-optimism.etherscan.io/address/0x96753bd0D9bdd98d3a84837B5933078AF49aF12d#writeContract)
+
 #### L1
 - L1Resolver = [0x65a0963A2941A13a96FcDCfE36c94c6a341f26E5](https://goerli.etherscan.io/address/0x65a0963A2941A13a96FcDCfE36c94c6a341f26E5) = Currently `op.evmgateway.eth` is set to the resolver
 
@@ -96,6 +99,9 @@ bun run hardhat deploy --network goerli
 #### L2
 - DelegatableResolver = [0x60BDFeF9ff7bB47d95d1658Be925587F046AE2C7](https://goerli.basescan.org/address/0x7d56Bc48F0802319CB7C79B421Fa5661De905AF7) = this is used as a template so cannot interact directly
 - DelegatableResolverFactory = [0x7d56Bc48F0802319CB7C79B421Fa5661De905AF7](https://goerli.basescan.org/address/0x7d56Bc48F0802319CB7C79B421Fa5661De905AF7)
+
+- DelegatableResolverRegistrar = [DelegatableResolverRegistrar](https://goerli.basescan.org/address/0xe0356133c3c43cbb623543488e607e4e349eaa10#code) = Demo contract that allow anyone to register subname under `base.evmgateway.eth` on  [L2 resolver on `base.evmgateway.eth`](https://goerli.basescan.org/address/0xE4B18eFbF71d516046514598FD7FcFbad4beC742)
+
 #### L1
 - L1Resolver = [0x052D7E10D55Ae12b4F62cdE18dBb7E938efa230D](https://goerli.etherscan.io/address/0x052D7E10D55Ae12b4F62cdE18dBb7E938efa230D) = Currently `base.evmgateway.eth` is set to the resolver
 
@@ -167,3 +173,34 @@ DEPLOYER_PRIVATE_KEY=$DEPLOYER_PRIVATE_KEY L1_PROVIDER_URL=$L1_PROVIDER_URL L2_P
 Once done, set addrss of the subname from the operator, wait 10~20 min, then query the subname on L1
 
 
+### Create subname registrar
+
+#### Step 1: Find out the corresponding L2 resolvers on L1
+
+```
+> encodedbasename = encodeName('')
+'0x0000'
+> encodedname = encodeName('base.evmgateway.eth')
+'0x04626173650a65766d676174657761790365746800'
+```
+
+Go to [Base L1 resolver](https://goerli.etherscan.io/address/0x052D7E10D55Ae12b4F62cdE18dBb7E938efa230D#readContract)
+
+```
+[node, target] = getTarget(encodedname, 0)
+```
+
+#### Step 2: Deploy the registrar contract
+
+Deploy [DelegatableResolverRegistrar.sol](https://gist.github.com/makoto/7d83ca6530adc69fea27923ee8ae8986) to L2 with resolver address as `target` which you obtained at step 1.
+Take notes of the deployed registrar address 
+
+#### Step 3: Delegate the registrar contract to root
+
+Go to the target address and approve the newly created registrar address as the operator ob the base node
+
+```
+approve(baseencodedname,registrarAddress, true)
+```
+
+Once done, anyone can register subnames on "base.evmgateway.eth" (NOTE: currently there is no notion of ownership so other people can overtake the names)
