@@ -3,14 +3,14 @@ const ethers = hre.ethers;
 
 export const main = async () => {
   const [signer] = await hre.ethers.getSigners();
-  if (!process.env.L2_PROVIDER_URL || !process.env.L2_REVERSE_REGISTRAR_ADDRESS  || !process.env.ENS_NAME)
-    throw 'Set L2_PROVIDER_URL, L2_REVERSE_REGISTRAR_ADDRESS, and ENS_NAME';
+  if (!process.env.REVERSE_NAMESPACE || !process.env.L2_PROVIDER_URL || !process.env.L2_REVERSE_REGISTRAR_ADDRESS  || !process.env.ENS_NAME)
+    throw 'Set REVERSE_NAMESPACE, L2_PROVIDER_URL, L2_REVERSE_REGISTRAR_ADDRESS, and ENS_NAME';
 
   const L2_PROVIDER_URL = process.env.L2_PROVIDER_URL;
   const L2_REVERSE_REGISTRAR_ADDRESS = process.env.L2_REVERSE_REGISTRAR_ADDRESS;
+  const namespace       = process.env.REVERSE_NAMESPACE;
   const ENS_NAME        = process.env.ENS_NAME;
   const ETH_ADDRESS     = signer.address
-  const namespace       = 'op.reverse.evmgateway.eth'
   const name            = ETH_ADDRESS.substring(2).toLowerCase() + "." + namespace
   const reversenode     = ethers.namehash(name)
 
