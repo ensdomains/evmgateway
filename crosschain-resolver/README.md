@@ -84,6 +84,24 @@ bun run hardhat deploy --network goerli
 
 ## Deployments
 
+NOTE: Each name owner will be deploying a dedicated resolver for the name and their subnames.
+You can predict the resolver address by calling the predictAddress
+
+```
+DelegatableResolverFactory.predictAddress(ownerAddress)
+```
+
+The function is an external function and you cannot call read function from etherscan.
+To work around, you may want to define the abi function as view function
+
+```
+const abi = [
+  "function predictAddress(address) view returns (address)"
+]
+const l2Factory = new ethers.Contract(L2_RESOLVER_FACTORY_ADDRESS, abi, l2provider);
+const l2resolverAddress = await l2Factory.predictAddress(ETH_ADDRESS)
+```
+
 ### OP
 #### L2
 - DelegatableResolver = [0xE00739Fc93e27aBf44343fD5FAA151c67C0A0Aa3](https://goerli-optimism.etherscan.io/address/0xE00739Fc93e27aBf44343fD5FAA151c67C0A0Aa3) = this is used as a template so cannot interact directly
@@ -178,16 +196,25 @@ Once done, set addrss of the subname from the operator, wait 10~20 min, then que
 #### Step 1: Find out the corresponding L2 resolvers on L1
 
 ```
+> const packet = require('dns-packet');
+> const ethers = require('ethers');
+> const encodeName = (name) => '0x' + packet.name.encode(name).toString('hex')
 > encodedbasename = encodeName('')
 '0x0000'
+> node = ethers.namehash('base.evmgateway.eth')
+'0xb164280377eb563e73caf38ac5693328813c1ed18f9bd925d17d5f59b22421f0'
 > encodedname = encodeName('base.evmgateway.eth')
 '0x04626173650a65766d676174657761790365746800'
+> subnode = ethers.namehash('makoto.base.evmgateway.eth')
+'0xe399336bd17b7d9660834201b6b166196290ceca5a41b402c033e3026d4e17d1'
+> encodedsubname = encodeName('makoto.base.evmgateway.eth')
+'0x066d616b6f746f04626173650a65766d676174657761790365746800'
 ```
 
 Go to [Base L1 resolver](https://goerli.etherscan.io/address/0x052D7E10D55Ae12b4F62cdE18dBb7E938efa230D#readContract)
 
 ```
-[node, target] = getTarget(encodedname, 0)
+[node, target] = l1resolver.getTarget(encodedname, 0)
 ```
 
 #### Step 2: Deploy the registrar contract
@@ -200,7 +227,12 @@ Take notes of the deployed registrar address
 Go to the target address and approve the newly created registrar address as the operator ob the base node
 
 ```
-approve(baseencodedname,registrarAddress, true)
+l2resolver.approve(baseencodedname,registrarAddress, true)
 ```
 
-Once done, anyone can register subnames on "base.evmgateway.eth" (NOTE: currently there is no notion of ownership so other people can overtake the names)
+Once done, anyone can register subnames on "base.evmgateway.eth" (NOTE: currently there is no notion of ownership so other people can overtake the names) from the L2 Registrar
+
+```
+l2registrar.register(encodedsubname, subnameuser)
+l2resolver['setAddr(bytes32,address)](subnode, subnameuser)
+```
