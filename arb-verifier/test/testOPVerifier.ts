@@ -43,6 +43,8 @@ describe('OPVerifier', () => {
 
     const opAddresses = await (await fetch("http://localhost:8080/addresses.json")).json();
 
+    
+
     const gateway = await makeOPGateway(
       (hre.network.config as any).url,
       (hre.config.networks[hre.network.companionNetworks.l2] as any).url,

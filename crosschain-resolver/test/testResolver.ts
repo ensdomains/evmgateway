@@ -62,9 +62,9 @@ describe('Crosschain Resolver', () => {
     const server = new Server()
     gateway.add(server)
     const app = server.makeApp('/')
-    const getUrl = FetchRequest.createGetUrlFunc();    
+    const getUrl = FetchRequest.createGetUrlFunc();
     ethers.FetchRequest.registerGetUrl(async (req: FetchRequest) => {
-      if(req.url != "test:") return getUrl(req);
+      if (req.url != "test:") return getUrl(req);
 
       const r = request(app).post('/');
       if (req.hasBody()) {
@@ -82,24 +82,24 @@ describe('Crosschain Resolver', () => {
         },
       };
     });
-    const ensFactory = await ethers.getContractFactory('ENSRegistry',signer);
+    const ensFactory = await ethers.getContractFactory('ENSRegistry', signer);
     ens = await ensFactory.deploy();
     const ensAddress = await ens.getAddress()
-    const baseRegistrarFactory = await ethers.getContractFactory('BaseRegistrarImplementation',signer);
-    baseRegistrar = await baseRegistrarFactory.deploy(ensAddress,ethers.namehash('eth'))
+    const baseRegistrarFactory = await ethers.getContractFactory('BaseRegistrarImplementation', signer);
+    baseRegistrar = await baseRegistrarFactory.deploy(ensAddress, ethers.namehash('eth'))
     const baseRegistrarAddress = await baseRegistrar.getAddress()
     await baseRegistrar.addController(signerAddress)
-    const metaDataserviceFactory = await ethers.getContractFactory('StaticMetadataService',signer);
+    const metaDataserviceFactory = await ethers.getContractFactory('StaticMetadataService', signer);
     const metaDataservice = await metaDataserviceFactory.deploy('https://ens.domains')
     const metaDataserviceAddress = await metaDataservice.getAddress()
-    const reverseRegistrarFactory = await ethers.getContractFactory('ReverseRegistrar',signer);
+    const reverseRegistrarFactory = await ethers.getContractFactory('ReverseRegistrar', signer);
     const reverseRegistrar = await reverseRegistrarFactory.deploy(ensAddress)
     const reverseRegistrarAddress = await reverseRegistrar.getAddress()
     await ens.setSubnodeOwner(EMPTY_BYTES32, labelhash('reverse'), signerAddress)
-    await ens.setSubnodeOwner(ethers.namehash('reverse'),labelhash('addr'), reverseRegistrarAddress)
+    await ens.setSubnodeOwner(ethers.namehash('reverse'), labelhash('addr'), reverseRegistrarAddress)
     await ens.setSubnodeOwner(EMPTY_BYTES32, labelhash('eth'), baseRegistrarAddress)
     await baseRegistrar.register(labelhash('foo'), signerAddress, 100000000)
-    const publicResolverFactory = await ethers.getContractFactory('PublicResolver',signer);
+    const publicResolverFactory = await ethers.getContractFactory('PublicResolver', signer);
     const publicResolver = await publicResolverFactory.deploy(
       ensAddress,
       '0x0000000000000000000000000000000000000000',
@@ -109,7 +109,7 @@ describe('Crosschain Resolver', () => {
     const publicResolverAddress = await publicResolver.getAddress()
     await reverseRegistrar.setDefaultResolver(publicResolverAddress)
 
-    const wrapperFactory = await ethers.getContractFactory('NameWrapper',signer);
+    const wrapperFactory = await ethers.getContractFactory('NameWrapper', signer);
     await provider.send('evm_mine', []);
     wrapper = await wrapperFactory.deploy(
       ensAddress,
@@ -149,27 +149,27 @@ describe('Crosschain Resolver', () => {
     l2contract = impl.attach(resolverAddress)
   });
 
-  it("should not allow non owner to set target", async() => {
+  it("should not allow non owner to set target", async () => {
     const incorrectnode = ethers.namehash('notowned.eth')
     const incorrectname = encodeName('notowned.eth')
     // For some reason expect().to.be.reverted isn't working
     // Throwing Error: missing revert data (action="estimateGas"...
-    try{
+    try {
       await target.setTarget(incorrectnode, resolverAddress)
-    }catch(e){
+    } catch (e) {
     }
 
     const result = await target.getTarget(incorrectname, 0)
     expect(result[1]).to.equal(EMPTY_ADDRESS);
   })
 
-  it("should allow owner to set target", async() => {
+  it("should allow owner to set target", async () => {
     await target.setTarget(node, signerAddress)
     const result = await target.getTarget(encodeName(name), 0)
     expect(result[1]).to.equal(signerAddress);
   })
 
-  it("subname should get target of its parent", async() => {
+  it("subname should get target of its parent", async () => {
     const subname = 'd.foo.eth'
     const encodedsubname = encodeName(subname)
     const subnode = ethers.namehash(subname)
@@ -179,7 +179,7 @@ describe('Crosschain Resolver', () => {
     expect(result[1]).to.equal(signerAddress);
   })
 
-  it("should allow wrapped owner to set target", async() => {
+  it("should allow wrapped owner to set target", async () => {
     const label = 'wrapped'
     const tokenId = labelhash(label)
     await baseRegistrar.setApprovalForAll(wrapperAddress, true)
@@ -197,7 +197,7 @@ describe('Crosschain Resolver', () => {
     expect(result[1]).to.equal(resolverAddress);
   })
 
-  it("should resolve empty ETH Address", async() => {
+  it("should resolve empty ETH Address", async () => {
     await target.setTarget(node, resolverAddress)
     const addr = '0x0000000000000000000000000000000000000000'
     await l2contract.clearRecords(node)
@@ -212,7 +212,7 @@ describe('Crosschain Resolver', () => {
     expect(decoded[0]).to.equal(addr);
   })
 
-  it("should resolve ETH Address", async() => {
+  it("should resolve ETH Address", async () => {
     await target.setTarget(node, resolverAddress)
     const addr = '0x5A384227B65FA093DEC03Ec34e111Db80A040615'
     await l2contract.clearRecords(node)
@@ -220,7 +220,7 @@ describe('Crosschain Resolver', () => {
     const result = await l2contract['addr(bytes32)'](node)
     expect(ethers.getAddress(result)).to.equal(addr);
     await provider.send("evm_mine", []);
-    
+
     const i = new ethers.Interface(["function addr(bytes32) returns(address)"])
     const calldata = i.encodeFunctionData("addr", [node])
     const result2 = await target.resolve(encodedname, calldata, { enableCcipRead: true })
@@ -228,7 +228,7 @@ describe('Crosschain Resolver', () => {
     expect(decoded[0]).to.equal(addr);
   })
 
-  it("should resolve ETH Address for subname", async() => {
+  it("should resolve ETH Address for subname", async () => {
     await target.setTarget(node, resolverAddress)
     const addr = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
     await l2contract.clearRecords(node)
@@ -241,13 +241,13 @@ describe('Crosschain Resolver', () => {
     await provider.send("evm_mine", []);
     const i = new ethers.Interface(["function addr(bytes32) returns(address)"])
     const calldata = i.encodeFunctionData("addr", [subnode])
-    
+
     const result2 = await target.resolve(encodedsubname, calldata, { enableCcipRead: true })
     const decoded = i.decodeFunctionResult("addr", result2)
     expect(decoded[0]).to.equal(addr);
   })
 
-  it("should resolve non ETH Address", async() => {
+  it("should resolve non ETH Address", async () => {
     await target.setTarget(node, resolverAddress)
     const addr = '0x76a91462e907b15cbf27d5425399ebf6f0fb50ebb88f1888ac'
     const coinType = 0 // BTC
@@ -262,7 +262,7 @@ describe('Crosschain Resolver', () => {
     expect(decoded[0]).to.equal(addr);
   })
 
-  it("should resolve text record", async() => {
+  it("should resolve text record", async () => {
     await target.setTarget(node, resolverAddress)
     const key = 'name'
     const value = 'nick.eth'
@@ -277,7 +277,7 @@ describe('Crosschain Resolver', () => {
     expect(decoded[0]).to.equal(value);
   })
 
-  it("should test contenthash", async() => {
+  it("should test contenthash", async () => {
     await target.setTarget(node, resolverAddress)
     const contenthash = '0xe3010170122029f2d17be6139079dc48696d1f582a8530eb9805b561eda517e22a892c7e3f1f'
     await l2contract.clearRecords(node)
