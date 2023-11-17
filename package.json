@@ -9,7 +9,9 @@
     "evm-verifier",
     "l1-verifier",
     "op-verifier",
-    "crosschain-resolver"
+    "crosschain-resolver",
+    "arbi-verifier",
+    "arbi-gateway"
   ],
   "scripts": {
     "env": "env",
