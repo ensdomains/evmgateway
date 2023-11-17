@@ -1,6 +1,6 @@
 {
   //"extends": "../tsconfig.json",
-  "include": ["./scripts", "./test"],
+  "include": ["./scripts", "./test", "../arb-gateway/src/ArbProofService.ts"],
   "files": ["hardhat.config.ts"],
   "compilerOptions": {
     "esModuleInterop": true,

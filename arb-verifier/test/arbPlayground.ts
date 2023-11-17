@@ -2,7 +2,7 @@
 /* eslint-disable prettier/prettier */
 import { EVMProofHelper } from "@ensdomains/evm-gateway"
 import { Contract, ethers } from "ethers"
-import { ArbProofService } from "./ArbProofService"
+import { ArbProofService } from "../../arb-gateway/src/ArbProofService"
 
 const test1Contract = "0x2161d46ad2b7dd9c9f58b8be0609198899fb431d"
 

@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 import { EVMProofHelper, type IProofService } from '@ensdomains/evm-gateway';
-import { AbiCoder, Contract, Filter, Interface, JsonRpcProvider, type AddressLike } from 'ethers';
+import { AbiCoder, Contract, Interface, JsonRpcProvider, type AddressLike, type Filter } from 'ethers';
 
 export interface ArbProvableBlock {
     stateRoot: string;
