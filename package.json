@@ -10,8 +10,8 @@
     "l1-verifier",
     "op-verifier",
     "crosschain-resolver",
-    "arbi-verifier",
-    "arbi-gateway"
+    "arb-verifier",
+    "arb-gateway"
   ],
   "scripts": {
     "env": "env",
