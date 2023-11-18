@@ -9,8 +9,6 @@ pragma solidity ^0.8.0;
 import {Bytes} from '@eth-optimism/contracts-bedrock/src/libraries/Bytes.sol';
 import {RLPReader} from '@eth-optimism/contracts-bedrock/src/libraries/rlp/RLPReader.sol';
 
-import 'hardhat/console.sol';
-
 /**
  * @title MerkleTrie
  * @notice MerkleTrie is a small library for verifying standard Ethereum Merkle-Patricia trie
@@ -160,16 +158,6 @@ library MerkleTrie {
             pathLength += 1;
 
             if (currentKeyIndex == 0) {
-                console.log('length');
-                console.log(_proof.length);
-                console.log('---');
-                console.logBytes(
-                    abi.encodePacked(keccak256(currentNode.encoded))
-                );
-                console.log('---');
-                console.logBytes(currentNode.encoded);
-                console.log('---');
-                console.logBytes(currentNodeID);
                 // First proof element is always the root node.
                 require(
                     Bytes.equal(
