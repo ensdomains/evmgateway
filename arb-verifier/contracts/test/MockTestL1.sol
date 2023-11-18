@@ -45,10 +45,13 @@ contract MockTestL1 is EVMFetchTarget {
     function getHighscorer(
         uint256 idx
     ) public view returns (EVMFetcher.EVMFetchRequest memory) {
-        return
-            EVMFetcher.newFetchRequest(verifier, target).getDynamic(3).element(
-                idx
-            );
+        EVMFetcher.EVMFetchRequest memory req = EVMFetcher
+            .newFetchRequest(verifier, target)
+            .getDynamic(3)
+            .element(idx);
+
+        _addOperation(req, OP_END);
+        return req;
     }
 
     function getLatestHighscore()
@@ -56,12 +59,13 @@ contract MockTestL1 is EVMFetchTarget {
         view
         returns (EVMFetcher.EVMFetchRequest memory)
     {
-        return
-            EVMFetcher
-                .newFetchRequest(verifier, target)
-                .getStatic(0)
-                .getStatic(2)
-                .ref(0);
+        EVMFetcher.EVMFetchRequest memory req = EVMFetcher
+            .newFetchRequest(verifier, target)
+            .getStatic(0)
+            .getStatic(2)
+            .ref(0);
+        _addOperation(req, OP_END);
+        return req;
     }
 
     function getLatestHighscorer()
@@ -69,12 +73,14 @@ contract MockTestL1 is EVMFetchTarget {
         view
         returns (EVMFetcher.EVMFetchRequest memory)
     {
-        return
-            EVMFetcher
-                .newFetchRequest(verifier, target)
-                .getStatic(0)
-                .getDynamic(3)
-                .ref(0);
+        EVMFetcher.EVMFetchRequest memory req = EVMFetcher
+            .newFetchRequest(verifier, target)
+            .getStatic(0)
+            .getDynamic(3)
+            .ref(0);
+
+        _addOperation(req, OP_END);
+        return req;
     }
 
     function getNickname(
