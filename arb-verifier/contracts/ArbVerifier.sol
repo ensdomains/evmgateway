@@ -10,17 +10,17 @@ struct ArbWitnessData {
     bytes32 latestBlockhash;
 }
 
-interface IOutbox {
+interface IRollup {
     function roots(bytes32) external view returns (bytes32); // maps root hashes => L2 block hash
 }
 
 contract ArbVerifier is IEVMVerifier {
     //Todo replace with IFace
-    IOutbox public immutable outbox;
+    IRollup public immutable rollup;
     string[] _gatewayURLs;
 
-    constructor(IOutbox _outboxAddress, string[] memory _urls) {
-        outbox = _outboxAddress;
+    constructor(IOutbox _rollupAddress, string[] memory _urls) {
+        rollup = _rollupAddress;
         _gatewayURLs = _urls;
     }
 
@@ -34,19 +34,33 @@ contract ArbVerifier is IEVMVerifier {
         bytes[] memory constants,
         bytes memory proof
     ) external view returns (bytes[] memory values) {
-        (ArbWitnessData memory opData, StateProof memory stateProof) = abi
+        (ArbWitnessData memory arbData, StateProof memory stateProof) = abi
             .decode(proof, (ArbWitnessData, StateProof));
 
-        console.log('hello');
-        console.logBytes32(opData.stateRoot);
+        console.log('stateeRoot');
 
-        return
-            EVMProofHelper.getStorageValues(
-                target,
-                commands,
-                constants,
-                opData.stateRoot,
-                stateProof
-            );
+        console.logBytes32(arbData.stateRoot);
+
+        values = EVMProofHelper.getStorageValues(
+            target,
+            commands,
+            constants,
+            arbData.stateRoot,
+            stateProof
+        );
+    }
+
+    function prooooooof(
+        uint64 nodeIndex,
+        bytes32 blockHash,
+        bytes32 sendRoot
+    ) internal {
+        bytes32 confirmdata = keccak256(abi.encodePacked(blockHash, sendRoot));
+        Node memory rblock = rollup.getNode(nodeIndex);
+        require(rblock.confirmData == confirmdata, 'confirmData mismatch');
+
+        bytes32 givenRoot = keccak256(abi.encodePacked(confirmData, stateRoot));
+
+        
     }
 }

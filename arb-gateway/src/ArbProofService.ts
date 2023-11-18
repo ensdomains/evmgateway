@@ -4,6 +4,7 @@ import { AbiCoder, Contract, Interface, JsonRpcProvider, type AddressLike, type 
 
 export interface ArbProvableBlock {
     stateRoot: string;
+    sendRoot: string;
     hash: string;
     number: number
 
@@ -64,14 +65,6 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
 
         console.log(block)
 
-        console.log(proof)
-        const rpcBlock = await this.l2Provider.send(
-            'eth_getBlockByNumber',
-            ['0x' + block.number.toString(16), false]
-        );
-
-        console.log(rpcBlock)
-
         return AbiCoder.defaultAbiCoder().encode(
             [
                 'tuple(bytes32 version, bytes32 stateRoot, bytes32 latestBlockhash)',
@@ -81,7 +74,7 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
                 {
                     version:
                         '0x0000000000000000000000000000000000000000000000000000000000000000',
-                    stateRoot: rpcBlock.stateRoot,
+                    stateRoot: block.stateRoot,
                     latestBlockhash: block.hash,
 
                 },
@@ -113,7 +106,7 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
         if (!e) {
             throw new Error("No event found")
         }
-        const [stateRoot, l2BlockHash] = e.args
+        const [sendRoot, l2BlockHash] = e.args
 
         const l2Block = await this.l2Provider.getBlock(l2BlockHash)
 
@@ -121,11 +114,19 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
             throw new Error("No block found")
         }
 
+        console.log("l2blockFromHash", l2Block)
+        console.log("stateRoot from event", sendRoot)
+
+        const blockWithStateRoot = await this.l2Provider.send(
+            'eth_getBlockByNumber',
+            ['0x' + l2Block.number.toString(16), false]
+        );
 
         return {
             hash: l2BlockHash,
             number: l2Block.number,
-            stateRoot: stateRoot
+            stateRoot: blockWithStateRoot.stateRoot,
+            sendRoot
         }
 
     }

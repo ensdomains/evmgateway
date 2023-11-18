@@ -156,4 +156,6 @@ contract TestL1 is EVMFetchTarget {
     ) public pure returns (uint256) {
         return abi.decode(values[1], (uint256));
     }
+
+  
 }

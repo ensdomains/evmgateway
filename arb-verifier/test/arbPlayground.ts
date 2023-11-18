@@ -3,12 +3,12 @@
 import { EVMProofHelper } from "@ensdomains/evm-gateway"
 import { Contract, ethers } from "ethers"
 import { ArbProofService } from "@ensdomains/arb-gateway"
-
 const test1Contract = "0x2161d46ad2b7dd9c9f58b8be0609198899fb431d"
 
 const rpcMainnet = "https://eth-goerli.g.alchemy.com/v2/XsX8NB_NvPFNUIAPQmOSjP4rMqsrTGDV"
 const rpcArbitrum = "https://arb-goerli.g.alchemy.com/v2/k2Vp4opdLW3ueLYaTPndSFtx4m7T3s71"
 const outboxGoerli = "0x45Af9Ed1D03703e480CE7d328fB684bb67DA5049"
+const rollupAddr = "0x45e5cAea8768F42B385A366D3551Ad1e0cbFAb17"
 const l1Provider = new ethers.JsonRpcProvider(rpcMainnet)
 const l2Provider = new ethers.JsonRpcProvider(rpcArbitrum, {
     chainId: 421613,
@@ -62,10 +62,9 @@ export const arbPlayground = async () => {
 
     const proofHelper = new EVMProofHelper(l2Provider)
 
-    const proofs = await proofHelper.getProofs(targetBlocknr, test1Contract, [0n, 1n])
+    const proofs = await proofHelper.getProofs(targetBlocknr, test1Contract, [0n])
 
     console.log(proofs)
-
 
 
 }
@@ -78,7 +77,7 @@ const runProofService = async () => {
     );
 
     const getBlock = await s.getProvableBlock()
-    const proofs = await s.getProofs(getBlock, test1Contract, [0n, 1n])
+    const proofs = await s.getProofs(getBlock, test1Contract, [0n])
 
     console.log(proofs)
 
@@ -100,3 +99,29 @@ const readFromContract = async () => {
 //readFromContract()
 runProofService()
 
+const withRollup = async () => {
+    /*     const rollup = new Contract(rollupAddr, rollupAbi, l1Provider)
+        const helper = new Contract()
+    
+        const nodeIdx = await rollup.latestNodeCreated()
+    
+        const nodeEventFilter = await rollup.filters.NodeCreated(nodeIdx);
+        const nodeEvents = await rollup.queryFilter(nodeEventFilter);
+        const assertion = nodeEvents[0].args!.assertion
+    
+        const sendRoot = await helper.getSendRoot(assertion)
+        const blockHash = await helper.getBlockHash(assertion)
+        const l2blockRaw = await l2provider.send('eth_getBlockByHash', [
+            blockHash,
+            false
+        ]);
+    
+        console.log(nodeIdx.toString()) */
+
+}
+
+//withRollup()
+
+const weProof = () => {
+
+}
