@@ -63,7 +63,6 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
         address: AddressLike,
         slots: bigint[]
     ): Promise<string> {
-        console.log("input block", block)
         const proof = await this.helper.getProofs(block.number, address, slots);
 
         return AbiCoder.defaultAbiCoder().encode(

@@ -5,7 +5,6 @@ import {IEVMVerifier} from '@ensdomains/evm-verifier/contracts/IEVMVerifier.sol'
 import {Node, IRollupCore} from '@arbitrum/nitro-contracts/src/rollup/IRollupCore.sol';
 import {RLPReader} from '@eth-optimism/contracts-bedrock/src/libraries/rlp/RLPReader.sol';
 
-import 'hardhat/console.sol';
 struct ArbWitnessData {
     bytes32 version;
     bytes32 sendRoot;
@@ -41,8 +40,6 @@ contract ArbVerifier is IEVMVerifier {
             abi.encodePacked(arbData.blockHash, arbData.sendRoot)
         );
 
-        console.log('idx');
-        console.log(arbData.nodeIndex);
         Node memory rblock = rollup.getNode(arbData.nodeIndex);
         require(rblock.confirmData == confirmData, 'confirmData mismatch');
 
