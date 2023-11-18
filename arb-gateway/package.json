@@ -62,6 +62,7 @@
     "@ethereumjs/block": "^5.0.0",
     "@nomicfoundation/ethereumjs-block": "^5.0.2",
     "commander": "^11.0.0",
-    "ethers": "^6.7.1"
+    "ethers": "^6.7.1",
+    "ethers5": "npm:ethers@5.7.2"
   }
 }

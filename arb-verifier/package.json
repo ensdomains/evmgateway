@@ -24,6 +24,7 @@
     "@types/supertest": "^2.0.14",
     "chai": "^4.2.0",
     "ethers": "^6.8.0",
+    "ethers5": "npm:ethers@5.7.2",
     "express": "^4.18.2",
     "ganache": "^7.9.1",
     "hardhat": "^2.16.0",
@@ -40,6 +41,8 @@
   "dependencies": {
     "@ensdomains/evm-verifier": "^0.1.0",
     "@eth-optimism/contracts": "^0.6.0",
-    "@eth-optimism/contracts-bedrock": "^0.16.2"
+    "@eth-optimism/contracts-bedrock": "^0.16.2",
+    "@arbitrum/nitro-contracts": "^1.1.0"
+
   }
 }

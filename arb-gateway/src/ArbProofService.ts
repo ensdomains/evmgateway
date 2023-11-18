@@ -1,19 +1,18 @@
 /* eslint-disable prettier/prettier */
 import { EVMProofHelper, type IProofService } from '@ensdomains/evm-gateway';
-import { AbiCoder, Contract, Interface, JsonRpcProvider, type AddressLike, type Filter } from 'ethers';
-
+import { AbiCoder, ethers, type AddressLike } from 'ethers';
+import { ethers as ethers5 } from "ethers5";
+import helperAbi from "./abi/helperAbi.js";
+import rollupAbi from "./abi/rollupABI.js";
 export interface ArbProvableBlock {
-    stateRoot: string;
-    sendRoot: string;
-    hash: string;
     number: number
 
+    sendRoot: string,
+    blockHash: string,
+    nodeIndex: string,
+    rlpEncodedBlock: string
 }
-const SEND_ROOT_UPDATED_EVENT_TOPIC = "0xb4df3847300f076a369cd76d2314b470a1194d9e8a6bb97f1860aee88a5f6748"
 
-const OUTBOX_ABI = [
-    "event SendRootUpdated(bytes32 indexed outputRoot, bytes32 indexed l2BlockHash)",
-];
 
 /**
  * The proofService class can be used to calculate proofs for a given target and slot on the Optimism Bedrock network.
@@ -21,24 +20,27 @@ const OUTBOX_ABI = [
  *
  */
 export class ArbProofService implements IProofService<ArbProvableBlock> {
-    private readonly l1Provider: JsonRpcProvider;
-    private readonly l2Provider: JsonRpcProvider;
-    private readonly l2Outbox: Contract;
+    private readonly l2LegacyProvider: ethers5.providers.JsonRpcProvider;
+    private readonly rollup: ethers5.Contract;
+    private readonly assertionHelper: ethers5.Contract;
     private readonly helper: EVMProofHelper;
 
     constructor(
-        l1Provider: JsonRpcProvider,
-        l2Provider: JsonRpcProvider,
-        l2OutboxAddress: string,
+        l2Provider: ethers.JsonRpcProvider,
+        l1LegacyProvider: ethers5.providers.JsonRpcProvider,
+        l2LegacyProvider: ethers5.providers.JsonRpcProvider,
+        l2RollupAddress: string,
+        assertionHelperAddress: string
     ) {
-        this.l1Provider = l1Provider;
-        this.l2Provider = l2Provider;
-        this.l2Outbox = new Contract(
-            l2OutboxAddress,
-            OUTBOX_ABI,
-            l1Provider
+        this.l2LegacyProvider = l2LegacyProvider;
+        this.rollup = new ethers5.Contract(
+            l2RollupAddress,
+            rollupAbi,
+
         );
         this.helper = new EVMProofHelper(l2Provider);
+        this.rollup = new ethers5.Contract(l2RollupAddress, rollupAbi, l1LegacyProvider)
+        this.assertionHelper = new ethers5.Contract(assertionHelperAddress, helperAbi, l2LegacyProvider)
 
 
     }
@@ -61,22 +63,23 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
         address: AddressLike,
         slots: bigint[]
     ): Promise<string> {
+        console.log("input block", block)
         const proof = await this.helper.getProofs(block.number, address, slots);
 
-        console.log(block)
 
         return AbiCoder.defaultAbiCoder().encode(
             [
-                'tuple(bytes32 version, bytes32 stateRoot, bytes32 latestBlockhash)',
+                'tuple(bytes32 version, bytes32 sendRoot, bytes32 blockHash,uint64 nodeIndex,bytes rlpEncodedBlock)',
                 'tuple(bytes[] stateTrieWitness, bytes[][] storageProofs)',
             ],
             [
                 {
                     version:
                         '0x0000000000000000000000000000000000000000000000000000000000000000',
-                    stateRoot: block.stateRoot,
-                    latestBlockhash: block.hash,
-
+                    sendRoot: block.sendRoot,
+                    blockHash: block.blockHash,
+                    nodeIndex: block.nodeIndex,
+                    rlpEncodedBlock: block.rlpEncodedBlock
                 },
                 proof,
             ]
@@ -84,50 +87,50 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
     }
 
     public async getProvableBlock(): Promise<ArbProvableBlock> {
-        const latestBlocknr = await this.l1Provider.getBlockNumber()
+        const nodeIndex = await this.rollup.latestNodeCreated()
 
-        const filter: Filter = {
-            fromBlock: latestBlocknr - 1000,
-            toBlock: latestBlocknr,
-            address: this.l2Outbox.getAddress(),
-            topics: [SEND_ROOT_UPDATED_EVENT_TOPIC]
-        };
+        const nodeEventFilter = await this.rollup.filters.NodeCreated(nodeIndex);
+        const nodeEvents = await this.rollup.queryFilter(nodeEventFilter) as any;
+        const assertion = nodeEvents[0].args!.assertion
 
-        const iface = new Interface(OUTBOX_ABI)
+        const sendRoot = await this.assertionHelper.getSendRoot(assertion)
+        const blockHash = await this.assertionHelper.getBlockHash(assertion)
 
-        const logs = await this.l1Provider.getLogs(filter);
-        const latestLog = logs[logs.length - 1];
+        const l2blockRaw = await this.l2LegacyProvider.send('eth_getBlockByHash', [
+            blockHash,
+            false
+        ]);
 
-        const e = iface.parseLog({
-            topics: [...latestLog.topics],
-            data: latestLog.data
-        })
+        const blockarray = [
+            l2blockRaw.parentHash,
+            l2blockRaw.sha3Uncles,
+            l2blockRaw.miner,
+            l2blockRaw.stateRoot,
+            l2blockRaw.transactionsRoot,
+            l2blockRaw.receiptsRoot,
+            l2blockRaw.logsBloom,
+            ethers5.BigNumber.from(l2blockRaw.difficulty).toHexString(),
+            ethers5.BigNumber.from(l2blockRaw.number).toHexString(),
+            ethers5.BigNumber.from(l2blockRaw.gasLimit).toHexString(),
+            ethers5.BigNumber.from(l2blockRaw.gasUsed).toHexString(),
+            ethers5.BigNumber.from(l2blockRaw.timestamp).toHexString(),
+            l2blockRaw.extraData,
+            l2blockRaw.mixHash,
+            l2blockRaw.nonce,
+            ethers5.BigNumber.from(l2blockRaw.baseFeePerGas).toHexString(),
+        ]
 
-        if (!e) {
-            throw new Error("No event found")
-        }
-        const [sendRoot, l2BlockHash] = e.args
 
-        const l2Block = await this.l2Provider.getBlock(l2BlockHash)
-
-        if (!l2Block) {
-            throw new Error("No block found")
-        }
-
-        console.log("l2blockFromHash", l2Block)
-        console.log("stateRoot from event", sendRoot)
-
-        const blockWithStateRoot = await this.l2Provider.send(
-            'eth_getBlockByNumber',
-            ['0x' + l2Block.number.toString(16), false]
-        );
+        const rlpEncodedBlock = ethers.encodeRlp(blockarray)
 
         return {
-            hash: l2BlockHash,
-            number: l2Block.number,
-            stateRoot: blockWithStateRoot.stateRoot,
-            sendRoot
+            rlpEncodedBlock,
+            sendRoot,
+            blockHash,
+            nodeIndex: nodeIndex.toNumber(),
+            number: ethers5.BigNumber.from(l2blockRaw.number).toNumber(),
         }
-
     }
+
+
 }
