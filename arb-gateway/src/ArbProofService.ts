@@ -62,22 +62,28 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
     ): Promise<string> {
         const proof = await this.helper.getProofs(block.number, address, slots);
 
-        console.log("target block", block.number)
+        console.log(block)
+
         console.log(proof)
+        const rpcBlock = await this.l2Provider.send(
+            'eth_getBlockByNumber',
+            ['0x' + block.number.toString(16), false]
+        );
+
+        console.log(rpcBlock)
+
         return AbiCoder.defaultAbiCoder().encode(
             [
-                'tuple(tuple(bytes32 version, bytes32 stateRoot, bytes32 latestBlockhash) outputRootProof)',
+                'tuple(bytes32 version, bytes32 stateRoot, bytes32 latestBlockhash)',
                 'tuple(bytes[] stateTrieWitness, bytes[][] storageProofs)',
             ],
             [
                 {
-                    blockNo: block.number,
-                    outputRootProof: {
-                        version:
-                            '0x0000000000000000000000000000000000000000000000000000000000000000',
-                        stateRoot: block.stateRoot,
-                        latestBlockhash: block.hash,
-                    },
+                    version:
+                        '0x0000000000000000000000000000000000000000000000000000000000000000',
+                    stateRoot: rpcBlock.stateRoot,
+                    latestBlockhash: block.hash,
+
                 },
                 proof,
             ]
