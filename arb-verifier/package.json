@@ -1,5 +1,5 @@
 {
-  "name": "@ensdomains/op-verifier",
+  "name": "@ensdomains/arb-verifier",
   "license": "MIT",
   "version": "0.1.0",
   "scripts": {
@@ -7,11 +7,10 @@
     "test": " hardhat test",
     "clean": "rm -fr artifacts cache node_modules typechain-types",
     "lint": "exit 0",
-    "play" : "npx ts-node  ./test/arbPlayground.ts"
-
+    "play": "npx ts-node  ./test/arbPlayground.ts"
   },
   "devDependencies": {
-    "@ensdomains/op-gateway": "workspace:*",
+    "@ensdomains/arb-gateway": "workspace:*",
     "@nomicfoundation/hardhat-chai-matchers": "^2.0.0",
     "@nomicfoundation/hardhat-ethers": "^3.0.0",
     "@nomicfoundation/hardhat-network-helpers": "^1.0.0",
