@@ -33,7 +33,13 @@ contract MockTestL1 is EVMFetchTarget {
     }
 
     function getName() public view returns (EVMFetcher.EVMFetchRequest memory) {
-        return EVMFetcher.newFetchRequest(verifier, target).getDynamic(1);
+        EVMFetcher.EVMFetchRequest memory req = EVMFetcher
+            .newFetchRequest(verifier, target)
+            .getDynamic(1);
+
+        _addOperation(req, OP_END);
+
+        return req;
     }
 
     function getHighscorer(
