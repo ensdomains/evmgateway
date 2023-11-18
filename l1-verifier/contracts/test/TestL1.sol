@@ -5,8 +5,6 @@ import {EVMFetcher} from '@ensdomains/evm-verifier/contracts/EVMFetcher.sol';
 import {EVMFetchTarget} from '@ensdomains/evm-verifier/contracts/EVMFetchTarget.sol';
 import {IEVMVerifier} from '@ensdomains/evm-verifier/contracts/IEVMVerifier.sol';
 
-import 'hardhat/console.sol';
-
 contract TestL1 is EVMFetchTarget {
     using EVMFetcher for EVMFetcher.EVMFetchRequest;
 
@@ -14,7 +12,6 @@ contract TestL1 is EVMFetchTarget {
     address target;
 
     constructor(IEVMVerifier _verifier, address _target) {
-        console.log('TEST');
         verifier = _verifier;
         target = _target;
     }
@@ -156,6 +153,4 @@ contract TestL1 is EVMFetchTarget {
     ) public pure returns (uint256) {
         return abi.decode(values[1], (uint256));
     }
-
-  
 }
