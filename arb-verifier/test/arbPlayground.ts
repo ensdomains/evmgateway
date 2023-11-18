@@ -48,7 +48,7 @@ const runProofService = async () => {
 
 //arbPlayground()
 //readFromContract()
-runProofService()
+//runProofService()
 
 const withRollup = async () => {
     const rollup = new ethers5.Contract(rollupAddr, rollupAbi, new ethers5.providers.JsonRpcProvider(rpcMainnet))
@@ -102,3 +102,15 @@ const withRollup = async () => {
 
 //withRollup()
 
+const getNode = async () => {
+    const idx = 12323
+
+    const rollup = new Contract(rollupAddr, rollupAbi,l1Provider)
+
+    const n = await rollup.getNode(idx)
+
+    console.log(n)
+
+}
+
+getNode()

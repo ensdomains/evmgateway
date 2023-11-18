@@ -43,10 +43,8 @@ contract ArbVerifier is IEVMVerifier {
 
         console.log('idx');
         console.log(arbData.nodeIndex);
-        // Node memory rblock = rollup.getNode(arbData.nodeIndex);
-        //  require(rblock.confirmData == confirmData, 'confirmData mismatch');
-
-        //Todo encode block and get stateRoot
+        Node memory rblock = rollup.getNode(arbData.nodeIndex);
+        require(rblock.confirmData == confirmData, 'confirmData mismatch');
 
         bytes32 stateRoot = decodeBlock(arbData.rlpEncodedBlock);
 

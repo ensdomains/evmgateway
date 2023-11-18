@@ -1,7 +1,14 @@
-contract MockOutbox {
-    function pushRoot(bytes32 blockHash, bytes32 root) external {
-        roots[root] = blockHash;
+import {Node, IRollupCore} from '@arbitrum/nitro-contracts/src/rollup/IRollupCore.sol';
+
+contract MockRollup {
+    function pushNode(uint idx, bytes calldata encodedNode) external {
+        Node memory node = abi.decode(encodedNode, (Node));
+        roots[idx] = node;
     }
 
-    mapping(bytes32 => bytes32) public roots; // maps root hashes => L2 block hash
+    function getNode(uint64 idx) external view returns (Node memory) {
+        return roots[idx];
+    }
+
+    mapping(uint256 => Node) public roots; // maps root hashes => L2 block hash
 }

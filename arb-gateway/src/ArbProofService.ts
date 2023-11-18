@@ -66,7 +66,6 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
         console.log("input block", block)
         const proof = await this.helper.getProofs(block.number, address, slots);
 
-
         return AbiCoder.defaultAbiCoder().encode(
             [
                 'tuple(bytes32 version, bytes32 sendRoot, bytes32 blockHash,uint64 nodeIndex,bytes rlpEncodedBlock)',
