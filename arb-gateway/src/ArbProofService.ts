@@ -15,7 +15,7 @@ export interface ArbProvableBlock {
 
 
 /**
- * The proofService class can be used to calculate proofs for a given target and slot on the Optimism Bedrock network.
+ * The proofService class can be used to calculate proofs for a given target and slot on the Arbitrum network.
  * It's also capable of proofing long types such as mappings or string by using all included slots in the proof.
  *
  */
@@ -83,22 +83,42 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
             ]
         );
     }
-
+    /**
+    * Retrieves information about the latest provable block in the Arbitrum Rollup.
+    *
+    * @returns { Promise<ArbProvableBlock> } A promise that resolves to an object containing information about the provable block.
+    * @throws Throws an error if any of the underlying operations fail.
+    *
+    * @typedef { Object } ArbProvableBlock
+    * @property { string } rlpEncodedBlock - The RLP - encoded block information.
+    * @property { string } sendRoot - The send root of the provable block.
+    * @property { string } blockHash - The hash of the provable block.
+    * @property { number } nodeIndex - The index of the node corresponding to the provable block.
+    * @property { number } number - The block number of the provable block.
+    */
     public async getProvableBlock(): Promise<ArbProvableBlock> {
+        //Retrieve the latest pending node that has been committed to the rollup.
         const nodeIndex = await this.rollup.latestNodeCreated()
 
+        //We fetch the node created event for the node index we just retrieved.
         const nodeEventFilter = await this.rollup.filters.NodeCreated(nodeIndex);
-        const nodeEvents = await this.rollup.queryFilter(nodeEventFilter) as any;
+        const nodeEvents = await this.rollup.queryFilter(nodeEventFilter);
+        //Ethers v6 handles events differntly from v5. It dosent seem to decode the events like in v5. Which makes it pretty different to deal with a compley event like the NodeCreated event. 
+        //I'm certain that there are ways to encode the data with ethers v6 but i havent them figured out yet
+        //TODO refactor to use ethers v6
         const assertion = nodeEvents[0].args!.assertion
 
+        //The assertion contains all information we need. Unfurtunately, the encoded hence the assertionHelper is used to decode it.
+        //TODO refactor use AbiCoder instead of assertionHelper  
         const sendRoot = await this.assertionHelper.getSendRoot(assertion)
         const blockHash = await this.assertionHelper.getBlockHash(assertion)
 
+        //The L1 rollup only provides us with the block hash. In order to ensure that the stateRoot we're using for the proof is indeed part of the block, we need to fetch the block. And provide it to the proof.
         const l2blockRaw = await this.l2LegacyProvider.send('eth_getBlockByHash', [
             blockHash,
             false
         ]);
-
+        //RLP encoder has problems with bigint types from v6. So v5 is used here as well 
         const blockarray = [
             l2blockRaw.parentHash,
             l2blockRaw.sha3Uncles,
@@ -118,7 +138,7 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
             ethers5.BigNumber.from(l2blockRaw.baseFeePerGas).toHexString(),
         ]
 
-
+        //Rlp encode the block to pass it as an argument
         const rlpEncodedBlock = ethers.encodeRlp(blockarray)
 
         return {
