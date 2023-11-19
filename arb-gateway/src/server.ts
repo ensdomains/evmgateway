@@ -24,7 +24,7 @@ const program = new Command()
     ''
   )
   .option(
-    '-o --l2-assertion-helper-address <address>',
+    '-ah --l2-assertion-helper-address <address>',
     'address for L2 outbox on the L1',
     ''
   );
