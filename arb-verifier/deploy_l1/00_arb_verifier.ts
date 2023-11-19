@@ -1,14 +1,13 @@
-import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
-import fs from 'fs';
+import { HardhatRuntimeEnvironment } from 'hardhat/types';
 
 const GATEWAY_URLS = {
   'opDevnetL1': 'http://localhost:8089/{sender}/{data}.json',
   'goerli': 'http://localhost:8089/{sender}/{data}.json',
 }
 
-const L2_OUTPUT_ORACLE_ADDRESSES = {
-  'goerli': '0xE6Dfba0953616Bacab0c9A8ecb3a9BBa77FC15c0'
+const ROLLUP_ADDRESSES = {
+  'goerli': '0x45e5cAea8768F42B385A366D3551Ad1e0cbFAb17'
 }
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
@@ -20,14 +19,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     const opAddresses = await (await fetch("http://localhost:8080/addresses.json")).json();
     L2_OUTPUT_ORACLE_ADDRESS = opAddresses.L2OutputOracleProxy
   } else {
-    L2_OUTPUT_ORACLE_ADDRESS = L2_OUTPUT_ORACLE_ADDRESSES[network.name]
+    L2_OUTPUT_ORACLE_ADDRESS = ROLLUP_ADDRESSES[network.name]
   }
-  console.log('OPVerifier', [[GATEWAY_URL], L2_OUTPUT_ORACLE_ADDRESS])
-  await deploy('OPVerifier', {
+  console.log('ArbVerifier', [[GATEWAY_URL], L2_OUTPUT_ORACLE_ADDRESS])
+  await deploy('ArbVerifier', {
     from: deployer,
     args: [[GATEWAY_URLS[network.name]], L2_OUTPUT_ORACLE_ADDRESS],
     log: true,
   });
 };
 export default func;
-func.tags = ['OPVerifier'];
+func.tags = ['ArbVerifier'];
