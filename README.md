@@ -10,6 +10,9 @@ This repository implements a generic CCIP-Read gateway framework for fetching st
 While this functionality is written primarily with read calls in mind, it also functions for transactions; using a compliant
 library like Ethers, a transaction that includes relevant L2 proofs can be generated and signed.
 
+## Test Arbitrum
+To the the arbritrum resolver, install and build the monorepo and run `bun run test arb` is runs tests against the arbitrum goerli testnet instead of the nitro docker image
+
 ## Usage
 
  1. Have your contract extend `EVMFetcher`.
