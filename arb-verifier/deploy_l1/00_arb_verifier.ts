@@ -17,6 +17,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   let ROLLUP_ADDRESS, GATEWAY_URL;
   console.log("NW ", network.name)
   if (network.name === 'arbDevnetL1') {
+    //Rollup address according to sequencer config. Unfortunately, there is no endpoint to fetch it at runtime from the rollup.
+    //The address can be found at nitro-testnode-sequencer-1/config/deployment.json 
     const rollup = '0xb264babb91df9d1ca05c8c2028288dc08c4bee46';
     ROLLUP_ADDRESS = rollup;
   } else {
