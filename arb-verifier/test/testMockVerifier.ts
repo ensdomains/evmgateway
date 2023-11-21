@@ -1,13 +1,12 @@
 /* eslint-disable prettier/prettier */
 
-import { expect } from "chai"
-import { AbiCoder, Contract, JsonRpcProvider, ethers, hexlify, keccak256, toBeHex, toBigInt } from "ethers"
-import hardhat from "hardhat"
-import { BigNumber, ethers as ethers5 } from "ethers5"
 import { ArbProofService } from "@ensdomains/arb-gateway"
+import { expect } from "chai"
+import { AbiCoder, Contract, JsonRpcProvider, ethers, toBigInt } from "ethers"
+import hardhat from "hardhat"
 
-import rollupAbi from "./abi/rollupABI"
 import { solidityKeccak256, toUtf8String } from "ethers5/lib/utils"
+import rollupAbi from "./abi/rollupABI"
 
 
 const rpcMainnet = "https://eth-goerli.g.alchemy.com/v2/XsX8NB_NvPFNUIAPQmOSjP4rMqsrTGDV"
@@ -24,18 +23,13 @@ describe("Arbi Verifier", () => {
     it("latest", async () => {
         const l1Provider = new ethers.JsonRpcProvider(rpcMainnet)
         const l2Provider = new JsonRpcProvider(rpcArbitrum);
-        const l1LegacyProvider = new ethers5.providers.JsonRpcProvider(
-            rpcMainnet
-        );
-        const l2LegacyProvider = new ethers5.providers.JsonRpcProvider(
-            rpcArbitrum
-        );
+
+
         const s = new ArbProofService(
+            l1Provider,
             l2Provider,
-            l1LegacyProvider,
-            l2LegacyProvider,
             rollupAddr,
-            helperAddr
+
 
         );
         const getBlock = await s.getProvableBlock()
@@ -95,18 +89,12 @@ describe("Arbi Verifier", () => {
     it("name", async () => {
         const l1Provider = new ethers.JsonRpcProvider(rpcMainnet)
         const l2Provider = new JsonRpcProvider(rpcArbitrum);
-        const l1LegacyProvider = new ethers5.providers.JsonRpcProvider(
-            rpcMainnet
-        );
-        const l2LegacyProvider = new ethers5.providers.JsonRpcProvider(
-            rpcArbitrum
-        );
+
+
         const s = new ArbProofService(
+            l1Provider,
             l2Provider,
-            l1LegacyProvider,
-            l2LegacyProvider,
             rollupAddr,
-            helperAddr
 
         );
         const getBlock = await s.getProvableBlock()
@@ -166,18 +154,12 @@ describe("Arbi Verifier", () => {
     it("highscore string", async () => {
         const l1Provider = new ethers.JsonRpcProvider(rpcMainnet)
         const l2Provider = new JsonRpcProvider(rpcArbitrum);
-        const l1LegacyProvider = new ethers5.providers.JsonRpcProvider(
-            rpcMainnet
-        );
-        const l2LegacyProvider = new ethers5.providers.JsonRpcProvider(
-            rpcArbitrum
-        );
+
+
         const s = new ArbProofService(
+            l1Provider,
             l2Provider,
-            l1LegacyProvider,
-            l2LegacyProvider,
             rollupAddr,
-            helperAddr
 
         );
         const getBlock = await s.getProvableBlock()

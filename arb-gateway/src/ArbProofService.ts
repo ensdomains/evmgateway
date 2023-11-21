@@ -1,8 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { EVMProofHelper, type IProofService } from '@ensdomains/evm-gateway';
-import { AbiCoder, ethers, type AddressLike } from 'ethers';
+import { AbiCoder, Contract, EventLog, ethers, toBeHex, type AddressLike } from 'ethers';
 import { ethers as ethers5 } from "ethers5";
-import helperAbi from "./abi/helperAbi.js";
 import rollupAbi from "./abi/rollupABI.js";
 export interface ArbProvableBlock {
     number: number
@@ -20,28 +19,24 @@ export interface ArbProvableBlock {
  *
  */
 export class ArbProofService implements IProofService<ArbProvableBlock> {
-    private readonly l2LegacyProvider: ethers5.providers.JsonRpcProvider;
-    private readonly rollup: ethers5.Contract;
-    private readonly assertionHelper: ethers5.Contract;
+    private readonly l2Provider: ethers.JsonRpcProvider;
+    private readonly rollup: Contract;
     private readonly helper: EVMProofHelper;
 
     constructor(
+        l1Provider: ethers.JsonRpcProvider,
         l2Provider: ethers.JsonRpcProvider,
-        l1LegacyProvider: ethers5.providers.JsonRpcProvider,
-        l2LegacyProvider: ethers5.providers.JsonRpcProvider,
         l2RollupAddress: string,
-        assertionHelperAddress: string
+
     ) {
-        this.l2LegacyProvider = l2LegacyProvider;
-        this.rollup = new ethers5.Contract(
+        this.l2Provider = l2Provider;
+        this.rollup = new Contract(
             l2RollupAddress,
             rollupAbi,
 
         );
         this.helper = new EVMProofHelper(l2Provider);
-        this.rollup = new ethers5.Contract(l2RollupAddress, rollupAbi, l1LegacyProvider)
-        this.assertionHelper = new ethers5.Contract(assertionHelperAddress, helperAbi, l2LegacyProvider)
-
+        this.rollup = new Contract(l2RollupAddress, rollupAbi, l1Provider)
 
     }
 
@@ -103,18 +98,13 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
         //We fetch the node created event for the node index we just retrieved.
         const nodeEventFilter = await this.rollup.filters.NodeCreated(nodeIndex);
         const nodeEvents = await this.rollup.queryFilter(nodeEventFilter);
-        //Ethers v6 handles events differntly from v5. It dosent seem to decode the events like in v5. Which makes it pretty different to deal with a compley event like the NodeCreated event. 
-        //I'm certain that there are ways to encode the data with ethers v6 but i havent them figured out yet
-        //TODO refactor to use ethers v6
-        const assertion = nodeEvents[0].args!.assertion
+        const assertion = (nodeEvents[0] as EventLog).args!.assertion
+        //Instead of using the AssertionHelper contract we can extract sendRoot from the assertion. Avoiding the deployment of the AssertionHelper contract and an additional RPC call.
+        const [blockHash, sendRoot] = assertion[1][0][0]
 
-        //The assertion contains all information we need. Unfurtunately, the encoded hence the assertionHelper is used to decode it.
-        //TODO refactor use AbiCoder instead of assertionHelper  
-        const sendRoot = await this.assertionHelper.getSendRoot(assertion)
-        const blockHash = await this.assertionHelper.getBlockHash(assertion)
 
         //The L1 rollup only provides us with the block hash. In order to ensure that the stateRoot we're using for the proof is indeed part of the block, we need to fetch the block. And provide it to the proof.
-        const l2blockRaw = await this.l2LegacyProvider.send('eth_getBlockByHash', [
+        const l2blockRaw = await this.l2Provider.send('eth_getBlockByHash', [
             blockHash,
             false
         ]);
@@ -127,15 +117,15 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
             l2blockRaw.transactionsRoot,
             l2blockRaw.receiptsRoot,
             l2blockRaw.logsBloom,
-            ethers5.BigNumber.from(l2blockRaw.difficulty).toHexString(),
-            ethers5.BigNumber.from(l2blockRaw.number).toHexString(),
-            ethers5.BigNumber.from(l2blockRaw.gasLimit).toHexString(),
-            ethers5.BigNumber.from(l2blockRaw.gasUsed).toHexString(),
-            ethers5.BigNumber.from(l2blockRaw.timestamp).toHexString(),
+            toBeHex(l2blockRaw.difficulty),
+            toBeHex(l2blockRaw.number),
+            toBeHex(l2blockRaw.gasLimit),
+            toBeHex(l2blockRaw.gasUsed),
+            toBeHex(l2blockRaw.timestamp),
             l2blockRaw.extraData,
             l2blockRaw.mixHash,
             l2blockRaw.nonce,
-            ethers5.BigNumber.from(l2blockRaw.baseFeePerGas).toHexString(),
+            toBeHex(l2blockRaw.baseFeePerGas)
         ]
 
         //Rlp encode the block to pass it as an argument
@@ -145,10 +135,9 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
             rlpEncodedBlock,
             sendRoot,
             blockHash,
-            nodeIndex: nodeIndex.toNumber(),
+            nodeIndex: nodeIndex,
             number: ethers5.BigNumber.from(l2blockRaw.number).toNumber(),
         }
     }
-
 
 }

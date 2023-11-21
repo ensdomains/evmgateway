@@ -24,7 +24,6 @@
     "@types/supertest": "^2.0.14",
     "chai": "^4.2.0",
     "ethers": "^6.8.0",
-    "ethers5": "npm:ethers@5.7.2",
     "express": "^4.18.2",
     "ganache": "^7.9.1",
     "hardhat": "^2.16.0",
