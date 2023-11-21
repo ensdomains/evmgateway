@@ -17,7 +17,7 @@ contract ArbVerifier is IEVMVerifier {
     IRollupCore public immutable rollup;
     string[] _gatewayURLs;
 
-    constructor(IRollupCore _rollupAddress, string[] memory _urls) {
+    constructor(string[] memory _urls, IRollupCore _rollupAddress) {
         rollup = _rollupAddress;
         _gatewayURLs = _urls;
     }

@@ -33,11 +33,9 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
         this.rollup = new Contract(
             l2RollupAddress,
             rollupAbi,
-
+            l1Provider
         );
         this.helper = new EVMProofHelper(l2Provider);
-        this.rollup = new Contract(l2RollupAddress, rollupAbi, l1Provider)
-
     }
 
     async getStorageAt(block: ArbProvableBlock, address: AddressLike, slot: bigint): Promise<string> {
@@ -58,6 +56,7 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
         address: AddressLike,
         slots: bigint[]
     ): Promise<string> {
+
         const proof = await this.helper.getProofs(block.number, address, slots);
 
         return AbiCoder.defaultAbiCoder().encode(

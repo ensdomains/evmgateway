@@ -22,7 +22,7 @@ const program = new Command()
     'address for L2 outbox on the L1',
     ''
   );
-  
+
 program.parse();
 
 (async () => {

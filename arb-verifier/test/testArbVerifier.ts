@@ -28,8 +28,8 @@ declare module 'hardhat/types/runtime' {
     ethers: ethersObj;
   }
 }
-//Skipped because testnet is not working on my machine yet
-describe.skip('ArbVerifier', () => {
+
+describe('ArbVerifier', () => {
   let provider: Provider;
   let signer: Signer;
   let gateway: express.Application;
@@ -41,16 +41,14 @@ describe.skip('ArbVerifier', () => {
     provider = new ethers.BrowserProvider(hre.network.provider);
     signer = await provider.getSigner(0);
 
-    //AS long as the Local node is not working we're using mockInbox contract
-    //const opAddresses = await (await fetch("http://localhost:8080/addresses.json")).json();
-
+    const rollupAddress = '0xb264babb91df9d1ca05c8c2028288dc08c4bee46';
 
 
     const gateway = await makeArbGateway(
       (hre.network.config as any).url,
       (hre.config.networks[hre.network.companionNetworks.l2] as any).url,
-      opAddresses.L2OutputOracleProxy,
-
+      rollupAddress,
+      5,
     );
     const server = new Server()
     gateway.add(server)

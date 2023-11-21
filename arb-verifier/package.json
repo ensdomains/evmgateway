@@ -4,10 +4,9 @@
   "version": "0.1.0",
   "scripts": {
     "build": "echo 'building op-verifier...' && bun hardhat compile",
-    "test": " hardhat test",
+    "test": " hardhat test --network arbDevnetL1",
     "clean": "rm -fr artifacts cache node_modules typechain-types",
-    "lint": "exit 0",
-    "play": "npx ts-node  ./test/arbPlayground.ts"
+    "lint": "exit 0"
   },
   "devDependencies": {
     "@ensdomains/arb-gateway": "workspace:*",

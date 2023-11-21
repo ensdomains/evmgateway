@@ -11,18 +11,18 @@ const L2_ETHERSCAN_API_KEY = process.env.L2_ETHERSCAN_API_KEY;
 const config: HardhatUserConfig = {
   solidity: '0.8.19',
   networks: {
-    opDevnetL1: {
-      url: "http://localhost:8545/",
+    arbDevnetL1: {
+      url: "http://127.0.0.1:8545/",
       accounts: [
         '0xb6b15c8cb491557369f3c7d2c287b053eb229daa9c22138887752191c9520659',
       ],
       deploy: ["deploy_l1/"],
       companionNetworks: {
-        l2: "opDevnetL2",
+        l2: "arbDevnetL2",
       },
     },
-    opDevnetL2: {
-      url: "http://localhost:8547/",
+    arbDevnetL2: {
+      url: "http://127.0.0.1:8547/",
       accounts: [
         '0xb6b15c8cb491557369f3c7d2c287b053eb229daa9c22138887752191c9520659',
       ],
