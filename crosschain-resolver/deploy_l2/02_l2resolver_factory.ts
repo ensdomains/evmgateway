@@ -2,10 +2,10 @@ import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  const {deployments} = hre;
+  const {deployments, getNamedAccounts} = hre;
   const {deploy} = deployments;
-  const DelegatableResolver = await hre.companionNetworks['l2'].deployments.get('DelegatableResolver');
-  console.log({DelegatableResolver})
+  const {deployer} = await getNamedAccounts();
+  const DelegatableResolver = await deployments.get('DelegatableResolver');
   const factory = await deploy('DelegatableResolverFactory', {
     from: deployer,
     args: [DelegatableResolver.address],

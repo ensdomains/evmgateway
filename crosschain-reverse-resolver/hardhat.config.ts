@@ -7,7 +7,7 @@ const DEPLOYER_PRIVATE_KEY = process.env.DEPLOYER_PRIVATE_KEY ?? "ac0974bec39a17
 const L1_PROVIDER_URL = process.env.L1_PROVIDER_URL || '';
 const L1_ETHERSCAN_API_KEY = process.env.L1_ETHERSCAN_API_KEY || '';
 const L2_ETHERSCAN_API_KEY = process.env.L2_ETHERSCAN_API_KEY || '';
-
+console.log({L1_PROVIDER_URL,L1_ETHERSCAN_API_KEY,L2_ETHERSCAN_API_KEY})
 const config: HardhatUserConfig = {
   solidity: '0.8.19',
   networks: {
@@ -18,12 +18,14 @@ const config: HardhatUserConfig = {
       url: L1_PROVIDER_URL,
       accounts: [DEPLOYER_PRIVATE_KEY],
       deploy: [ "deploy_l1/" ],
-      companionNetworks: {
-        l2: "optimismGoerli",
-      },
     },
     optimismGoerli: {
       url: "https://goerli.optimism.io",
+      accounts: [DEPLOYER_PRIVATE_KEY],
+      deploy: [ "deploy_l2/" ],
+    },
+    baseGoerli: {
+      url: "https://goerli.base.org",
       accounts: [DEPLOYER_PRIVATE_KEY],
       deploy: [ "deploy_l2/" ],
     }
@@ -31,7 +33,8 @@ const config: HardhatUserConfig = {
   etherscan: {
     apiKey: {
         goerli: L1_ETHERSCAN_API_KEY,
-        optimismGoerli: L2_ETHERSCAN_API_KEY
+        optimismGoerli: L2_ETHERSCAN_API_KEY,
+        baseGoerli: L2_ETHERSCAN_API_KEY
     },
     customChains: [
       {
@@ -40,6 +43,14 @@ const config: HardhatUserConfig = {
         urls: {
             apiURL: "https://api-goerli-optimism.etherscan.io/api",
             browserURL: "https://goerli-optimism.etherscan.io"
+        }
+      },
+      {
+        network: "baseGoerli",
+        chainId: 84531,
+        urls: {
+          browserURL: "https://goerli.basescan.org",
+          apiURL: "https://api-goerli.basescan.org/api",
         }
       }
     ]

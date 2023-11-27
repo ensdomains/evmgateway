@@ -6,7 +6,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const {deploy} = deployments;
 
   const {deployer} = await getNamedAccounts();
-  console.log({deployer})
   const impl = await deploy('DelegatableResolver', {
     from: deployer,
     args: [],
@@ -14,13 +13,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   });
   const implAddress  = impl.address  
   console.log(`DelegatableResolver is deployed at ${implAddress}`)
-  const factory = await deploy('DelegatableResolverFactory', {
-    from: deployer,
-    args: [impl.address],
-    log: true,
-  });
-  await factory.wait()
-  console.log(`DelegatableResolverFactory is deployed at ${factory.address}`)
 };
 export default func;
 func.tags = ['DelegatableResolver'];
