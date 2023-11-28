@@ -11,7 +11,8 @@ import {IAddrResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profi
 import {IAddressResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profiles/IAddressResolver.sol";
 import {ITextResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profiles/ITextResolver.sol";
 import {IContentHashResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profiles/IContentHashResolver.sol";
-
+import {IExtendedResolver} from './IExtendedResolver.sol';
+import {ITargetResolver} from './ITargetResolver.sol';
 
 contract L1Resolver is EVMFetchTarget {
     using EVMFetcher for EVMFetcher.EVMFetchRequest;
@@ -209,5 +210,13 @@ contract L1Resolver is EVMFetchTarget {
         bytes memory
     ) public pure returns (bytes memory) {
         return abi.encode(values[1]);
+    }
+
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public pure returns (bool) {
+        return
+            interfaceId == type(IExtendedResolver).interfaceId ||
+            interfaceId == type(ITargetResolver).interfaceId;
     }
 }
