@@ -291,7 +291,7 @@ describe('Crosschain Resolver', () => {
     expect(decoded[0]).to.equal(contenthash);
   })
 
-  it("should support wildcard interfaceid", async() => {
+  it("should support interface", async() => {
     expect(await target.supportsInterface('0x6c4787ef')).to.equal(true) // ITargetResolver
     expect(await target.supportsInterface('0x9061b923')).to.equal(true) // IExtendedResolver
   })
