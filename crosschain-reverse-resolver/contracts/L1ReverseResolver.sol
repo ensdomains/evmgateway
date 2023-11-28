@@ -4,6 +4,8 @@ pragma solidity ^0.8.17;
 import {EVMFetcher} from '@ensdomains/evm-verifier/contracts/EVMFetcher.sol';
 import {EVMFetchTarget} from '@ensdomains/evm-verifier/contracts/EVMFetchTarget.sol';
 import {IEVMVerifier} from '@ensdomains/evm-verifier/contracts/IEVMVerifier.sol';
+import "@ensdomains/ens-contracts/contracts/resolvers/profiles/INameResolver.sol";
+import "@ensdomains/ens-contracts/contracts/resolvers/profiles/ITextResolver.sol";
 
 contract L1ReverseResolver is EVMFetchTarget {
     using EVMFetcher for EVMFetcher.EVMFetchRequest;
@@ -66,5 +68,13 @@ contract L1ReverseResolver is EVMFetchTarget {
         bytes memory
     ) public pure returns (string memory) {
         return string(values[1]);
+    }
+
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public pure returns (bool) {
+        return
+            interfaceId == type(ITextResolver).interfaceId ||
+            interfaceId == type(INameResolver).interfaceId;
     }
 }

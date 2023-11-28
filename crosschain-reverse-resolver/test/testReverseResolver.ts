@@ -114,4 +114,8 @@ describe('Crosschain Reverse Resolver', () => {
     expect(result2).to.equal(value);
   })
 
+  it("should support interface", async() => {
+    expect(await target.supportsInterface('0x59d1d43c')).to.equal(true) // ITextResolver
+    expect(await target.supportsInterface('0x691f3431')).to.equal(true) // INameResolver
+  })
 });
