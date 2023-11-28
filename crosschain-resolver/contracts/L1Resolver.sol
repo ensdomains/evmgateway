@@ -17,9 +17,9 @@ import {ITargetResolver} from './ITargetResolver.sol';
 contract L1Resolver is EVMFetchTarget {
     using EVMFetcher for EVMFetcher.EVMFetchRequest;
     using BytesUtils for bytes;
-    IEVMVerifier immutable verifier;
-    ENS immutable ens;
-    INameWrapper immutable nameWrapper;
+    IEVMVerifier public immutable verifier;
+    ENS public immutable ens;
+    INameWrapper public immutable nameWrapper;
     mapping(bytes32 => address) targets;
     uint256 constant COIN_TYPE_ETH = 60;
     uint256 constant RECORD_VERSIONS_SLOT = 0;

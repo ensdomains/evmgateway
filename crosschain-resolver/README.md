@@ -110,7 +110,7 @@ const l2resolverAddress = await l2Factory.predictAddress(ETH_ADDRESS)
 - DelegatableResolverRegistrar = [DelegatableResolverRegistrar](https://goerli-optimism.etherscan.io/address/0x2b07cf3ef421a5ff1cb6f437036bdef132eea37b#writeContract) = Demo contract that allow anyone to register subname under `op.evmgateway.eth` on  [L2 resolver on `op.evmgateway.eth`](https://goerli-optimism.etherscan.io/address/0x96753bd0D9bdd98d3a84837B5933078AF49aF12d#writeContract)
 
 #### L1
-- L1Resolver = [0x65a0963A2941A13a96FcDCfE36c94c6a341f26E5](https://goerli.etherscan.io/address/0x65a0963A2941A13a96FcDCfE36c94c6a341f26E5) = Currently `op.evmgateway.eth` is set to the resolver
+- L1Resolver = [0x7Bf57B0a683CC964B0fEe30633A72F5c05464a0f](https://goerli.etherscan.io/address/0x7Bf57B0a683CC964B0fEe30633A72F5c05464a0f) = Currently `op.evmgateway.eth` is set to the resolver
 
 ### Base
 
@@ -121,7 +121,7 @@ const l2resolverAddress = await l2Factory.predictAddress(ETH_ADDRESS)
 - DelegatableResolverRegistrar = [DelegatableResolverRegistrar](https://goerli.basescan.org/address/0xe0356133c3c43cbb623543488e607e4e349eaa10#code) = Demo contract that allow anyone to register subname under `base.evmgateway.eth` on  [L2 resolver on `base.evmgateway.eth`](https://goerli.basescan.org/address/0xE4B18eFbF71d516046514598FD7FcFbad4beC742)
 
 #### L1
-- L1Resolver = [0x052D7E10D55Ae12b4F62cdE18dBb7E938efa230D](https://goerli.etherscan.io/address/0x052D7E10D55Ae12b4F62cdE18dBb7E938efa230D) = Currently `base.evmgateway.eth` is set to the resolver
+- L1Resolver = [0x3Ac25843A1F696fe2166C5dE127FD4f2832F4d42](https://goerli.etherscan.io/address/0x3Ac25843A1F696fe2166C5dE127FD4f2832F4d42) = Currently `base.evmgateway.eth` is set to the resolver
 
 
 ## Usage
