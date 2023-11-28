@@ -11,7 +11,7 @@ import {IAddrResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profi
 import {IAddressResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profiles/IAddressResolver.sol";
 import {ITextResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profiles/ITextResolver.sol";
 import {IContentHashResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profiles/IContentHashResolver.sol";
-import {IExtendedResolver} from './IExtendedResolver.sol';
+import "@ensdomains/ens-contracts/contracts/resolvers/profiles/IExtendedResolver.sol";
 import {ITargetResolver} from './ITargetResolver.sol';
 
 contract L1Resolver is EVMFetchTarget {
