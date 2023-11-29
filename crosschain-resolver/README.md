@@ -214,7 +214,7 @@ Once done, set addrss of the subname from the operator, wait 10~20 min, then que
 Go to [Base L1 resolver](https://goerli.etherscan.io/address/0x052D7E10D55Ae12b4F62cdE18dBb7E938efa230D#readContract)
 
 ```
-[node, target] = l1resolver.getTarget(encodedname, 0)
+[node, target] = l1resolver.getTarget(encodedname)
 ```
 
 #### Step 2: Deploy the registrar contract

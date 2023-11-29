@@ -73,19 +73,24 @@ contract L1Resolver is EVMFetchTarget {
     /**
      * @dev Returns the L2 target address that can answer queries for `name`.
      * @param name DNS encoded ENS name to query
-     * @param offset The offset of the label to query recursively.
      * @return node The node of the name
      * @return target The L2 resolver address to verify against.
      */
     function getTarget(
+        bytes memory name
+    ) public view returns (bytes32 node, address target) {
+        return _getTarget(name, 0);
+    }
+
+    function _getTarget(
         bytes memory name,
         uint256 offset
-    ) public view returns (bytes32 node, address target) {
+    ) private view returns (bytes32 node, address target) {
         uint256 len = name.readUint8(offset);
         node = bytes32(0);
         if (len > 0) {
             bytes32 label = name.keccak(offset + 1, len);
-            (node, target) = getTarget(
+            (node, target) = _getTarget(
                 name,
                 offset + len + 1
             );
@@ -112,7 +117,7 @@ contract L1Resolver is EVMFetchTarget {
      * @return result result of the call
      */
     function resolve(bytes calldata name, bytes calldata data) external view returns (bytes memory result) {
-        (, address target) = getTarget(name, 0);
+        (, address target) = _getTarget(name, 0);
         bytes4 selector = bytes4(data);
 
         if (selector == IAddrResolver.addr.selector) {

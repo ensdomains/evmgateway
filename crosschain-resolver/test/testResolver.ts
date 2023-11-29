@@ -159,13 +159,13 @@ describe('Crosschain Resolver', () => {
     }catch(e){
     }
 
-    const result = await target.getTarget(incorrectname, 0)
+    const result = await target.getTarget(incorrectname)
     expect(result[1]).to.equal(EMPTY_ADDRESS);
   })
 
   it("should allow owner to set target", async() => {
     await target.setTarget(node, signerAddress)
-    const result = await target.getTarget(encodeName(name), 0)
+    const result = await target.getTarget(encodeName(name))
     expect(result[1]).to.equal(signerAddress);
   })
 
@@ -174,7 +174,7 @@ describe('Crosschain Resolver', () => {
     const encodedsubname = encodeName(subname)
     const subnode = ethers.namehash(subname)
     await target.setTarget(node, signerAddress)
-    const result = await target.getTarget(encodedsubname, 0)
+    const result = await target.getTarget(encodedsubname)
     expect(result[0]).to.equal(subnode);
     expect(result[1]).to.equal(signerAddress);
   })
@@ -193,7 +193,7 @@ describe('Crosschain Resolver', () => {
     const wrappedtnode = ethers.namehash(`${label}.eth`)
     await target.setTarget(wrappedtnode, resolverAddress)
     const encodedname = encodeName(`${label}.eth`)
-    const result = await target.getTarget(encodedname, 0)
+    const result = await target.getTarget(encodedname)
     expect(result[1]).to.equal(resolverAddress);
   })
 
@@ -292,7 +292,7 @@ describe('Crosschain Resolver', () => {
   })
 
   it("should support interface", async() => {
-    expect(await target.supportsInterface('0x6c4787ef')).to.equal(true) // ITargetResolver
+    expect(await target.supportsInterface('0x15f64386')).to.equal(true) // ITargetResolver
     expect(await target.supportsInterface('0x9061b923')).to.equal(true) // IExtendedResolver
   })
 });

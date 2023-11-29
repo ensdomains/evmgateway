@@ -1,7 +1,7 @@
 import packet from 'dns-packet';
 const encodeName = (name) => '0x' + packet.name.encode(name).toString('hex')
 const l1abi = [
-  "function getTarget(bytes,uint256) view returns (bytes32, address)",
+  "function getTarget(bytes) view returns (bytes32, address)",
   "function addr(bytes32) view returns (address)",
   "function resolve(bytes,bytes) view returns (bytes)",
 ]
@@ -32,7 +32,7 @@ export const main = async () => {
   }
   console.log({ENS_NAME, resolver, encodedname, node})
   const l1resolver      = new ethers.Contract(resolver.address, l1abi, l1provider);
-  const target          = await l1resolver.getTarget(encodedname, 0)
+  const target          = await l1resolver.getTarget(encodedname)
   const l2resolverAddress = target[1]
   console.log('Target is set to ' + l2resolverAddress);
   const l2resolver        = new ethers.Contract(l2resolverAddress, l2abi, l2provider);
