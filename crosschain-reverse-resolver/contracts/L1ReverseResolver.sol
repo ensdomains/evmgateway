@@ -7,7 +7,7 @@ import {IEVMVerifier} from '@ensdomains/evm-verifier/contracts/IEVMVerifier.sol'
 import "@ensdomains/ens-contracts/contracts/resolvers/profiles/INameResolver.sol";
 import "@ensdomains/ens-contracts/contracts/resolvers/profiles/ITextResolver.sol";
 
-contract L1ReverseResolver is EVMFetchTarget {
+contract L1ReverseResolver is EVMFetchTarget, INameResolver, ITextResolver {
     using EVMFetcher for EVMFetcher.EVMFetchRequest;
     IEVMVerifier immutable verifier;
     address immutable target;
