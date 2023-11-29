@@ -1,7 +1,6 @@
 /* eslint-disable prettier/prettier */
 import { EVMProofHelper, type IProofService } from '@ensdomains/evm-gateway';
-import { AbiCoder, Contract, EventLog, ethers, toBeHex, type AddressLike } from 'ethers';
-import { ethers as ethers5 } from "ethers5";
+import { AbiCoder, Contract, EventLog, ethers, toBeHex, type AddressLike, toNumber } from 'ethers';
 import rollupAbi from "./abi/rollupABI.js";
 export interface ArbProvableBlock {
     number: number
@@ -56,8 +55,9 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
         address: AddressLike,
         slots: bigint[]
     ): Promise<string> {
-
+        console.log("BNR", block.number)
         const proof = await this.helper.getProofs(block.number, address, slots);
+        console.log("AFTER", block.number)
 
         return AbiCoder.defaultAbiCoder().encode(
             [
@@ -135,7 +135,7 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
             sendRoot,
             blockHash,
             nodeIndex: nodeIndex,
-            number: ethers5.BigNumber.from(l2blockRaw.number).toNumber(),
+            number: toNumber(l2blockRaw.number)
         }
     }
 
