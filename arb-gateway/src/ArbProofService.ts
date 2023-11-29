@@ -55,9 +55,7 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
         address: AddressLike,
         slots: bigint[]
     ): Promise<string> {
-        console.log("BNR", block.number)
         const proof = await this.helper.getProofs(block.number, address, slots);
-        console.log("AFTER", block.number)
 
         return AbiCoder.defaultAbiCoder().encode(
             [
