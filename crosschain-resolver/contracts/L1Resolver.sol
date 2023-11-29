@@ -14,7 +14,7 @@ import {IContentHashResolver} from "@ensdomains/ens-contracts/contracts/resolver
 import "@ensdomains/ens-contracts/contracts/resolvers/profiles/IExtendedResolver.sol";
 import {ITargetResolver} from './ITargetResolver.sol';
 
-contract L1Resolver is EVMFetchTarget {
+contract L1Resolver is EVMFetchTarget, ITargetResolver, IExtendedResolver {
     using EVMFetcher for EVMFetcher.EVMFetchRequest;
     using BytesUtils for bytes;
     IEVMVerifier public immutable verifier;
