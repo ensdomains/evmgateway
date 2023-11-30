@@ -6,8 +6,9 @@ import {EVMFetchTarget} from '@ensdomains/evm-verifier/contracts/EVMFetchTarget.
 import {IEVMVerifier} from '@ensdomains/evm-verifier/contracts/IEVMVerifier.sol';
 import "@ensdomains/ens-contracts/contracts/resolvers/profiles/INameResolver.sol";
 import "@ensdomains/ens-contracts/contracts/resolvers/profiles/ITextResolver.sol";
+import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-contract L1ReverseResolver is EVMFetchTarget, INameResolver, ITextResolver {
+contract L1ReverseResolver is EVMFetchTarget, INameResolver, ITextResolver, ERC165 {
     using EVMFetcher for EVMFetcher.EVMFetchRequest;
     IEVMVerifier immutable verifier;
     address immutable target;
@@ -72,9 +73,10 @@ contract L1ReverseResolver is EVMFetchTarget, INameResolver, ITextResolver {
 
     function supportsInterface(
         bytes4 interfaceId
-    ) public pure returns (bool) {
+    ) public override view returns (bool) {
         return
             interfaceId == type(ITextResolver).interfaceId ||
-            interfaceId == type(INameResolver).interfaceId;
+            interfaceId == type(INameResolver).interfaceId ||
+            super.supportsInterface(interfaceId);
     }
 }
