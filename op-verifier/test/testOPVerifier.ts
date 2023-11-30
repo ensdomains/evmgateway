@@ -1,17 +1,19 @@
-import { Server } from '@chainlink/ccip-read-server';
 import { makeOPGateway } from '@ensdomains/op-gateway';
+import { Server } from '@chainlink/ccip-read-server';
 import { HardhatEthersProvider } from '@nomicfoundation/hardhat-ethers/internal/hardhat-ethers-provider';
 import type { HardhatEthersHelpers } from '@nomicfoundation/hardhat-ethers/types';
 import { expect } from 'chai';
+import hre from 'hardhat';
 import {
   Contract,
-  FetchRequest,
   Provider,
+  ethers as ethersT,
+  FetchRequest,
   Signer,
-  ethers as ethersT
+  JsonRpcProvider
 } from 'ethers';
 import express from 'express';
-import hre, { ethers } from 'hardhat';
+import { ethers } from 'hardhat';
 import { EthereumProvider } from 'hardhat/types';
 import request from 'supertest';
 
