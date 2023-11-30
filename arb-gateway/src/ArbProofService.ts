@@ -105,7 +105,6 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
             blockHash,
             false
         ]);
-        //RLP encoder has problems with bigint types from v6. So v5 is used here as well 
         const blockarray = [
             l2blockRaw.parentHash,
             l2blockRaw.sha3Uncles,
