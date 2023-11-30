@@ -1,4 +1,4 @@
-# @ensdomains/op-gateway
+# @ensdomains/arb-gateway
 
 An instantiation of [evm-gateway](https://github.com/ensdomains/evmgateway/tree/main/evm-gateway) that targets Optimism - that is, it implements a CCIP-Read gateway that generates proofs of contract state on Optimism.
 
@@ -30,10 +30,15 @@ yarn deploy
 
 ## How to test
 
-```
-cd ../l1-verifier l1-gateway
-PROVIDER_URL=$PROVIDER_URL TARGET_ADDRESS=$TARGET_ADDRESS yarn remote_test
-```
+1. Start the Nitro Test node. You can find instructions here: https://docs.arbitrum.io/node-running/how-tos/local-dev-node
+2. Retrieve the Rollup address from the Node's Logs.
+3. Replace the rollup address in the files `arb-verifier/test/testArbVerifier.ts` and `arb-verifier/deploy_l1/00_arb_verifier.ts`.
+4. Build the Project.
+5. Navigate to the Gateway directory using `cd ./arb-gateway`.
+6. Start the Gateway by running `bun run start -u http://127.0.0.1:8545/ -v http://127.0.0.1:8547/ -o 0xb264babb91df9d1ca05c8c2028288dc08c4bee46  -p 8089`.
+7. Open another Terminal Tab and navigate to the verifier directory using `cd ./arb-verifier/`.
+8. Deploy contracts to the node using the command `npx hardhat --network arbDevnetL1 deploy`.
+9. Run the test using the command `bun run test`.
 
 ## Current deployments
 
@@ -41,16 +46,8 @@ PROVIDER_URL=$PROVIDER_URL TARGET_ADDRESS=$TARGET_ADDRESS yarn remote_test
 
 #### Contracts
 
-- OPVerifier = [0x0c2746F20C9c97DBf718de10c04943cf408230A3](https://goerli.etherscan.io/address/0x0c2746F20C9c97DBf718de10c04943cf408230A3)
-
 #### Example contracts
 
-- TestL1 = [0x5057276e2BD7750Be043595ac6d21dE31e900c3c](https://goerli.etherscan.io/address/0x5057276e2BD7750Be043595ac6d21dE31e900c3c)
-
-#### Example contracts(OptimismGoerli)
-
-- TestL2 = [0x0FEcD0Fec173807204c7B31e36384acEeB048b0A](https://goerli-optimism.etherscan.io/address/0x0FEcD0Fec173807204c7B31e36384acEeB048b0A)
+#### Example contracts(ArbitrumGoerli)
 
 #### Gateway
-
-- http://op-gateway-worker.ens-cf.workers.dev

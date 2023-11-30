@@ -3,7 +3,7 @@
   "license": "MIT",
   "version": "0.1.0",
   "scripts": {
-    "build": "echo 'building op-verifier...' && bun hardhat compile",
+    "build": "echo 'building arb-verifier...' && bun hardhat compile",
     "test": " hardhat test --network arbDevnetL1",
     "clean": "rm -fr artifacts cache node_modules typechain-types",
     "lint": "exit 0"
@@ -41,6 +41,5 @@
     "@eth-optimism/contracts": "^0.6.0",
     "@eth-optimism/contracts-bedrock": "^0.16.2",
     "@arbitrum/nitro-contracts": "^1.1.0"
-
   }
 }
