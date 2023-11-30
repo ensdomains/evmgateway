@@ -77,14 +77,13 @@ contract ArbVerifier is IEVMVerifier {
      * Decodes a block by extracting and converting the bytes32 value from the RLP-encoded block information.
      *
      * @param {bytes} rlpEncodedBlock - The RLP-encoded block information.
-     * @returns {bytes32} The decoded bytes32 value extracted from the RLP-encoded block information.
-     *
-     * @notice This function is designed to be used internally within the contract.
+     * @returns {bytes32} The stateRoot extracted from the RLP-encoded block information.
      */
     function decodeBlock(
         bytes memory rlpEncdoedBlock
     ) internal pure returns (bytes32) {
         RLPReader.RLPItem[] memory i = RLPReader.readList(rlpEncdoedBlock);
+        //StateRoot is located at idx 3
         return bytes32(RLPReader.readBytes(i[3]));
     }
 }
