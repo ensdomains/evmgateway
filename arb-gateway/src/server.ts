@@ -4,7 +4,6 @@ import { EVMGateway } from '@ensdomains/evm-gateway';
 import { JsonRpcProvider } from 'ethers';
 import { ArbProofService } from './ArbProofService.js';
 
-
 const program = new Command()
   .option('-p, --port <port>', 'port to listen on', '8080')
   .option(
