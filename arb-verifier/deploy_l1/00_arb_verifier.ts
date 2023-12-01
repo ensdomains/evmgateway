@@ -3,7 +3,7 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types';
 
 const GATEWAY_URLS = {
   arbDevnetL1: 'http://localhost:8089/{sender}/{data}.json',
-  goerli: 'http://localhost:8089/{sender}/{data}.json',
+  goerli: 'https://arb-gateway-worker.ens-cf.workers.dev/{sender}/{data}.json',
 };
 
 const ROLLUP_ADDRESSES = {
@@ -14,7 +14,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployments, getNamedAccounts, network } = hre;
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
-  let ROLLUP_ADDRESS, GATEWAY_URL;
+  let ROLLUP_ADDRESS;
   console.log("NW ", network.name)
   if (network.name === 'arbDevnetL1') {
     //Rollup address according to sequencer config. Unfortunately, there is no endpoint to fetch it at runtime from the rollup.
@@ -24,10 +24,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   } else {
     ROLLUP_ADDRESS = ROLLUP_ADDRESSES[network.name];
   }
+  const GATEWAY_URL = GATEWAY_URLS[network.name];
   console.log('ArbVerifier', [[GATEWAY_URL], ROLLUP_ADDRESS]);
   await deploy('ArbVerifier', {
     from: deployer,
-    args: [[GATEWAY_URLS[network.name]], ROLLUP_ADDRESS],
+    args: [[GATEWAY_URL], ROLLUP_ADDRESS],
     log: true,
   });
 };

@@ -33,7 +33,7 @@ const config: HardhatUserConfig = {
       accounts: [DEPLOYER_PRIVATE_KEY],
       deploy: ["deploy_l1/"],
       companionNetworks: {
-        l2: "optimismGoerli",
+        l2: "arbitrumGoerli"
       },
     },
     arbitrumGoerli: {
@@ -45,12 +45,13 @@ const config: HardhatUserConfig = {
   etherscan: {
     apiKey: {
       goerli: L1_ETHERSCAN_API_KEY,
-      optimismGoerli: L2_ETHERSCAN_API_KEY
+      optimismGoerli: L2_ETHERSCAN_API_KEY,
+      arbitrumGoerli: L2_ETHERSCAN_API_KEY
     },
     customChains: [
       {
         network: "arbitrumGoerli",
-        chainId: 420,
+        chainId: 421613,
         urls: {
           apiURL: "https://api-goerli.arbiscan.io/api",
           browserURL: "https://api-goerli.arbiscan.io.io"

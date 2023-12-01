@@ -29,3 +29,21 @@ hardhat test --network opDevnetL1
 ```
 
 The tests will require small modifications to work on public testnets; specifically, contract addresses are currently fetched from `http://localhost:8080/addresses.json`; this will need to be made conditional on the network being used.
+
+
+## Deployments
+
+### L2
+
+- TestL2.sol = [0xAdef74372444e716C0473dEe1F9Cb3108EFa3818](https://goerli.arbiscan.io/address/0xAdef74372444e716C0473dEe1F9Cb3108EFa3818#code)
+
+### L1
+
+- ArbVerifier = [0x9E46DeE08Ad370bEFa7858c0E9a6c87f2D7E57A1](https://goerli.etherscan.io/address/0x9E46DeE08Ad370bEFa7858c0E9a6c87f2D7E57A1#code)
+
+- TestL1.sol = [0x0d6c6B70cd561EB59e6818D832197fFad60840AB](https://goerli.etherscan.io/address/0x0d6c6B70cd561EB59e6818D832197fFad60840AB#code)
+
+### Gateway server
+
+- https://arb-gateway-worker.ens-cf.workers.dev
+
