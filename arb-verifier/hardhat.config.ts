@@ -53,7 +53,7 @@ const config: HardhatUserConfig = {
         chainId: 421613,
         urls: {
           apiURL: 'https://api-goerli.arbiscan.io/api',
-          browserURL: 'https://api-goerli.arbiscan.io.io'
+          browserURL: 'https://api-goerli.arbiscan.io.io',
         },
       },
     ],
