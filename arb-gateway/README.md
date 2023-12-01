@@ -11,7 +11,7 @@ npm install -g bun
 cd arb-gateway
 bun install
 touch .dev.vars
-## set L1_PROVIDER_URL, L2_PROVIDER_URL, L2_OUTPUT_ORACLE, DELAY=5
+## set L1_PROVIDER_URL, L2_PROVIDER_URL, L2_ROLLUP
 yarn dev
 ```
 
@@ -21,10 +21,10 @@ yarn dev
 cd arb-gateway
 npm install -g wrangler
 wrngler login
+
 wrangler secret put L1_PROVIDER_URL
 wrangler secret put L2_PROVIDER_URL
-wrangler secret put L2_OUTPUT_ORACLE
-wrangler secret put DELAY
+wrangler secret put L2_ROLLUP
 yarn deploy
 ```
 
