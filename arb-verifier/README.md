@@ -1,35 +1,48 @@
 # @ensdomains/op-verifier
 
-A complete Solidity library that facilitates sending CCIP-Read requests for Optimism state, and verifying the responses.
+A complete Solidity library that facilitates sending CCIP-Read requests for Arbitrum state, and verifying the responses.
 
 For a detailed readme and usage instructions, see the [monorepo readme](https://github.com/ensdomains/evmgateway/tree/main).
 
 ## Testing
 
-Start up a devnet by following Optimism's instructions [here](https://community.optimism.io/docs/developers/build/dev-node/#do-i-need-this).
+Start up a devnet by following Arbitrums's instructions [here](https://docs.arbitrum.io/node-running/how-tos/local-dev-node).
 
-Then, deploy the L2 contract:
+The test requires you to use the rollup address of your node, which may not always be the same. This address is printed in the logs after you've initially set up the node. Copy that value and replace it accordingly. Unfortunately, there is no endpoint to retrieve the rollup address dynamically.
 
-```
-bun run hardhat deploy --network opDevnetL2
-```
-
-Followed by the L1 contract:
+Copy the rollup address from the Node's Logs. Add it to the following files
 
 ```
-bun run hardhat deploy --network opDevnetL1
+arb-verifier/test/testArbVerifier.ts
 ```
 
-The L1 contracts contain a reference to the L2 contract, and so will require redeploying if the L2 contract changes.
+```
+arb-verifier/deploy_l1/00_arb_verifier.ts
+```
+
+Build the project
+
+```
+bun run build
+```
+
+Open another terminal window and start the Gateway
+
+```
+cd ./arb-gateway && bun run start -u http://127.0.0.1:8545/ -v http://127.0.0.1:8547/ -o $ROLLUP_ADDRESS  -p 8089
+```
+
+Go back to the first Termina window and deploy the contracts to the test node
+
+```
+npx hardhat --network arbDevnetL1 deploy && npx hardhat --network arbDevnetL2 deploy
+```
 
 Finally, run the tests:
 
 ```
-hardhat test --network opDevnetL1
+bun run test
 ```
-
-The tests will require small modifications to work on public testnets; specifically, contract addresses are currently fetched from `http://localhost:8080/addresses.json`; this will need to be made conditional on the network being used.
-
 
 ## Deployments
 
