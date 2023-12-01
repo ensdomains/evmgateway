@@ -8,7 +8,7 @@ interface Env {
   L2_ROLLUP: string;
 }
 
-const {corsify, preflight} = createCors()
+const {corsify} = createCors()
 let app: Router;
 async function fetch(request: Request, env: Env) {
   // Loading libraries dynamically as a temp work around.
@@ -33,7 +33,6 @@ async function fetch(request: Request, env: Env) {
     const server = new Server();
     gateway.add(server);
     app = server.makeApp('/');
-    app.all('*', preflight);
   }
   return app.handle(request).then(corsify);
 }
