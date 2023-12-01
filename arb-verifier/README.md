@@ -1,4 +1,4 @@
-# @ensdomains/op-verifier
+# @ensdomains/arb-verifier
 
 A complete Solidity library that facilitates sending CCIP-Read requests for Arbitrum state, and verifying the responses.
 

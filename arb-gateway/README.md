@@ -1,24 +1,24 @@
 # @ensdomains/arb-gateway
 
-An instantiation of [evm-gateway](https://github.com/ensdomains/evmgateway/tree/main/evm-gateway) that targets Optimism - that is, it implements a CCIP-Read gateway that generates proofs of contract state on Optimism.
+An instantiation of [evm-gateway](https://github.com/ensdomains/evmgateway/tree/main/evm-gateway) that targets Arbitrum - that is, it implements a CCIP-Read gateway that generates proofs of contract state on Arbitrum.
 
 For a detailed readme and usage instructions, see the [monorepo readme](https://github.com/ensdomains/evmgateway/tree/main).
 
-## How to use op-gateway locally via cloudflare dev env (aka wrangler)
+## How to use arb-gateway locally via cloudflare dev env (aka wrangler)
 
 ```
 npm install -g bun
-cd op-gateway
+cd arb-gateway
 bun install
 touch .dev.vars
 ## set L1_PROVIDER_URL, L2_PROVIDER_URL, L2_ROLLUP
 yarn dev
 ```
 
-## How to deploy op-gateway to cloudflare
+## How to deploy arb-gateway to cloudflare
 
 ```
-cd op-gateway
+cd arb-gateway
 npm install -g wrangler
 wrngler login
 
