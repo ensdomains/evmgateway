@@ -37,7 +37,7 @@ const config: HardhatUserConfig = {
       },
     },
     arbitrumGoerli: {
-      url: "https://rpc.goerli.arbitrum.gateway.fm",
+      url: 'https://rpc.goerli.arbitrum.gateway.fm',
       accounts: [DEPLOYER_PRIVATE_KEY],
       deploy: ["deploy_l2/"],
     },
