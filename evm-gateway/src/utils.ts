@@ -1,3 +1,3 @@
 export interface Router {
-  handle: (request: Request) => Promise<any>;
+  handle: (request: Request) => void;
 }

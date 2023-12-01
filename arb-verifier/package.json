@@ -37,8 +37,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@arbitrum/nitro-contracts": "^1.1.0",
     "@ensdomains/evm-verifier": "^0.1.0",
-    "itty-router": "^4.0.23"
+    "@arbitrum/nitro-contracts": "^1.1.0"
   }
 }
