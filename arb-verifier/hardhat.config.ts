@@ -45,7 +45,7 @@ const config: HardhatUserConfig = {
   etherscan: {
     apiKey: {
       goerli: L1_ETHERSCAN_API_KEY,
-      arbitrumGoerli: L2_ETHERSCAN_API_KEY
+      arbitrumGoerli: L2_ETHERSCAN_API_KEY,
     },
     customChains: [
       {
