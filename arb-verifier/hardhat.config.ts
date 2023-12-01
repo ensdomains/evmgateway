@@ -33,7 +33,7 @@ const config: HardhatUserConfig = {
       accounts: [DEPLOYER_PRIVATE_KEY],
       deploy: ["deploy_l1/"],
       companionNetworks: {
-        l2: "arbitrumGoerli"
+        l2: "arbitrumGoerli",
       },
     },
     arbitrumGoerli: {
