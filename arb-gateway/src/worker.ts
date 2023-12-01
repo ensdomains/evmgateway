@@ -1,11 +1,14 @@
 import { Server } from '@ensdomains/ccip-read-cf-worker';
+import { createCors } from 'itty-router';
 import type { Router } from '@ensdomains/evm-gateway';
+
 interface Env {
   L1_PROVIDER_URL: string;
   L2_PROVIDER_URL: string;
   L2_ROLLUP: string;
 }
 
+const {corsify} = createCors()
 let app: Router;
 async function fetch(request: Request, env: Env) {
   // Loading libraries dynamically as a temp work around.
@@ -31,7 +34,7 @@ async function fetch(request: Request, env: Env) {
     gateway.add(server);
     app = server.makeApp('/');
   }
-  return app.handle(request);
+  return app.handle(request).then(corsify);
 }
 
 export default {
