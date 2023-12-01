@@ -39,22 +39,21 @@ const config: HardhatUserConfig = {
     arbitrumGoerli: {
       url: 'https://rpc.goerli.arbitrum.gateway.fm',
       accounts: [DEPLOYER_PRIVATE_KEY],
-      deploy: ["deploy_l2/"],
+      deploy: ['deploy_l2/'],
     },
   },
   etherscan: {
     apiKey: {
       goerli: L1_ETHERSCAN_API_KEY,
-      optimismGoerli: L2_ETHERSCAN_API_KEY,
       arbitrumGoerli: L2_ETHERSCAN_API_KEY
     },
     customChains: [
       {
-        network: "arbitrumGoerli",
+        network: 'arbitrumGoerli',
         chainId: 421613,
         urls: {
-          apiURL: "https://api-goerli.arbiscan.io/api",
-          browserURL: "https://api-goerli.arbiscan.io.io"
+          apiURL: 'https://api-goerli.arbiscan.io/api',
+          browserURL: 'https://api-goerli.arbiscan.io.io'
         },
       },
     ],
