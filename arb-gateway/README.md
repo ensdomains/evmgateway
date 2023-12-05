@@ -40,14 +40,3 @@ yarn deploy
 8. Deploy contracts to the node using the command `npx hardhat --network arbDevnetL1 deploy`.
 9. Run the test using the command `bun run test`.
 
-## Current deployments
-
-### Goerli
-
-#### Contracts
-
-#### Example contracts
-
-#### Example contracts(ArbitrumGoerli)
-
-#### Gateway
