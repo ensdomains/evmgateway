@@ -13,9 +13,10 @@ import {ITextResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profi
 import {IContentHashResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profiles/IContentHashResolver.sol";
 import "@ensdomains/ens-contracts/contracts/resolvers/profiles/IExtendedResolver.sol";
 import {ITargetResolver} from './ITargetResolver.sol';
+import {IMetadataResolver} from './IMetadataResolver.sol';
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-contract L1Resolver is EVMFetchTarget, ITargetResolver, IExtendedResolver, ERC165 {
+contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExtendedResolver, ERC165 {
     using EVMFetcher for EVMFetcher.EVMFetchRequest;
     using BytesUtils for bytes;
     IEVMVerifier public immutable verifier;
@@ -27,6 +28,9 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IExtendedResolver, ERC16
     uint256 constant VERSIONABLE_ADDRESSES_SLOT = 2;
     uint256 constant VERSIONABLE_HASHES_SLOT = 3;
     uint256 constant VERSIONABLE_TEXTS_SLOT = 10;
+    string  public   graphqlUrl;
+    string  public   resolverName;
+    uint256 public   l2ResolverCoinType;
 
     event TargetSet(bytes32 indexed node, address target);
 
@@ -48,10 +52,21 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IExtendedResolver, ERC16
         _;
     }
 
+    /**
+     * @param _verifier     The chain verifier address
+     * @param _ens          The ENS registry address
+     * @param _nameWrapper  The ENS name wrapper address
+     * @param _graphqlUrl   The offchain/l2 graphql endpoint url
+     * @param _resolverName The name of the resolver, eg: "OP Resolver"
+     * @param _l2ResolverCoinType The chainId at which the resolver resolves data from. 0 if storageLocation is offChain
+     */
     constructor(
       IEVMVerifier _verifier,
       ENS _ens,
-      INameWrapper _nameWrapper
+      INameWrapper _nameWrapper,
+      string memory _graphqlUrl,
+      string memory _resolverName,
+      uint256 _l2ResolverCoinType
     ){
       require(address(_nameWrapper) != address(0), "Name Wrapper address must be set");
       require(address(_verifier) != address(0), "Verifier address must be set");
@@ -59,6 +74,9 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IExtendedResolver, ERC16
       verifier = _verifier;
       ens = _ens;
       nameWrapper = _nameWrapper;
+      graphqlUrl = _graphqlUrl;
+      resolverName = _resolverName;
+      l2ResolverCoinType = _l2ResolverCoinType;
     }
 
     /**
@@ -218,12 +236,46 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IExtendedResolver, ERC16
         return abi.encode(values[1]);
     }
 
+    /**
+     * @notice Get metadata about the L1 Resolver
+     * @dev This function provides metadata about the L1 Resolver, including its name, coin type, GraphQL URL, storage type, and encoded information.
+     * @param name The domain name in format (dnsEncoded)
+     * @return name The name of the resolver ("CCIP RESOLVER")
+     * @return coinType Resolvers coin type (60 for Ethereum)
+     * @return graphqlUrl The GraphQL URL used by the resolver
+     * @return storageType Storage Type (0 for EVM)
+     * @return storageLocation The storage identifier. For EVM chains, this is the address of the resolver contract.
+     * @return context can be l2 resolver contract address for evm chain but can be any l2 storage identifier for non-evm chain
+     */
+    function metadata(
+        bytes calldata name
+    ) external view returns (string memory, uint256, string memory, uint8, bytes memory, bytes memory) {
+        /*
+         * Get the verifier for the given name.
+         * reverts if no verifier was set in advance
+         */
+        (, address target) = getTarget(name);
+
+        return (
+            resolverName,
+            l2ResolverCoinType,
+            graphqlUrl,
+            uint8(0), // storage Type 0 => EVM
+            abi.encodePacked(address(target)), // storage location => l2 resolver address
+            abi.encodePacked(address(target))  // context => l2 resolver address
+        );
+    }
+    function id() public pure returns(bytes4){
+        return type(IMetadataResolver).interfaceId;
+    }
+
     function supportsInterface(
         bytes4 interfaceId
     ) public override view returns (bool) {
         return
             interfaceId == type(IExtendedResolver).interfaceId ||
             interfaceId == type(ITargetResolver).interfaceId ||
+            interfaceId == type(IMetadataResolver).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 }

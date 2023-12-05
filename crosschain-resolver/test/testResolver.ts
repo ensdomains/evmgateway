@@ -15,8 +15,14 @@ import { ethers } from 'hardhat';
 import { EthereumProvider } from 'hardhat/types';
 import request from 'supertest';
 import packet from 'dns-packet';
+import {convertEVMChainIdToCoinType} from '@ensdomains/address-encoder'
 const labelhash = (label) => ethers.keccak256(ethers.toUtf8Bytes(label))
 const encodeName = (name) => '0x' + packet.name.encode(name).toString('hex')
+
+const l2graphqlUrl = 'http://graphql'
+const l2resolverName = 'L2 Resolver'
+const l2ResolverCoinType = convertEVMChainIdToCoinType(420) // Optimism Goerli
+
 const name = 'foo.eth'
 const node = ethers.namehash(name)
 const encodedname = encodeName(name)
@@ -143,7 +149,8 @@ describe('Crosschain Resolver', () => {
       signer
     );
     const verifierAddress = await verifier.getAddress()
-    target = await testL1Factory.deploy(verifierAddress, ensAddress, wrapperAddress);
+    target = await testL1Factory.deploy(verifierAddress, ensAddress, wrapperAddress, l2graphqlUrl, l2resolverName, l2ResolverCoinType);
+
     // Mine an empty block so we have something to prove against
     await provider.send('evm_mine', []);
     l2contract = impl.attach(resolverAddress)
@@ -294,6 +301,20 @@ describe('Crosschain Resolver', () => {
   it("should support interface", async() => {
     expect(await target.supportsInterface('0x15f64386')).to.equal(true) // ITargetResolver
     expect(await target.supportsInterface('0x9061b923')).to.equal(true) // IExtendedResolver
+    expect(await target.supportsInterface('0x8a596ebe')).to.equal(true) // IMetadataResolver
     expect(await target.supportsInterface('0x01ffc9a7')).to.equal(true) // ERC-165 support
   })
+
+  describe('Metadata', () => {
+    it('returns metadata', async () => {
+      await target.setTarget(node, signerAddress)
+      const [name, coinType, graphqlUrl, storageType, storageLocation, context] = await target.metadata(encodedname);
+      expect(name).to.equal(l2resolverName);
+      expect(coinType).to.equal(l2ResolverCoinType);
+      expect(graphqlUrl).to.equal(l2graphqlUrl);
+      expect(storageType).to.equal(storageType);
+      expect(ethers.getAddress(storageLocation)).to.equal(signerAddress);
+      expect(ethers.getAddress(context)).to.equal(signerAddress);
+    });
+  });
 });
