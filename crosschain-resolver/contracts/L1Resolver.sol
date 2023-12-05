@@ -32,7 +32,7 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
     string  public   resolverName;
     uint256 public   l2ResolverCoinType;
 
-    event TargetSet(bytes name, bytes32 indexed node, address target);
+    event TargetSet(bytes indexed name, address target);
     event MetadataChanged(
         bytes name,
         string resolverName,
@@ -91,7 +91,7 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
       (bytes32 node,) = getTarget(name);
       require(isAuthorised(node));
       targets[node] = target;
-      emit TargetSet(name, node, target);
+      emit TargetSet(name, target);
       (
         ,,,
         uint8 storageType,
@@ -280,9 +280,6 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
             abi.encodePacked(address(target)), // storage location => l2 resolver address
             abi.encodePacked(address(target))  // context => l2 resolver address
         );
-    }
-    function id() public pure returns(bytes4){
-        return type(IMetadataResolver).interfaceId;
     }
 
     function supportsInterface(
