@@ -270,10 +270,6 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
     function metadata(
         bytes calldata name
     ) public view returns (string memory, uint256, string memory, uint8, bytes memory, bytes memory) {
-        /*
-         * Get the verifier for the given name.
-         * reverts if no verifier was set in advance
-         */
         (, address target) = getTarget(name);
 
         return (
