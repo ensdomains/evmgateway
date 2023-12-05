@@ -134,7 +134,7 @@ On L1
 // On L1
 await ENS.setResolver(l1lresolver)
 const l2resolverAddress = await DelegatableResolverFactory.predictAddress(OWNER_ADDRESS)
-await L1Resolver.setTarget(node, l2resolverAddress)
+await L1Resolver.setTarget(encodedname, l2resolverAddress)
 // On L2
 const l2resolverAddress = await DelegatableResolverFactory.predictAddress(OWNER_ADDRESS)
 await DelegatableResolverFactory.create(OWNER_ADDRESS)

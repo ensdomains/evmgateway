@@ -157,12 +157,11 @@ describe('Crosschain Resolver', () => {
   });
 
   it("should not allow non owner to set target", async() => {
-    const incorrectnode = ethers.namehash('notowned.eth')
     const incorrectname = encodeName('notowned.eth')
     // For some reason expect().to.be.reverted isn't working
     // Throwing Error: missing revert data (action="estimateGas"...
     try{
-      await target.setTarget(incorrectnode, resolverAddress)
+      await target.setTarget(incorrectname, resolverAddress)
     }catch(e){
     }
 
@@ -171,16 +170,25 @@ describe('Crosschain Resolver', () => {
   })
 
   it("should allow owner to set target", async() => {
-    await target.setTarget(node, signerAddress)
+    await target.setTarget(encodedname, signerAddress)
     const result = await target.getTarget(encodeName(name))
     expect(result[1]).to.equal(signerAddress);
+  })
+
+  it("should emit a TargetSet event", async() => {
+    await target.setTarget(encodedname, signerAddress)
+    const logs = await target.queryFilter("TargetSet")
+    const [eventname, eventnode, eventtarget] = logs[0].args
+    expect(eventname).to.equal(encodedname);
+    expect(eventnode).to.equal(node);
+    expect(eventtarget).to.equal(signerAddress);
   })
 
   it("subname should get target of its parent", async() => {
     const subname = 'd.foo.eth'
     const encodedsubname = encodeName(subname)
     const subnode = ethers.namehash(subname)
-    await target.setTarget(node, signerAddress)
+    await target.setTarget(encodedname, signerAddress)
     const result = await target.getTarget(encodedsubname)
     expect(result[0]).to.equal(subnode);
     expect(result[1]).to.equal(signerAddress);
@@ -197,15 +205,15 @@ describe('Crosschain Resolver', () => {
       0, // CAN_DO_EVERYTHING
       EMPTY_ADDRESS,
     )
-    const wrappedtnode = ethers.namehash(`${label}.eth`)
-    await target.setTarget(wrappedtnode, resolverAddress)
+    const wrappedtname = encodeName(`${label}.eth`)
+    await target.setTarget(wrappedtname, resolverAddress)
     const encodedname = encodeName(`${label}.eth`)
     const result = await target.getTarget(encodedname)
     expect(result[1]).to.equal(resolverAddress);
   })
 
   it("should resolve empty ETH Address", async() => {
-    await target.setTarget(node, resolverAddress)
+    await target.setTarget(encodedname, resolverAddress)
     const addr = '0x0000000000000000000000000000000000000000'
     await l2contract.clearRecords(node)
     const result = await l2contract['addr(bytes32)'](node)
@@ -220,7 +228,7 @@ describe('Crosschain Resolver', () => {
   })
 
   it("should resolve ETH Address", async() => {
-    await target.setTarget(node, resolverAddress)
+    await target.setTarget(encodedname, resolverAddress)
     const addr = '0x5A384227B65FA093DEC03Ec34e111Db80A040615'
     await l2contract.clearRecords(node)
     await l2contract['setAddr(bytes32,address)'](node, addr)
@@ -236,7 +244,7 @@ describe('Crosschain Resolver', () => {
   })
 
   it("should resolve ETH Address for subname", async() => {
-    await target.setTarget(node, resolverAddress)
+    await target.setTarget(encodedname, resolverAddress)
     const addr = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
     await l2contract.clearRecords(node)
     const subname = 'd.foo.eth'
@@ -255,7 +263,7 @@ describe('Crosschain Resolver', () => {
   })
 
   it("should resolve non ETH Address", async() => {
-    await target.setTarget(node, resolverAddress)
+    await target.setTarget(encodedname, resolverAddress)
     const addr = '0x76a91462e907b15cbf27d5425399ebf6f0fb50ebb88f1888ac'
     const coinType = 0 // BTC
     await l2contract.clearRecords(node)
@@ -270,7 +278,7 @@ describe('Crosschain Resolver', () => {
   })
 
   it("should resolve text record", async() => {
-    await target.setTarget(node, resolverAddress)
+    await target.setTarget(encodedname, resolverAddress)
     const key = 'name'
     const value = 'nick.eth'
     await l2contract.clearRecords(node)
@@ -285,7 +293,7 @@ describe('Crosschain Resolver', () => {
   })
 
   it("should test contenthash", async() => {
-    await target.setTarget(node, resolverAddress)
+    await target.setTarget(encodedname, resolverAddress)
     const contenthash = '0xe3010170122029f2d17be6139079dc48696d1f582a8530eb9805b561eda517e22a892c7e3f1f'
     await l2contract.clearRecords(node)
     await l2contract.setContenthash(node, contenthash)
@@ -307,9 +315,24 @@ describe('Crosschain Resolver', () => {
 
   describe('Metadata', () => {
     it('returns metadata', async () => {
-      await target.setTarget(node, signerAddress)
+      await target.setTarget(encodedname, signerAddress)
+
       const [name, coinType, graphqlUrl, storageType, storageLocation, context] = await target.metadata(encodedname);
       expect(name).to.equal(l2resolverName);
+      expect(coinType).to.equal(l2ResolverCoinType);
+      expect(graphqlUrl).to.equal(l2graphqlUrl);
+      expect(storageType).to.equal(storageType);
+      expect(ethers.getAddress(storageLocation)).to.equal(signerAddress);
+      expect(ethers.getAddress(context)).to.equal(signerAddress);
+    });
+
+    it('emits a MetadataChanged event', async () => {
+      const tx = await target.setTarget(encodedname, signerAddress)
+      await tx.wait()
+      const logs = await target.queryFilter("MetadataChanged")
+      const [name, resolverName, coinType, graphqlUrl, storageType, storageLocation, context] = logs[0].args
+      expect(name).to.equal(encodedname);
+      expect(resolverName).to.equal(l2resolverName);
       expect(coinType).to.equal(l2ResolverCoinType);
       expect(graphqlUrl).to.equal(l2graphqlUrl);
       expect(storageType).to.equal(storageType);

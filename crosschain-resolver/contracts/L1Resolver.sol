@@ -32,8 +32,16 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
     string  public   resolverName;
     uint256 public   l2ResolverCoinType;
 
-    event TargetSet(bytes32 indexed node, address target);
-
+    event TargetSet(bytes name, bytes32 indexed node, address target);
+    event MetadataChanged(
+        bytes name,
+        string resolverName,
+        uint256 coinType,
+        string graphqlUrl,
+        uint8 storageType,
+        bytes storageLocation,
+        bytes context
+    );
     function isAuthorised(bytes32 node) internal view returns (bool) {
         // TODO: Add support for
         // trustedETHController
@@ -45,11 +53,6 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
           owner = nameWrapper.ownerOf(uint256(node));
         }
         return owner == msg.sender;
-    }
-
-    modifier authorised(bytes32 node) {
-        require(isAuthorised(node));
-        _;
     }
 
     /**
@@ -81,12 +84,29 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
 
     /**
      * Set target address to verify aagainst
-     * @param node The ENS node to query.
+     * @param name The encoded name to query.
      * @param target The L2 resolver address to verify against.
      */
-    function setTarget(bytes32 node, address target) public authorised(node){
+    function setTarget(bytes calldata name, address target) public {
+      (bytes32 node,) = getTarget(name);
+      require(isAuthorised(node));
       targets[node] = target;
-      emit TargetSet(node, target);
+      emit TargetSet(name, node, target);
+      (
+        ,,,
+        uint8 storageType,
+        bytes memory storageLocation,
+        bytes memory context
+      ) = metadata(name);
+      emit MetadataChanged(
+        name,
+        resolverName,
+        l2ResolverCoinType,
+        graphqlUrl,
+        storageType,
+        storageLocation,
+        context
+      );
     }
 
     /**
@@ -249,7 +269,7 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
      */
     function metadata(
         bytes calldata name
-    ) external view returns (string memory, uint256, string memory, uint8, bytes memory, bytes memory) {
+    ) public view returns (string memory, uint256, string memory, uint8, bytes memory, bytes memory) {
         /*
          * Get the verifier for the given name.
          * reverts if no verifier was set in advance
