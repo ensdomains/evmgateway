@@ -13,9 +13,10 @@ import {ITextResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profi
 import {IContentHashResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profiles/IContentHashResolver.sol";
 import "@ensdomains/ens-contracts/contracts/resolvers/profiles/IExtendedResolver.sol";
 import {ITargetResolver} from './ITargetResolver.sol';
+import {IMetadataResolver} from './IMetadataResolver.sol';
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-contract L1Resolver is EVMFetchTarget, ITargetResolver, IExtendedResolver, ERC165 {
+contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExtendedResolver, ERC165 {
     using EVMFetcher for EVMFetcher.EVMFetchRequest;
     using BytesUtils for bytes;
     IEVMVerifier public immutable verifier;
@@ -27,9 +28,10 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IExtendedResolver, ERC16
     uint256 constant VERSIONABLE_ADDRESSES_SLOT = 2;
     uint256 constant VERSIONABLE_HASHES_SLOT = 3;
     uint256 constant VERSIONABLE_TEXTS_SLOT = 10;
+    string  public   graphqlUrl;
+    uint256 public   l2ResolverCoinType;
 
-    event TargetSet(bytes32 indexed node, address target);
-
+    event TargetSet(bytes name, address target);
     function isAuthorised(bytes32 node) internal view returns (bool) {
         // TODO: Add support for
         // trustedETHController
@@ -43,15 +45,19 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IExtendedResolver, ERC16
         return owner == msg.sender;
     }
 
-    modifier authorised(bytes32 node) {
-        require(isAuthorised(node));
-        _;
-    }
-
+    /**
+     * @param _verifier     The chain verifier address
+     * @param _ens          The ENS registry address
+     * @param _nameWrapper  The ENS name wrapper address
+     * @param _graphqlUrl   The offchain/l2 graphql endpoint url
+     * @param _l2ResolverCoinType The chainId at which the resolver resolves data from. 0 if storageLocation is offChain
+     */
     constructor(
       IEVMVerifier _verifier,
       ENS _ens,
-      INameWrapper _nameWrapper
+      INameWrapper _nameWrapper,
+      string memory _graphqlUrl,
+      uint256 _l2ResolverCoinType
     ){
       require(address(_nameWrapper) != address(0), "Name Wrapper address must be set");
       require(address(_verifier) != address(0), "Verifier address must be set");
@@ -59,16 +65,34 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IExtendedResolver, ERC16
       verifier = _verifier;
       ens = _ens;
       nameWrapper = _nameWrapper;
+      graphqlUrl = _graphqlUrl;
+      l2ResolverCoinType = _l2ResolverCoinType;
     }
 
     /**
      * Set target address to verify aagainst
-     * @param node The ENS node to query.
+     * @param name The encoded name to query.
      * @param target The L2 resolver address to verify against.
      */
-    function setTarget(bytes32 node, address target) public authorised(node){
+    function setTarget(bytes calldata name, address target) public {
+      (bytes32 node,) = getTarget(name);
+      require(isAuthorised(node));
       targets[node] = target;
-      emit TargetSet(node, target);
+      emit TargetSet(name, target);
+      (
+        ,,
+        uint8 storageType,
+        bytes memory storageLocation,
+        bytes memory context
+      ) = metadata(name);
+      emit MetadataChanged(
+        name,
+        l2ResolverCoinType,
+        graphqlUrl,
+        storageType,
+        storageLocation,
+        context
+      );
     }
 
     /**
@@ -218,12 +242,37 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IExtendedResolver, ERC16
         return abi.encode(values[1]);
     }
 
+    /**
+     * @notice Get metadata about the L1 Resolver
+     * @dev This function provides metadata about the L1 Resolver, including its name, coin type, GraphQL URL, storage type, and encoded information.
+     * @param name The domain name in format (dnsEncoded)
+     * @return coinType The cointype of the chain the target contract locates such as Optimism, Base, Arb, etc
+     * @return graphqlUrl The GraphQL URL used by the resolver
+     * @return storageType Storage Type (0 for EVM)
+     * @return storageLocation The storage identifier. For EVM chains, this is the address of the resolver contract.
+     * @return context. An identifier used by l2 graph indexer for Domain schema id (`context-namehash`) allowing multiple resolver contracts to have own namespace.
+     */
+    function metadata(
+        bytes calldata name
+    ) public view returns (uint256, string memory, uint8, bytes memory, bytes memory) {
+        (, address target) = getTarget(name);
+
+        return (
+            l2ResolverCoinType,
+            graphqlUrl,
+            uint8(0), // storage Type 0 => EVM
+            abi.encodePacked(address(target)), // storage location => l2 resolver address
+            abi.encodePacked(address(target))  // context => l2 resolver address
+        );
+    }
+
     function supportsInterface(
         bytes4 interfaceId
     ) public override view returns (bool) {
         return
             interfaceId == type(IExtendedResolver).interfaceId ||
             interfaceId == type(ITargetResolver).interfaceId ||
+            interfaceId == type(IMetadataResolver).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 }
