@@ -307,6 +307,7 @@ describe('Crosschain Resolver', () => {
   it("should support interface", async() => {
     expect(await target.supportsInterface('0x15f64386')).to.equal(true) // ITargetResolver
     expect(await target.supportsInterface('0x9061b923')).to.equal(true) // IExtendedResolver
+    console.log(await target.id())
     expect(await target.supportsInterface('0x8a596ebe')).to.equal(true) // IMetadataResolver
     expect(await target.supportsInterface('0x01ffc9a7')).to.equal(true) // ERC-165 support
   })

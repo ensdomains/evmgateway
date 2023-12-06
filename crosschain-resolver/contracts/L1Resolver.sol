@@ -32,14 +32,6 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
     uint256 public   l2ResolverCoinType;
 
     event TargetSet(bytes name, address target);
-    event MetadataChanged(
-        bytes name,
-        uint256 coinType,
-        string graphqlUrl,
-        uint8 storageType,
-        bytes storageLocation,
-        bytes context
-    );
     function isAuthorised(bytes32 node) internal view returns (bool) {
         // TODO: Add support for
         // trustedETHController
@@ -254,11 +246,11 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
      * @notice Get metadata about the L1 Resolver
      * @dev This function provides metadata about the L1 Resolver, including its name, coin type, GraphQL URL, storage type, and encoded information.
      * @param name The domain name in format (dnsEncoded)
-     * @return coinType Resolvers coin type (60 for Ethereum)
+     * @return coinType The cointype of the chain the target contract locates such as Optimism, Base, Arb, etc
      * @return graphqlUrl The GraphQL URL used by the resolver
      * @return storageType Storage Type (0 for EVM)
      * @return storageLocation The storage identifier. For EVM chains, this is the address of the resolver contract.
-     * @return context can be l2 resolver contract address for evm chain but can be any l2 storage identifier for non-evm chain
+     * @return context. An identifier used by l2 graph indexer for Domain schema id (`context-namehash`) allowing multiple resolver contracts to have own namespace.
      */
     function metadata(
         bytes calldata name
@@ -272,6 +264,10 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
             abi.encodePacked(address(target)), // storage location => l2 resolver address
             abi.encodePacked(address(target))  // context => l2 resolver address
         );
+    }
+
+    function id() public pure returns (bytes4) {
+        return type(IMetadataResolver).interfaceId;
     }
 
     function supportsInterface(
