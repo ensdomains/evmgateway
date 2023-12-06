@@ -29,13 +29,11 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
     uint256 constant VERSIONABLE_HASHES_SLOT = 3;
     uint256 constant VERSIONABLE_TEXTS_SLOT = 10;
     string  public   graphqlUrl;
-    string  public   resolverName;
     uint256 public   l2ResolverCoinType;
 
     event TargetSet(bytes name, address target);
     event MetadataChanged(
         bytes name,
-        string resolverName,
         uint256 coinType,
         string graphqlUrl,
         uint8 storageType,
@@ -60,7 +58,6 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
      * @param _ens          The ENS registry address
      * @param _nameWrapper  The ENS name wrapper address
      * @param _graphqlUrl   The offchain/l2 graphql endpoint url
-     * @param _resolverName The name of the resolver, eg: "OP Resolver"
      * @param _l2ResolverCoinType The chainId at which the resolver resolves data from. 0 if storageLocation is offChain
      */
     constructor(
@@ -68,7 +65,6 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
       ENS _ens,
       INameWrapper _nameWrapper,
       string memory _graphqlUrl,
-      string memory _resolverName,
       uint256 _l2ResolverCoinType
     ){
       require(address(_nameWrapper) != address(0), "Name Wrapper address must be set");
@@ -78,7 +74,6 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
       ens = _ens;
       nameWrapper = _nameWrapper;
       graphqlUrl = _graphqlUrl;
-      resolverName = _resolverName;
       l2ResolverCoinType = _l2ResolverCoinType;
     }
 
@@ -93,14 +88,13 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
       targets[node] = target;
       emit TargetSet(name, target);
       (
-        ,,,
+        ,,
         uint8 storageType,
         bytes memory storageLocation,
         bytes memory context
       ) = metadata(name);
       emit MetadataChanged(
         name,
-        resolverName,
         l2ResolverCoinType,
         graphqlUrl,
         storageType,
@@ -260,7 +254,6 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
      * @notice Get metadata about the L1 Resolver
      * @dev This function provides metadata about the L1 Resolver, including its name, coin type, GraphQL URL, storage type, and encoded information.
      * @param name The domain name in format (dnsEncoded)
-     * @return name The name of the resolver ("CCIP RESOLVER")
      * @return coinType Resolvers coin type (60 for Ethereum)
      * @return graphqlUrl The GraphQL URL used by the resolver
      * @return storageType Storage Type (0 for EVM)
@@ -269,11 +262,10 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
      */
     function metadata(
         bytes calldata name
-    ) public view returns (string memory, uint256, string memory, uint8, bytes memory, bytes memory) {
+    ) public view returns (uint256, string memory, uint8, bytes memory, bytes memory) {
         (, address target) = getTarget(name);
 
         return (
-            resolverName,
             l2ResolverCoinType,
             graphqlUrl,
             uint8(0), // storage Type 0 => EVM

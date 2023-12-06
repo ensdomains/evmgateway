@@ -20,7 +20,6 @@ const labelhash = (label) => ethers.keccak256(ethers.toUtf8Bytes(label))
 const encodeName = (name) => '0x' + packet.name.encode(name).toString('hex')
 
 const l2graphqlUrl = 'http://graphql'
-const l2resolverName = 'L2 Resolver'
 const l2ResolverCoinType = convertEVMChainIdToCoinType(420) // Optimism Goerli
 
 const name = 'foo.eth'
@@ -149,7 +148,7 @@ describe('Crosschain Resolver', () => {
       signer
     );
     const verifierAddress = await verifier.getAddress()
-    target = await testL1Factory.deploy(verifierAddress, ensAddress, wrapperAddress, l2graphqlUrl, l2resolverName, l2ResolverCoinType);
+    target = await testL1Factory.deploy(verifierAddress, ensAddress, wrapperAddress, l2graphqlUrl, l2ResolverCoinType);
 
     // Mine an empty block so we have something to prove against
     await provider.send('evm_mine', []);
@@ -316,8 +315,7 @@ describe('Crosschain Resolver', () => {
     it('returns metadata', async () => {
       await target.setTarget(encodedname, signerAddress)
 
-      const [name, coinType, graphqlUrl, storageType, storageLocation, context] = await target.metadata(encodedname);
-      expect(name).to.equal(l2resolverName);
+      const [coinType, graphqlUrl, storageType, storageLocation, context] = await target.metadata(encodedname);
       expect(coinType).to.equal(l2ResolverCoinType);
       expect(graphqlUrl).to.equal(l2graphqlUrl);
       expect(storageType).to.equal(storageType);
@@ -329,9 +327,8 @@ describe('Crosschain Resolver', () => {
       const tx = await target.setTarget(encodedname, signerAddress)
       await tx.wait()
       const logs = await target.queryFilter("MetadataChanged")
-      const [name, resolverName, coinType, graphqlUrl, storageType, storageLocation, context] = logs[0].args
+      const [name, coinType, graphqlUrl, storageType, storageLocation, context] = logs[0].args
       expect(name).to.equal(encodedname);
-      expect(resolverName).to.equal(l2resolverName);
       expect(coinType).to.equal(l2ResolverCoinType);
       expect(graphqlUrl).to.equal(l2graphqlUrl);
       expect(storageType).to.equal(storageType);

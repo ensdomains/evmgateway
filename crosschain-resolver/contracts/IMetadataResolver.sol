@@ -6,7 +6,6 @@ interface IMetadataResolver {
      * @notice Get metadata about the CCIP Resolver ENSIP 16 https://docs.ens.domains/ens-improvement-proposals/ensip-16-offchain-metadata
      * @dev This function provides metadata about the CCIP Resolver, including its name, coin type, GraphQL URL, storage type, and encoded information.
      * @param name The domain name in format (dnsEncoded)
-     * @return resolverName The name of the resolver ("CCIP RESOLVER")
      * @return coinType Resolvers coin type (60 for Ethereum)
      * @return graphqlUrl The GraphQL URL used by the resolver
      * @return storageType 0 = EVM, 1 = Non blockchain, 2 = Starknet
@@ -15,7 +14,6 @@ interface IMetadataResolver {
      *
      */
     function metadata(bytes calldata name) external view returns (
-        string memory resolverName,
         uint256 coinType,
         string memory graphqlUrl,
         uint8 storageType,
