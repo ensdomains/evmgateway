@@ -80,9 +80,9 @@ contract ArbVerifier is IEVMVerifier {
      * @returns {bytes32} The stateRoot extracted from the RLP-encoded block information.
      */
     function getStateRootFromBlock(
-        bytes memory rlpEncdoedBlock
+        bytes memory rlpEncodedBlock
     ) internal pure returns (bytes32) {
-        RLPReader.RLPItem[] memory i = RLPReader.readList(rlpEncdoedBlock);
+        RLPReader.RLPItem[] memory i = RLPReader.readList(rlpEncodedBlock);
         //StateRoot is located at idx 3
         return bytes32(RLPReader.readBytes(i[3]));
     }
