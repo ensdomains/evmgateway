@@ -5,7 +5,6 @@ import rollupAbi from "./abi/rollupABI.js";
 export interface ArbProvableBlock {
     number: number
     sendRoot: string,
-    blockHash: string,
     nodeIndex: string,
     rlpEncodedBlock: string
 }
@@ -58,7 +57,7 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
 
         return AbiCoder.defaultAbiCoder().encode(
             [
-                'tuple(bytes32 version, bytes32 sendRoot, bytes32 blockHash,uint64 nodeIndex,bytes rlpEncodedBlock)',
+                'tuple(bytes32 version, bytes32 sendRoot, uint64 nodeIndex,bytes rlpEncodedBlock)',
                 'tuple(bytes[] stateTrieWitness, bytes[][] storageProofs)',
             ],
             [
@@ -66,7 +65,6 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
                     version:
                         '0x0000000000000000000000000000000000000000000000000000000000000000',
                     sendRoot: block.sendRoot,
-                    blockHash: block.blockHash,
                     nodeIndex: block.nodeIndex,
                     rlpEncodedBlock: block.rlpEncodedBlock
                 },
@@ -129,7 +127,6 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
         return {
             rlpEncodedBlock,
             sendRoot,
-            blockHash,
             nodeIndex: nodeIndex,
             number: toNumber(l2blockRaw.number)
         }

@@ -8,7 +8,6 @@ import {RLPReader} from '@eth-optimism/contracts-bedrock/src/libraries/rlp/RLPRe
 struct ArbWitnessData {
     bytes32 version;
     bytes32 sendRoot;
-    bytes32 blockHash;
     uint64 nodeIndex;
     bytes rlpEncodedBlock;
 }
@@ -47,22 +46,23 @@ contract ArbVerifier is IEVMVerifier {
         (ArbWitnessData memory arbData, StateProof memory stateProof) = abi
             .decode(proof, (ArbWitnessData, StateProof));
 
-        //The confirm data is the keccak256 hash of the block hash and the send root. It is used to verify that the block hash is correct.
-        bytes32 confirmData = keccak256(
-            abi.encodePacked(arbData.blockHash, arbData.sendRoot)
-        );
         //Get the node from the rollup contract
         Node memory rblock = rollup.getNode(arbData.nodeIndex);
+
+        //The confirm data is the keccak256 hash of the block hash and the send root. It is used to verify that the rblock is a subject of the layer 2 block that is being proven.
+        bytes32 confirmData = keccak256(
+            abi.encodePacked(
+                keccak256(arbData.rlpEncodedBlock),
+                arbData.sendRoot
+            )
+        );
 
         //Verify that the block hash is correct
         require(rblock.confirmData == confirmData, 'confirmData mismatch');
         //Verifiy that the block that is being proven is the same as the block that was passed in
-        require(
-            arbData.blockHash == keccak256(arbData.rlpEncodedBlock),
-            'blockHash encodedBlockArray mismatch'
-        );
+
         //Now that we know that the block is valid, we can get the state root from the block.
-        bytes32 stateRoot = decodeBlock(arbData.rlpEncodedBlock);
+        bytes32 stateRoot = getStateRootFromBlock(arbData.rlpEncodedBlock);
 
         values = EVMProofHelper.getStorageValues(
             target,
@@ -74,12 +74,12 @@ contract ArbVerifier is IEVMVerifier {
     }
 
     /*
-     * Decodes a block by extracting and converting the bytes32 value from the RLP-encoded block information.
+     * Decodes a block by extracting and converting the bytes32 value from the RLP-encoded block to get the stateRoot.
      *
      * @param {bytes} rlpEncodedBlock - The RLP-encoded block information.
      * @returns {bytes32} The stateRoot extracted from the RLP-encoded block information.
      */
-    function decodeBlock(
+    function getStateRootFromBlock(
         bytes memory rlpEncdoedBlock
     ) internal pure returns (bytes32) {
         RLPReader.RLPItem[] memory i = RLPReader.readList(rlpEncdoedBlock);
