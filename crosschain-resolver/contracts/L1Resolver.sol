@@ -266,10 +266,6 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
         );
     }
 
-    function id() public pure returns (bytes4) {
-        return type(IMetadataResolver).interfaceId;
-    }
-
     function supportsInterface(
         bytes4 interfaceId
     ) public override view returns (bool) {
