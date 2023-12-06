@@ -32,7 +32,7 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
     string  public   resolverName;
     uint256 public   l2ResolverCoinType;
 
-    event TargetSet(bytes indexed name, address target);
+    event TargetSet(bytes name, address target);
     event MetadataChanged(
         bytes name,
         string resolverName,

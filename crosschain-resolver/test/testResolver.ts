@@ -178,9 +178,8 @@ describe('Crosschain Resolver', () => {
   it("should emit a TargetSet event", async() => {
     await target.setTarget(encodedname, signerAddress)
     const logs = await target.queryFilter("TargetSet")
-    const [eventname, eventnode, eventtarget] = logs[0].args
+    const [eventname, eventtarget] = logs[0].args
     expect(eventname).to.equal(encodedname);
-    expect(eventnode).to.equal(node);
     expect(eventtarget).to.equal(signerAddress);
   })
 
