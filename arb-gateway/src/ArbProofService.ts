@@ -4,7 +4,6 @@ import { AbiCoder, Contract, EventLog, ethers, toBeHex, type AddressLike, toNumb
 import rollupAbi from "./abi/rollupABI.js";
 export interface ArbProvableBlock {
     number: number
-
     sendRoot: string,
     blockHash: string,
     nodeIndex: string,
