@@ -43,7 +43,7 @@ describe('ArbVerifier', () => {
 
     //Rollup address according to sequencer config. Unfortunately, there is no endpoint to fetch it at runtime from the rollup.
     //The address can be found at nitro-testnode-sequencer-1/config/deployment.json 
-    const rollupAddress = '0xb264babb91df9d1ca05c8c2028288dc08c4bee46';
+    const rollupAddress = process.env.ROLLUP_ADDRESS;
     // When testing against Goerli, replace with this address
     // const rollupAddress = '0x45e5cAea8768F42B385A366D3551Ad1e0cbFAb17';
 

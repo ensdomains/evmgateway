@@ -1,5 +1,6 @@
 import { DeployFunction } from 'hardhat-deploy/types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import 'dotenv/config';
 
 const GATEWAY_URLS = {
   arbDevnetL1: 'http://localhost:8089/{sender}/{data}.json',
@@ -15,12 +16,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deploy } = deployments;
   const { deployer } = await getNamedAccounts();
   let ROLLUP_ADDRESS;
-  console.log("NW ", network.name)
   if (network.name === 'arbDevnetL1') {
     //Rollup address according to sequencer config. Unfortunately, there is no endpoint to fetch it at runtime from the rollup.
     //The address can be found at nitro-testnode-sequencer-1/config/deployment.json 
-    const rollup = '0xb264babb91df9d1ca05c8c2028288dc08c4bee46';
-    ROLLUP_ADDRESS = rollup;
+    ROLLUP_ADDRESS = process.env.ROLLUP_ADDRESS;
   } else {
     ROLLUP_ADDRESS = ROLLUP_ADDRESSES[network.name];
   }

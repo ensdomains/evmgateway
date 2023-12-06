@@ -19,7 +19,7 @@ const program = new Command()
   .option(
     '-o --l2-rollup-address <address>',
     'address for L2 outbox on the L1',
-    ''
+    process.env.ROLLUP_ADDRESS
   );
 
 program.parse();
@@ -29,6 +29,7 @@ program.parse();
 
   const l1Provider = new JsonRpcProvider(options.l1ProviderUrl);
   const l2Provider = new JsonRpcProvider(options.l2ProviderUrl);
+
 
   const gateway = new EVMGateway(
     new ArbProofService(l1Provider, l2Provider, options.l2RollupAddress)
