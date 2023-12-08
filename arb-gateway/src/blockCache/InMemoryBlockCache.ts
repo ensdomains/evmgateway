@@ -23,7 +23,6 @@ export class InMemoryBlockCache implements IBlockCache {
       return null;
     }
     //Cache hit
-    console.log('Cache hit for nodeIndex: ', nodeIndex);
     return {
       nodeIndex: this.nodeIndex,
       block: this.block,
@@ -36,6 +35,8 @@ export class InMemoryBlockCache implements IBlockCache {
     block: Record<string, never>,
     sendRoot: string
   ) {
+    console.log('Setting new block for nodeIndex: ', nodeIndex);
+
     this.nodeIndex = nodeIndex;
     this.block = block;
     this.sendRoot = sendRoot;
