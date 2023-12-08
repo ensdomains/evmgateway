@@ -1,6 +1,7 @@
 import { EVMGateway } from '@ensdomains/evm-gateway';
 import { JsonRpcProvider } from 'ethers';
 import { ArbProofService, type ArbProvableBlock } from './ArbProofService.js';
+import { InMemoryBlockCache } from './cache/InMemoryBlockCache.js';
 
 export type ArbGateway = EVMGateway<ArbProvableBlock>;
 
@@ -12,7 +13,12 @@ export async function makeArbGateway(
   const l1Provider = new JsonRpcProvider(l1providerUrl);
   const l2Provider = new JsonRpcProvider(l2providerUrl);
   return new EVMGateway(
-    await new ArbProofService(l1Provider, l2Provider, l2RollupAddress)
+    new ArbProofService(
+      l1Provider,
+      l2Provider,
+      l2RollupAddress,
+      new InMemoryBlockCache()
+    )
   );
 }
 

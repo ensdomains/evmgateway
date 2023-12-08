@@ -2,6 +2,7 @@
 import { EVMProofHelper, type IProofService } from '@ensdomains/evm-gateway';
 import { AbiCoder, Contract, EventLog, ethers, toBeHex, type AddressLike, toNumber } from 'ethers';
 import rollupAbi from "./abi/rollupABI.js";
+import type { IBlockCache } from './cache/IBlockCache.js';
 export interface ArbProvableBlock {
     number: number
     sendRoot: string,
@@ -19,11 +20,14 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
     private readonly l2Provider: ethers.JsonRpcProvider;
     private readonly rollup: Contract;
     private readonly helper: EVMProofHelper;
+    private readonly cache: IBlockCache;
+
 
     constructor(
         l1Provider: ethers.JsonRpcProvider,
         l2Provider: ethers.JsonRpcProvider,
         l2RollupAddress: string,
+        cache: IBlockCache
 
     ) {
         this.l2Provider = l2Provider;
@@ -33,6 +37,7 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
             l1Provider
         );
         this.helper = new EVMProofHelper(l2Provider);
+        this.cache = cache
     }
 
     async getStorageAt(block: ArbProvableBlock, address: AddressLike, slot: bigint): Promise<string> {
@@ -88,20 +93,8 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
     public async getProvableBlock(): Promise<ArbProvableBlock> {
         //Retrieve the latest pending node that has been committed to the rollup.
         const nodeIndex = await this.rollup.latestNodeCreated()
+        const [l2blockRaw, sendRoot] = await this.getCachedBlock(nodeIndex)
 
-        //We fetch the node created event for the node index we just retrieved.
-        const nodeEventFilter = await this.rollup.filters.NodeCreated(nodeIndex);
-        const nodeEvents = await this.rollup.queryFilter(nodeEventFilter);
-        const assertion = (nodeEvents[0] as EventLog).args!.assertion
-        //Instead of using the AssertionHelper contract we can extract sendRoot from the assertion. Avoiding the deployment of the AssertionHelper contract and an additional RPC call.
-        const [blockHash, sendRoot] = assertion[1][0][0]
-
-
-        //The L1 rollup only provides us with the block hash. In order to ensure that the stateRoot we're using for the proof is indeed part of the block, we need to fetch the block. And provide it to the proof.
-        const l2blockRaw = await this.l2Provider.send('eth_getBlockByHash', [
-            blockHash,
-            false
-        ]);
         const blockarray = [
             l2blockRaw.parentHash,
             l2blockRaw.sha3Uncles,
@@ -130,6 +123,34 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
             nodeIndex: nodeIndex,
             number: toNumber(l2blockRaw.number)
         }
+    }
+
+    private async getCachedBlock(nodeIndex: bigint): Promise<[Record<string, string>, string]> {
+
+        //We first check if we have the block cached
+        const cachedBlock = await this.cache.getBlock(nodeIndex)
+        if (cachedBlock) {
+            return [cachedBlock.block, cachedBlock.sendRoot]
+        }
+
+        //We fetch the node created event for the node index we just retrieved.
+        const nodeEventFilter = await this.rollup.filters.NodeCreated(nodeIndex);
+        const nodeEvents = await this.rollup.queryFilter(nodeEventFilter);
+        const assertion = (nodeEvents[0] as EventLog).args!.assertion
+        //Instead of using the AssertionHelper contract we can extract sendRoot from the assertion. Avoiding the deployment of the AssertionHelper contract and an additional RPC call.
+        const [blockHash, sendRoot] = assertion[1][0][0]
+
+
+        //The L1 rollup only provides us with the block hash. In order to ensure that the stateRoot we're using for the proof is indeed part of the block, we need to fetch the block. And provide it to the proof.
+        const l2blockRaw = await this.l2Provider.send('eth_getBlockByHash', [
+            blockHash,
+            false
+        ]);
+
+        //Cache the block for future use
+        await this.cache.setBlock(nodeIndex, l2blockRaw, sendRoot)
+
+        return [l2blockRaw, sendRoot]
     }
 
 }

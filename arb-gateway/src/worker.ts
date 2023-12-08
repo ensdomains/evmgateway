@@ -1,5 +1,6 @@
 import { Server } from '@ensdomains/ccip-read-cf-worker';
 import type { Router } from '@ensdomains/evm-gateway';
+import { InMemoryBlockCache } from './cache/InMemoryBlockCache.js';
 interface Env {
   L1_PROVIDER_URL: string;
   L2_PROVIDER_URL: string;
@@ -24,7 +25,12 @@ async function fetch(request: Request, env: Env) {
 
     console.log({ L1_PROVIDER_URL, L2_PROVIDER_URL });
     const gateway = new EVMGateway(
-      new ArbProofService(l1Provider, l2Provider, L2_ROLLUP)
+      new ArbProofService(
+        l1Provider,
+        l2Provider,
+        L2_ROLLUP,
+        new InMemoryBlockCache()
+      )
     );
 
     const server = new Server();

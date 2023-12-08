@@ -3,6 +3,7 @@ import { Command } from '@commander-js/extra-typings';
 import { EVMGateway } from '@ensdomains/evm-gateway';
 import { JsonRpcProvider } from 'ethers';
 import { ArbProofService } from './ArbProofService.js';
+import { InMemoryBlockCache } from './cache/InMemoryBlockCache.js';
 
 const program = new Command()
   .option('-p, --port <port>', 'port to listen on', '8080')
@@ -30,9 +31,13 @@ program.parse();
   const l1Provider = new JsonRpcProvider(options.l1ProviderUrl);
   const l2Provider = new JsonRpcProvider(options.l2ProviderUrl);
 
-
   const gateway = new EVMGateway(
-    new ArbProofService(l1Provider, l2Provider, options.l2RollupAddress)
+    new ArbProofService(
+      l1Provider,
+      l2Provider,
+      options.l2RollupAddress,
+      new InMemoryBlockCache()
+    )
   );
   const server = new Server();
   gateway.add(server);
