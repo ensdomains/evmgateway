@@ -2,7 +2,7 @@
 import { EVMProofHelper, type IProofService } from '@ensdomains/evm-gateway';
 import { AbiCoder, Contract, EventLog, ethers, toBeHex, type AddressLike, toNumber } from 'ethers';
 import rollupAbi from "./abi/rollupABI.js";
-import type { IBlockCache } from './cache/IBlockCache.js';
+import type { IBlockCache } from './blockCache/IBlockCache.js';
 export interface ArbProvableBlock {
     number: number
     sendRoot: string,

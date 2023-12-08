@@ -3,7 +3,7 @@ import { Command } from '@commander-js/extra-typings';
 import { EVMGateway } from '@ensdomains/evm-gateway';
 import { JsonRpcProvider } from 'ethers';
 import { ArbProofService } from './ArbProofService.js';
-import { InMemoryBlockCache } from './cache/InMemoryBlockCache.js';
+import { InMemoryBlockCache } from './blockCache/InMemoryBlockCache.js';
 
 const program = new Command()
   .option('-p, --port <port>', 'port to listen on', '8080')

@@ -1,6 +1,6 @@
 import { Server } from '@ensdomains/ccip-read-cf-worker';
 import type { Router } from '@ensdomains/evm-gateway';
-import { InMemoryBlockCache } from './cache/InMemoryBlockCache.js';
+import { InMemoryBlockCache } from './blockCache/InMemoryBlockCache.js';
 interface Env {
   L1_PROVIDER_URL: string;
   L2_PROVIDER_URL: string;
