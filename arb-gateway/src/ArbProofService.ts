@@ -93,7 +93,7 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
     public async getProvableBlock(): Promise<ArbProvableBlock> {
         //Retrieve the latest pending node that has been committed to the rollup.
         const nodeIndex = await this.rollup.latestNodeCreated()
-        const [l2blockRaw, sendRoot] = await this.getCachedBlock(nodeIndex)
+        const [l2blockRaw, sendRoot] = await this.getL2BlockForNode(nodeIndex)
 
         const blockarray = [
             l2blockRaw.parentHash,
@@ -124,8 +124,12 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
             number: toNumber(l2blockRaw.number)
         }
     }
-
-    private async getCachedBlock(nodeIndex: bigint): Promise<[Record<string, string>, string]> {
+    /**
+     * Fetches the corrospending L2 block for a given node index and returns it along with the send root.
+     * @param {bigint} nodeIndex - The index of the node for which to fetch the block.
+     * @returns {Promise<[Record<string, string>, string]>} A promise that resolves to a tuple containing the fetched block and the send root.
+     */
+    private async getL2BlockForNode(nodeIndex: bigint): Promise<[Record<string, string>, string]> {
 
         //We first check if we have the block cached
         const cachedBlock = await this.cache.getBlock(nodeIndex)
