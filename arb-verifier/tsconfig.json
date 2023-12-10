@@ -1,0 +1,14 @@
+{
+  //"extends": "../tsconfig.json",
+  "include": ["./scripts", "./test", "../arb-gateway/src/ArbProofService.ts"],
+  "files": ["hardhat.config.ts"],
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "verbatimModuleSyntax": false,
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2020",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "skipLibCheck": true
+  }
+}

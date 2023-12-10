@@ -1,0 +1,44 @@
+{
+  "name": "@ensdomains/arb-verifier",
+  "license": "MIT",
+  "version": "0.1.0",
+  "scripts": {
+    "build": "echo 'building arb-verifier...' && bun hardhat compile",
+    "test": " hardhat test --network arbDevnetL1",
+    "clean": "rm -fr artifacts cache node_modules typechain-types",
+    "lint": "exit 0"
+  },
+  "devDependencies": {
+    "@ensdomains/arb-gateway": "workspace:*",
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.0",
+    "@nomicfoundation/hardhat-ethers": "^3.0.0",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.0",
+    "@nomicfoundation/hardhat-toolbox": "^3.0.0",
+    "@nomicfoundation/hardhat-verify": "^1.0.0",
+    "@typechain/ethers-v6": "^0.4.0",
+    "@typechain/hardhat": "^8.0.0",
+    "@types/chai": "^4.2.0",
+    "@types/express": "^4.17.18",
+    "@types/mocha": ">=9.1.0",
+    "@types/supertest": "^2.0.14",
+    "chai": "^4.2.0",
+    "ethers": "^6.8.0",
+    "express": "^4.18.2",
+    "ganache": "^7.9.1",
+    "hardhat": "^2.16.0",
+    "hardhat-deploy": "^0.11.43",
+    "hardhat-deploy-ethers": "^0.4.1",
+    "hardhat-gas-reporter": "^1.0.8",
+    "solidity-bytes-utils": "^0.8.0",
+    "solidity-coverage": "^0.8.1",
+    "supertest": "^6.3.3",
+    "ts-node": "^10.9.1",
+    "typechain": "^8.2.0",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "@arbitrum/nitro-contracts": "^1.1.0",
+    "@ensdomains/evm-verifier": "^0.1.0",
+    "dotenv": "^16.3.1"
+  }
+}

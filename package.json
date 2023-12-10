@@ -6,9 +6,11 @@
     "evm-gateway",
     "l1-gateway",
     "op-gateway",
+    "arb-gateway",
     "evm-verifier",
     "l1-verifier",
     "op-verifier",
+    "arb-verifier",
     "crosschain-resolver"
   ],
   "scripts": {
@@ -49,7 +51,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@ensdomains/ccip-read-cf-worker": "^0.0.1",
+    "@ensdomains/ccip-read-cf-worker": "^0.0.3",
     "@eth-optimism/sdk": "^3.1.4"
   }
 }
