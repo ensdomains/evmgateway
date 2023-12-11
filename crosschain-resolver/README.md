@@ -110,6 +110,7 @@ const l2resolverAddress = await l2Factory.predictAddress(ETH_ADDRESS)
 - DelegatableResolverRegistrar = [DelegatableResolverRegistrar](https://goerli-optimism.etherscan.io/address/0x2b07cf3ef421a5ff1cb6f437036bdef132eea37b#writeContract) = Demo contract that allow anyone to register subname under `op.evmgateway.eth` on  [L2 resolver on `op.evmgateway.eth`](https://goerli-optimism.etherscan.io/address/0x96753bd0D9bdd98d3a84837B5933078AF49aF12d#writeContract)
 
 #### L1
+- OPVerifier = [0xe58448bfc2fa097953e800e0af0b0a5257ecc4b1](https://goerli.etherscan.io/address/0xe58448bfc2fa097953e800e0af0b0a5257ecc4b1)
 - L1Resolver = [0x7Bf57B0a683CC964B0fEe30633A72F5c05464a0f](https://goerli.etherscan.io/address/0x7Bf57B0a683CC964B0fEe30633A72F5c05464a0f) = Currently `op.evmgateway.eth` is set to the resolver
 
 ### Base
@@ -121,8 +122,20 @@ const l2resolverAddress = await l2Factory.predictAddress(ETH_ADDRESS)
 - DelegatableResolverRegistrar = [DelegatableResolverRegistrar](https://goerli.basescan.org/address/0xe0356133c3c43cbb623543488e607e4e349eaa10#code) = Demo contract that allow anyone to register subname under `base.evmgateway.eth` on  [L2 resolver on `base.evmgateway.eth`](https://goerli.basescan.org/address/0xE4B18eFbF71d516046514598FD7FcFbad4beC742)
 
 #### L1
+- OPVerifier = [0x7e2f9c4a1467e8a41e1e8283ba3ba72e3d92f6b8](https://goerli.etherscan.io/address/0x7e2f9c4a1467e8a41e1e8283ba3ba72e3d92f6b8)
 - L1Resolver = [0x3Ac25843A1F696fe2166C5dE127FD4f2832F4d42](https://goerli.etherscan.io/address/0x3Ac25843A1F696fe2166C5dE127FD4f2832F4d42) = Currently `base.evmgateway.eth` is set to the resolver
 
+### Arbitrum 
+
+#### L2
+- DelegatableResolver = [0x5F5e99139a17c56eadC3B1d01535224d003B7E5b](https://goerli.arbiscan.io/address/0x5F5e99139a17c56eadC3B1d01535224d003B7E5b) this is used as a template so cannot interact directly
+- DelegatableResolverFactory = [0x94fbCE7ca1a0152cfC99F90f4421d31cf356c896](https://goerli.arbiscan.io/address/0x94fbCE7ca1a0152cfC99F90f4421d31cf356c896)
+- [0xf91e7d97e4dbb5303f047b135247073d7991cbdb]
+- DelegatableResolverRegistrar = [DelegatableResolverRegistrar](0x50200c7Ccb1abD927184396547ea8dD1A18CAA3A) = Demo contract that allow anyone to register subname under `arb.evmgateway.eth` on  [L2 resolver on `arb.evmgateway.eth`](0xa0Ed81518Bf5Dadb75AC5d5565fCEC2529CBC286)
+
+#### L1
+- ArbVerifier = [0x9E46DeE08Ad370bEFa7858c0E9a6c87f2D7E57A1](https://goerli.etherscan.io/address/0x9E46DeE08Ad370bEFa7858c0E9a6c87f2D7E57A1#code)
+- L1Resolver = [0xFb42a2d1A28A10607ee426764BdcdA7d121731AD](https://goerli.etherscan.io/address/0xFb42a2d1A28A10607ee426764BdcdA7d121731AD#code)
 
 ## Usage
 
@@ -219,8 +232,7 @@ Go to [Base L1 resolver](https://goerli.etherscan.io/address/0x052D7E10D55Ae12b4
 
 #### Step 2: Deploy the registrar contract
 
-Deploy [DelegatableResolverRegistrar.sol](https://gist.github.com/makoto/7d83ca6530adc69fea27923ee8ae8986) to L2 with resolver address as `target` which you obtained at step 1.
-Take notes of the deployed registrar address 
+It's in the part of deployment script
 
 #### Step 3: Delegate the registrar contract to root
 
