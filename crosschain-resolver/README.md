@@ -232,7 +232,7 @@ Go to [Base L1 resolver](https://goerli.etherscan.io/address/0x052D7E10D55Ae12b4
 
 #### Step 2: Deploy the registrar contract
 
-It's in the part of deployment script
+The deployment script is at `deploy_l2/03_l2resolver_registrar.ts`.
 
 #### Step 3: Delegate the registrar contract to root
 
