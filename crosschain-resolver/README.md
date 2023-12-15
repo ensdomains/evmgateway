@@ -147,7 +147,7 @@ On L1
 // On L1
 await ENS.setResolver(l1lresolver)
 const l2resolverAddress = await DelegatableResolverFactory.predictAddress(OWNER_ADDRESS)
-await L1Resolver.setTarget(node, l2resolverAddress)
+await L1Resolver.setTarget(encodedname, l2resolverAddress)
 // On L2
 const l2resolverAddress = await DelegatableResolverFactory.predictAddress(OWNER_ADDRESS)
 await DelegatableResolverFactory.create(OWNER_ADDRESS)
@@ -227,7 +227,7 @@ Once done, set addrss of the subname from the operator, wait 10~20 min, then que
 Go to [Base L1 resolver](https://goerli.etherscan.io/address/0x052D7E10D55Ae12b4F62cdE18dBb7E938efa230D#readContract)
 
 ```
-[node, target] = l1resolver.getTarget(encodedname, 0)
+[node, target] = l1resolver.getTarget(encodedname)
 ```
 
 #### Step 2: Deploy the registrar contract

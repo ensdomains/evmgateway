@@ -117,5 +117,6 @@ describe('Crosschain Reverse Resolver', () => {
   it("should support interface", async() => {
     expect(await target.supportsInterface('0x59d1d43c')).to.equal(true) // ITextResolver
     expect(await target.supportsInterface('0x691f3431')).to.equal(true) // INameResolver
+    expect(await target.supportsInterface('0x01ffc9a7')).to.equal(true) // ERC-165 support
   })
 });
