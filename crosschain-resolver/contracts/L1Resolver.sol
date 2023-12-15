@@ -13,8 +13,9 @@ import {ITextResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profi
 import {IContentHashResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profiles/IContentHashResolver.sol";
 import "@ensdomains/ens-contracts/contracts/resolvers/profiles/IExtendedResolver.sol";
 import {ITargetResolver} from './ITargetResolver.sol';
+import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
-contract L1Resolver is EVMFetchTarget {
+contract L1Resolver is EVMFetchTarget, IERC165 {
     using EVMFetcher for EVMFetcher.EVMFetchRequest;
     using BytesUtils for bytes;
     IEVMVerifier public immutable verifier;
@@ -217,6 +218,7 @@ contract L1Resolver is EVMFetchTarget {
     ) public pure returns (bool) {
         return
             interfaceId == type(IExtendedResolver).interfaceId ||
-            interfaceId == type(ITargetResolver).interfaceId;
+            interfaceId == type(ITargetResolver).interfaceId ||
+            super.supportsInterface(interfaceId);
     }
 }
