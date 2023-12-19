@@ -7,8 +7,8 @@ interface TrackerOptions {
 }
 
 interface TrackingOptions {
-  props?: any;
-  data?: any;
+  props?: { [key: string]: number | string } | string | number;
+  data?: { [key: string]: number | string } | string | number;
 }
 
 interface RequestBody {
@@ -16,8 +16,8 @@ interface RequestBody {
   name: string;
   url: string;
   referrer?: string;
-  props?: any;
-  data?: any;
+  props?: { [key: string]: number | string } | string | number;
+  data?: { [key: string]: number | string } | string | number;
 }
 
 export class Tracker {
