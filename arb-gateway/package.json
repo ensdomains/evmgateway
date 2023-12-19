@@ -57,14 +57,15 @@
   },
   "dependencies": {
     "@chainlink/ccip-read-server": "^0.2.1",
+    "@cloudflare/workers-types": "^4.20231121.0",
     "@ensdomains/evm-gateway": "^0.1.0",
     "@ethereumjs/block": "^5.0.0",
     "@nomicfoundation/ethereumjs-block": "^5.0.2",
     "commander": "^11.0.0",
-    "ethers": "^6.7.1"
+    "ethers": "^6.7.1",
+    "express": "^4.18.2"
   },
   "devDependencies": {
     "@commander-js/extra-typings": "^11.0.0"
-
   }
 }
