@@ -2,16 +2,20 @@ import { Request as CFWRequest } from '@cloudflare/workers-types';
 import { Server } from '@ensdomains/ccip-read-cf-worker';
 import type { Router } from '@ensdomains/evm-gateway';
 import { InMemoryBlockCache } from './blockCache/InMemoryBlockCache.js';
-import { Tracker } from './tracker';
+import { Tracker } from './tracker.js';
 interface Env {
   L1_PROVIDER_URL: string;
   L2_PROVIDER_URL: string;
   L2_ROLLUP: string;
 }
 
-const tracker = new Tracker('arb-gateway-worker.ens-cf.workers.dev', {enableLogging:true});
-const logResult = async (request:CFWRequest, result: Response) => {
-  console.log({request, result})
+const tracker = new Tracker('arb-gateway-worker.ens-cf.workers.dev', {
+  enableLogging: true,
+});
+const logResult = async (
+  request: CFWRequest,
+  result: Response
+): Promise<Response> => {
   if (!result.body) {
     return result;
   }
@@ -28,7 +32,7 @@ const logResult = async (request:CFWRequest, result: Response) => {
 };
 
 let app: Router;
-async function fetchGateway(request: CFWRequest, env: Env) {
+async function fetchGateway(request: CFWRequest, env: Env): Promise<Response> {
   // Loading libraries dynamically as a temp work around.
   // Otherwise, deployment thorws "Error: Script startup exceeded CPU time limit." error
   if (!app) {
@@ -57,9 +61,9 @@ async function fetchGateway(request: CFWRequest, env: Env) {
     gateway.add(server);
     app = server.makeApp('/');
   }
-  return app.handle(request).then(logResult.bind(this, request));
+  return app.handle(request).then(logResult.bind(null, request));
 }
 
 export default {
-  fetch:fetchGateway,
+  fetch: fetchGateway,
 };

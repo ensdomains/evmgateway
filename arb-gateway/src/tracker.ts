@@ -1,5 +1,5 @@
 import { Request as CFWRequest } from '@cloudflare/workers-types';
-import { Request as ExpressRequest } from 'express';
+import { type Request as ExpressRequest } from 'express';
 
 interface TrackerOptions {
   apiEndpoint?: string;
@@ -67,11 +67,8 @@ export class Tracker {
 
       const requestInfo = 'originalUrl' in req ? req : req.headers;
 
-      if (
-        requestInfo.get('Referrer')
-      ) {
-        body.referrer = requestInfo.get('Referrer') ||
-          '';
+      if (requestInfo.get('Referrer')) {
+        body.referrer = requestInfo.get('Referrer') || '';
       }
 
       if (props) {
