@@ -95,6 +95,7 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
         const nodeIndex = await this.rollup.latestNodeCreated()
         const [l2blockRaw, sendRoot] = await this.getL2BlockForNode(nodeIndex)
 
+        // https://github.com/ethereum/go-ethereum/blob/577be37e0e7a69564224e0a15e49d648ed461ac5/core/types/block.go#L65
         const blockarray = [
             l2blockRaw.parentHash,
             l2blockRaw.sha3Uncles,
@@ -103,16 +104,19 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
             l2blockRaw.transactionsRoot,
             l2blockRaw.receiptsRoot,
             l2blockRaw.logsBloom,
-            toBeHex(l2blockRaw.difficulty),
-            toBeHex(l2blockRaw.number),
-            toBeHex(l2blockRaw.gasLimit),
-            toBeHex(l2blockRaw.gasUsed),
-            toBeHex(l2blockRaw.timestamp),
+            toBeHex(l2blockRaw.difficulty, 32),
+            toBeHex(l2blockRaw.number, 32),
+            toBeHex(l2blockRaw.gasLimit, 8),
+            toBeHex(l2blockRaw.gasUsed, 8),
+            toBeHex(l2blockRaw.timestamp, 8),
             l2blockRaw.extraData,
             l2blockRaw.mixHash,
             l2blockRaw.nonce,
-            toBeHex(l2blockRaw.baseFeePerGas)
+            toBeHex(l2blockRaw.baseFeePerGas, 32)
         ]
+        if(l2blockRaw.withdrawalsRoot){
+            blockarray.push(l2blockRaw.withdrawalsRoot)
+        }
 
         //Rlp encode the block to pass it as an argument
         const rlpEncodedBlock = ethers.encodeRlp(blockarray)
