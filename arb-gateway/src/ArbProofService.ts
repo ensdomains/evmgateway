@@ -112,7 +112,7 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
             l2blockRaw.extraData,
             l2blockRaw.mixHash,
             l2blockRaw.nonce,
-            l2blockRaw.baseFeePerGas ? toBeHex(l2blockRaw.baseFeePerGas) : []
+            l2blockRaw.baseFeePerGas
         ].map((item) => {
             return item == '0x00' ? "0x" : item
         })
