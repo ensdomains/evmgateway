@@ -95,7 +95,7 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
         const nodeIndex = await this.rollup.latestNodeCreated()
         const [l2blockRaw, sendRoot] = await this.getL2BlockForNode(nodeIndex)
 
-        // https://github.com/ethereum/go-ethereum/blob/577be37e0e7a69564224e0a15e49d648ed461ac5/core/types/block.go#L65
+        // https://github.com/OffchainLabs/go-ethereum/blob/b1622e6ac4bf3762aebde92a585de2889d90823f/core/types/block.go#L65
         const blockarray = [
             l2blockRaw.parentHash,
             l2blockRaw.sha3Uncles,
