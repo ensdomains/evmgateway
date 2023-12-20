@@ -104,19 +104,18 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
             l2blockRaw.transactionsRoot,
             l2blockRaw.receiptsRoot,
             l2blockRaw.logsBloom,
-            toBeHex(l2blockRaw.difficulty, 32),
-            toBeHex(l2blockRaw.number, 32),
-            toBeHex(l2blockRaw.gasLimit, 8),
-            toBeHex(l2blockRaw.gasUsed, 8),
-            toBeHex(l2blockRaw.timestamp, 8),
+            toBeHex(l2blockRaw.difficulty),
+            toBeHex(l2blockRaw.number),
+            toBeHex(l2blockRaw.gasLimit),
+            toBeHex(l2blockRaw.gasUsed),
+            toBeHex(l2blockRaw.timestamp),
             l2blockRaw.extraData,
             l2blockRaw.mixHash,
             l2blockRaw.nonce,
-            toBeHex(l2blockRaw.baseFeePerGas, 32)
-        ]
-        if(l2blockRaw.withdrawalsRoot){
-            blockarray.push(l2blockRaw.withdrawalsRoot)
-        }
+            l2blockRaw.baseFeePerGas ? toBeHex(l2blockRaw.baseFeePerGas) : []
+        ].map((item) => {
+            return item == '0x00' ? "0x" : item
+        })
 
         //Rlp encode the block to pass it as an argument
         const rlpEncodedBlock = ethers.encodeRlp(blockarray)
