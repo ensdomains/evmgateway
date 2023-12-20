@@ -46,6 +46,14 @@ After deployment is complete, set the rersolver of $REVERSE_NAMESPACE to L1Rever
 #### L1
 - L1ReverseResolver = [0x3c332a23a6052afE947F47656d1fD0f450F4C237](https://goerli.etherscan.io/address/0x3c332a23a6052afE947F47656d1fD0f450F4C237)
 
+### Arbitrum
+
+#### L2
+- L2ReverseRegistrar = [0x4166B7e70F14C48980Da362256D1Da9Cc8F95e13](https://goerli.arbiscan.io/address/0x4166B7e70F14C48980Da362256D1Da9Cc8F95e13#code) = REVERSE_NAMESPACE is set to `arb.reverse.evmgateway.eth`
+#### L1
+- L1ReverseResolver = [0x2fed4238EfD49d0ECCeEED943BCf4D5C3a299418](Successfully verified contract L1ReverseResolver on the block explorer.
+https://goerli.etherscan.io/address/0x2fed4238EfD49d0ECCeEED943BCf4D5C3a299418#code)
+
 
 ## Usage
 
