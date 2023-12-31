@@ -10,7 +10,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const OPVerifier = await deployments.get('OPVerifier');
   const TestL2 = await hre.companionNetworks['l2'].deployments.get('TestL2');
-
+  console.log([OPVerifier.address, TestL2.address])
   await deploy('TestL1', {
     from: deployer,
     args: [OPVerifier.address, TestL2.address],
