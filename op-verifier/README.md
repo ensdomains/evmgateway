@@ -51,10 +51,17 @@ The tests will require small modifications to work on public testnets; specifica
 
 #### L1
 
+- OPVerifier = [0xAdef74372444e716C0473dEe1F9Cb3108EFa3818](https://sepolia.etherscan.io/address/0xAdef74372444e716C0473dEe1F9Cb3108EFa3818#code
+)
+- TestL1 = [0x540C93800699C044dB8cf1f0F059ca0FA5CaED92](https://sepolia.etherscan.io/address/0x540C93800699C044dB8cf1f0F059ca0FA5CaED92#code)
+
 #### L2
 
 - TestL2 = [0x94fbCE7ca1a0152cfC99F90f4421d31cf356c896](https://sepolia.basescan.org/address/0x94fbCE7ca1a0152cfC99F90f4421d31cf356c896#code)
 
+#### Gateway url
+
+- https://base-sepolia-gateway-worker.ens-cf.workers.dev/{sender}/{data}.json
 
 ## Testing gateway
 
