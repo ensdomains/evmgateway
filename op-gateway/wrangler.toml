@@ -1,4 +1,3 @@
-name = "base-sepolia-gateway-worker"
 account_id = "15dcc9085cb794bb4f29d3e8177ac880"
 main = "./src/worker.ts"
 node_compat = true
@@ -10,4 +9,8 @@ port = 8080
 [build]
 command = "yarn build"
 
-[vars]
+[env.base-sepolia]
+name = "base-sepolia-gateway-worker"
+
+[env.op-sepolia]
+name = "op-sepolia-gateway-worker"
