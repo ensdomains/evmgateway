@@ -9,7 +9,7 @@ const DEPLOYER_PRIVATE_KEY =
 const L1_PROVIDER_URL = process.env.L1_PROVIDER_URL || '';
 const L1_ETHERSCAN_API_KEY = process.env.L1_ETHERSCAN_API_KEY;
 const L2_ETHERSCAN_API_KEY = process.env.L2_ETHERSCAN_API_KEY;
-
+console.log({DEPLOYER_PRIVATE_KEY})
 const config: HardhatUserConfig = {
   solidity: '0.8.19',
   networks: {
@@ -38,16 +38,31 @@ const config: HardhatUserConfig = {
         l2: 'arbitrumGoerli',
       },
     },
+    sepolia: {
+      url: L1_PROVIDER_URL,
+      accounts: [DEPLOYER_PRIVATE_KEY],
+      deploy: ['deploy_l1/'],
+      companionNetworks: {
+        l2: 'arbitrumSepolia',
+      },
+    },
     arbitrumGoerli: {
       url: 'https://rpc.goerli.arbitrum.gateway.fm',
       accounts: [DEPLOYER_PRIVATE_KEY],
       deploy: ['deploy_l2/'],
     },
+    arbitrumSepolia: {
+      url: 'https://sepolia-rollup.arbitrum.io/rpc',
+      accounts: [DEPLOYER_PRIVATE_KEY],
+      deploy: [ "deploy_l2/" ],
+    },
   },
   etherscan: {
     apiKey: {
       goerli: L1_ETHERSCAN_API_KEY,
+      sepolia: L1_ETHERSCAN_API_KEY,
       arbitrumGoerli: L2_ETHERSCAN_API_KEY,
+      arbitrumSepolia: L2_ETHERSCAN_API_KEY,
     },
     customChains: [
       {
@@ -55,9 +70,17 @@ const config: HardhatUserConfig = {
         chainId: 421613,
         urls: {
           apiURL: 'https://api-goerli.arbiscan.io/api',
-          browserURL: 'https://api-goerli.arbiscan.io.io',
+          browserURL: 'https://api-goerli.arbiscan.io',
         },
       },
+      {
+        network: "arbitrumSepolia",
+        chainId: 421614,
+        urls: {
+          apiURL: "https://api-sepolia.arbiscan.io/api",
+          browserURL: "https://api-sepolia.arbiscan.io"
+        }
+      }
     ],
   },
   namedAccounts: {
