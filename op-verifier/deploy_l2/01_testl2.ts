@@ -6,7 +6,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const {deploy} = deployments;
 
   const {deployer} = await getNamedAccounts();
-  console.log(network)
+
   await deploy('TestL2', {
     from: deployer,
     args: [],
