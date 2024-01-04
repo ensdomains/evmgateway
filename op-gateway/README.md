@@ -25,7 +25,7 @@ wrangler secret put L1_PROVIDER_URL
 wrangler secret put L2_PROVIDER_URL
 wrangler secret put L2_OUTPUT_ORACLE
 wrangler secret put DELAY
-yarn deploy
+yarn deploy --env op-sepolia // or --env base-sepolia for base deployment
 ```
 
 ## How to test
