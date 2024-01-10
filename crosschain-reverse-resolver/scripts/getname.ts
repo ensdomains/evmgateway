@@ -9,8 +9,11 @@ export const main = async () => {
 
   const namespace       = process.env.REVERSE_NAMESPACE;
   const L1_PROVIDER_URL = process.env.L1_PROVIDER_URL;
+  const L2_PROVIDER_URL = process.env.L2_PROVIDER_URL;
+  const L2_REVERSE_REGISTRAR_ADDRESS = process.env.L2_REVERSE_REGISTRAR_ADDRESS
   const ETH_ADDRESS     = process.env.ETH_ADDRESS;
   const provider        = new ethers.JsonRpcProvider(L1_PROVIDER_URL);
+  const l2provider        = new ethers.JsonRpcProvider(L2_PROVIDER_URL);
   const name            = ETH_ADDRESS.substring(2).toLowerCase() + "." + namespace
   const encodedname     = encodeName(name)
   const reversenode     = ethers.namehash(name)
@@ -18,8 +21,12 @@ export const main = async () => {
   console.log({namespace, ETH_ADDRESS, name, encodedname,reversenode})
   const reverseresolver = await provider.getResolver(namespace);
   console.log({reverseresolver})
+  if (L2_PROVIDER_URL && L2_REVERSE_REGISTRAR_ADDRESS){
+    const l2resolver = new ethers.Contract(L2_REVERSE_REGISTRAR_ADDRESS, abi, l2provider);
+    console.log(`l2: Reverse node for ${name} is set to `, await l2resolver.name(reversenode))
+  }
   const l1resolver = new ethers.Contract(reverseresolver.address, abi, provider);
-  console.log(`Reverse node is set to `, await l1resolver.name(reversenode, {enableCcipRead:true}))
+  console.log(`l1: Reverse node for ${name} is set to `, await l1resolver.name(reversenode, {enableCcipRead:true}))
 };
 
 main();

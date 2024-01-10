@@ -7,6 +7,18 @@ For a detailed readme and usage instructions, see the [monorepo readme](https://
 
 ## Deploying (Goerli)
 
+## Deploying (Sepolia)
+
+Before deploying l1 contracts, deploy l2 contracts on https://github.com/ensdomains/ens-contracts
+
+```
+git clone https://github.com/ensdomains/ens-contracts
+cd ens-contracts
+DEPLOYER_KEY=$DEPLOYER_KEY ETHERSCAN_API_KEY=$ETHERSCAN_API_KEY npx hardhat deploy --tags l2 --network optimismSepolia/baseSepolia/arbSepolia
+```
+
+Once l2 contracts are deployed, create `.env` and set the following variables
+
 Create `.env` and set the following variables
 
 - DEPLOYER_PRIVATE_KEY
@@ -16,17 +28,10 @@ Create `.env` and set the following variables
 - L2_ETHERSCAN_API_KEY
 - VERIFIER_ADDRESS
 - REVERSE_NAMESPACE
-
-NOTE: Use https://github.com/ethereum-optimism/evmgateway-starter#op-gateway-and-op-verifier-deployments for VERIFIER_ADDRESS
-
-```
-bun run hardhat deploy --network optimismGoerli
-```
-
-Followed by the L1 contract:
+- L2_REVERSE_REGISTRAR_ADDRESS
 
 ```
-bun run hardhat deploy --network goerli
+bun run hardhat deploy --network sepolia
 ```
 
 After deployment is complete, set the rersolver of $REVERSE_NAMESPACE to L1ReverseResolver contract address
@@ -35,25 +40,23 @@ After deployment is complete, set the rersolver of $REVERSE_NAMESPACE to L1Rever
 
 ### OP
 #### L2
-- L2ReverseRegistrar = [0x7D006EFd21eb282C8B0a425BAB546517bfEC2cc2](https://goerli-optimism.etherscan.io/address/0x7D006EFd21eb282C8B0a425BAB546517bfEC2cc2) = REVERSE_NAMESPACE is set to `op.reverse.evmgateway.eth`
+- L2ReverseRegistrar = [0x7bB1207A7C23d620Cb22C2DcC96424CCb92272ae](https://sepolia-optimism.etherscan.io/address/0x7bB1207A7C23d620Cb22C2DcC96424CCb92272ae#code) = REVERSE_NAMESPACE is set to `2158639068.reverse.evmgateway.eth`
 #### L1
-- L1ReverseResolver = [0xeEB5832Ea8732f7EF06d468E40F562c9D7347795](https://goerli.etherscan.io/address/0xeEB5832Ea8732f7EF06d468E40F562c9D7347795) 
+- L1ReverseResolver = [0x83C058D2139a6eFA32E42BeB415409000C075563](https://sepolia.etherscan.io/address/0x83C058D2139a6eFA32E42BeB415409000C075563#code)
 
 ### Base
 
 #### L2
-- L2ReverseRegistrar = [0xDC317ef697b3A9903a24abcC325d9C1C80B19D87](https://goerli.basescan.org/address/0xDC317ef697b3A9903a24abcC325d9C1C80B19D87) = REVERSE_NAMESPACE is set to `base.reverse.evmgateway.eth`
+- L2ReverseRegistrar = [0x00198c6c94522A81698190ADF411641995Eb180c](https://sepolia.basescan.org/address/0x00198c6c94522A81698190ADF411641995Eb180c#code) = REVERSE_NAMESPACE is set to `2147568180.reverse.evmgateway.eth`
 #### L1
-- L1ReverseResolver = [0x3c332a23a6052afE947F47656d1fD0f450F4C237](https://goerli.etherscan.io/address/0x3c332a23a6052afE947F47656d1fD0f450F4C237)
+- L1ReverseResolver = [0x3d6BBfDCe5C484D9177F3a7d30e3bfe7Add5051E](https://sepolia.etherscan.io/address/0x3d6BBfDCe5C484D9177F3a7d30e3bfe7Add5051E#code)
 
 ### Arbitrum
 
 #### L2
-- L2ReverseRegistrar = [0x4166B7e70F14C48980Da362256D1Da9Cc8F95e13](https://goerli.arbiscan.io/address/0x4166B7e70F14C48980Da362256D1Da9Cc8F95e13#code) = REVERSE_NAMESPACE is set to `arb.reverse.evmgateway.eth`
+- L2ReverseRegistrar = [0x9B3f2e110e27EAe077B581b4880f5BD777121C66](https://sepolia.arbiscan.io/address/0x9B3f2e110e27EAe077B581b4880f5BD777121C66#code) = REVERSE_NAMESPACE is set to `2147905262.reverse.evmgateway.eth`
 #### L1
-- L1ReverseResolver = [0x2fed4238EfD49d0ECCeEED943BCf4D5C3a299418](Successfully verified contract L1ReverseResolver on the block explorer.
-https://goerli.etherscan.io/address/0x2fed4238EfD49d0ECCeEED943BCf4D5C3a299418#code)
-
+- L1ReverseResolver = [0xDC317ef697b3A9903a24abcC325d9C1C80B19D87](https://sepolia.etherscan.io/address/0xDC317ef697b3A9903a24abcC325d9C1C80B19D87#code)
 
 ## Usage
 
@@ -66,15 +69,16 @@ const registrar = registrar.setName(name)
 
 , try it directly from [etherscan](https://goerli.etherscan.io/address/0xeEB5832Ea8732f7EF06d468E40F562c9D7347795), or run the script
 ```
-DEPLOYER_PRIVATE_KEY=$DEPLOYER_PRIVATE_KEY REVERSE_NAMESPACE=REVERSE_NAMESPACE L2_PROVIDER_URL=$L2_PROVIDER_URL L2_REVERSE_REGISTRAR_ADDRESS=$L2_REVERSE_REGISTRAR_ADDRESS ENS_NAME='foo.op.evmgateway.eth' yarn setname --network optimismGoerli
+DEPLOYER_PRIVATE_KEY=$DEPLOYER_PRIVATE_KEY REVERSE_NAMESPACE=$REVERSE_NAMESPACE L2_PROVIDER_URL=$L2_PROVIDER_URL L2_REVERSE_REGISTRAR_ADDRESS=$L2_REVERSE_REGISTRAR_ADDRESS ENS_NAME=$ENS_NAME yarn setname --network optimismSepolia
 ```
 
 ### Query Primary name on L1
 
-The current goerli primary namespace is set at `op.reverse.evmgateway.eth` for Optimism Goerli. Once the ENS DAO approves it, it will be put under `${cointype}.ververse`
+The current goerli primary namespace is set at `{cointype}.reverse.evmgateway.eth` for Optimism Goerli. Once the ENS DAO approves it, it will be put under `${cointype}.reverse`
 
-- 2147484068 is the coin type of Optimism Goerli (420)
-- 2147568179 is the coin type of Base Goerli (84531)
+- 2158639068 is the coin type of Optimism Sepolia (11155420)
+- 2147568180 is the coin type of Base Sepolia (84532)
+- 2147905262 is the coin type of Arbitrum Sepolia (421614)
 
 ```js
 import packet from 'dns-packet';
@@ -94,5 +98,5 @@ console.log(await l1resolver.name(reversenode, {enableCcipRead:true}))
 Using the script
 
 ```
-L1_PROVIDER_URL=$L1_PROVIDER_URL L2_REVERSE_REGISTRAR_ADDRESS=$L2_REVERSE_REGISTRAR_ADDRESS ETH_ADDRESS=$ETH_ADDRESS yarn getname
+L1_PROVIDER_URL=$L1_PROVIDER_URL REVERSE_NAMESPACE=$REVERSE_NAMESPACE L2_REVERSE_REGISTRAR_ADDRESS=$L2_REVERSE_REGISTRAR_ADDRESS ETH_ADDRESS=$ETH_ADDRESS yarn getname
 ```
