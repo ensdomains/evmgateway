@@ -12,10 +12,10 @@ contract L1ReverseResolver is EVMFetchTarget, INameResolver, ITextResolver, ERC1
     using EVMFetcher for EVMFetcher.EVMFetchRequest;
     IEVMVerifier immutable verifier;
     address immutable target;
-    uint256 constant RECORD_VERSIONS_SLOT = 1;
-    uint256 constant VERSIONABLE_TEXTS_SLOT = 3;
-    uint256 constant VERSIONABLE_NAME_SLOT = 4;
-
+    uint256 constant VERSIONABLE_TEXTS_SLOT = 2;
+    uint256 constant VERSIONABLE_NAME_SLOT = 3;
+    uint256 constant RECORD_VERSIONS_SLOT = 4;
+    
     constructor(IEVMVerifier _verifier, address _target) {
         verifier = _verifier;
         target = _target;
