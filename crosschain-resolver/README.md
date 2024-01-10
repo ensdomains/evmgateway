@@ -58,28 +58,28 @@ Storage verificaton can only verify the data of l2. When the function result nee
     }
 ```
 
+## Deploying (Sepolia)
 
+Before deploying l1 contracts, deploy l2 contracts on https://github.com/ensdomains/ens-contracts
 
-## Deploying (Goerli)
+```
+git clone https://github.com/ensdomains/ens-contracts
+cd ens-contracts
+DEPLOYER_KEY=$DEPLOYER_KEY ETHERSCAN_API_KEY=$ETHERSCAN_API_KEY npx hardhat deploy --tags l2 --network optimismSepolia/baseSepolia/arbSepolia
+```
 
-Create `.env` and set the following variables
+Once l2 contracts are deployed, create `.env` and set the following variables
 
 - DEPLOYER_PRIVATE_KEY
 - L1_PROVIDER_URL
 - L2_PROVIDER_URL
 - L1_ETHERSCAN_API_KEY
-- L2_ETHERSCAN_API_KEY
 - VERIFIER_ADDRESS
 - ENS_ADDRESS
 - WRAPPER_ADDRESS
+- L2_GRAPHQL_URL
 ```
-bun run hardhat deploy --network optimismGoerli
-```
-
-Followed by the L1 contract:
-
-```
-bun run hardhat deploy --network goerli
+bun run hardhat deploy --network sepolia
 ```
 
 ## Deployments
@@ -102,35 +102,38 @@ const l2Factory = new ethers.Contract(L2_RESOLVER_FACTORY_ADDRESS, abi, l2provid
 const l2resolverAddress = await l2Factory.predictAddress(ETH_ADDRESS)
 ```
 
-### OP
-#### L2
-- DelegatableResolver = [0xE00739Fc93e27aBf44343fD5FAA151c67C0A0Aa3](https://goerli-optimism.etherscan.io/address/0xE00739Fc93e27aBf44343fD5FAA151c67C0A0Aa3) = this is used as a template so cannot interact directly
-- DelegatableResolverFactory = [0xacB9771923873614d77C914D716d8E25dAF09b8d](https://goerli-optimism.etherscan.io/address/0xacB9771923873614d77C914D716d8E25dAF09b8d)
-
-#### L1
-- OPVerifier = [0xe58448bfc2fa097953e800e0af0b0a5257ecc4b1](https://goerli.etherscan.io/address/0xe58448bfc2fa097953e800e0af0b0a5257ecc4b1)
-- L1Resolver = [0x7Bf57B0a683CC964B0fEe30633A72F5c05464a0f](https://goerli.etherscan.io/address/0x7Bf57B0a683CC964B0fEe30633A72F5c05464a0f) = Currently `op.evmgateway.eth` is set to the resolver
-
-### Base
+### OP on Sepolia
 
 #### L2
-- DelegatableResolver = [0x60BDFeF9ff7bB47d95d1658Be925587F046AE2C7](https://goerli.basescan.org/address/0x7d56Bc48F0802319CB7C79B421Fa5661De905AF7) = this is used as a template so cannot interact directly
-- DelegatableResolverFactory = [0x7d56Bc48F0802319CB7C79B421Fa5661De905AF7](https://goerli.basescan.org/address/0x7d56Bc48F0802319CB7C79B421Fa5661De905AF7)
+- DelegatableResolver = [0x50200c7Ccb1abD927184396547ea8dD1A18CAA3A](https://sepolia-optimism.etherscan.io/address/0x50200c7Ccb1abD927184396547ea8dD1A18CAA3A#code) = this is used as a template so cannot interact directly
+- DelegatableResolverFactory = [0x4166B7e70F14C48980Da362256D1Da9Cc8F95e13](https://sepolia-optimism.etherscan.io/address/0x4166B7e70F14C48980Da362256D1Da9Cc8F95e13#code)
+- L2ReverseRegistrar = [0x7bB1207A7C23d620Cb22C2DcC96424CCb92272ae](https://sepolia-optimism.etherscan.io/address/0x7bB1207A7C23d620Cb22C2DcC96424CCb92272ae#code)
 
 #### L1
-- OPVerifier = [0x7e2f9c4a1467e8a41e1e8283ba3ba72e3d92f6b8](https://goerli.etherscan.io/address/0x7e2f9c4a1467e8a41e1e8283ba3ba72e3d92f6b8)
-- L1Resolver = [0x3Ac25843A1F696fe2166C5dE127FD4f2832F4d42](https://goerli.etherscan.io/address/0x3Ac25843A1F696fe2166C5dE127FD4f2832F4d42) = Currently `base.evmgateway.eth` is set to the resolver
+- OPVerifier = [0x0e8DA38565915B7e74e2d78F80ba1BF815F34116](https://sepolia.etherscan.io/address/0x0e8DA38565915B7e74e2d78F80ba1BF815F34116#code)
+- L1Resolver = [0x4166B7e70F14C48980Da362256D1Da9Cc8F95e13](https://sepolia.etherscan.io/address/0x4166B7e70F14C48980Da362256D1Da9Cc8F95e13#code) = Currently `op.evmgateway.eth` is set to the resolver
+- L1ReverseResolver = [0xCcFC8Be7f65E1D46Af71cf6C06668DDA25f51e3e](https://sepolia.etherscan.io/address/0xCcFC8Be7f65E1D46Af71cf6C06668DDA25f51e3e#code)
 
-### Arbitrum 
+### Base on Sepolia
 
 #### L2
-- DelegatableResolver = [0x5F5e99139a17c56eadC3B1d01535224d003B7E5b](https://goerli.arbiscan.io/address/0x5F5e99139a17c56eadC3B1d01535224d003B7E5b) this is used as a template so cannot interact directly
-- DelegatableResolverFactory = [0x94fbCE7ca1a0152cfC99F90f4421d31cf356c896](https://goerli.arbiscan.io/address/0x94fbCE7ca1a0152cfC99F90f4421d31cf356c896)
-- [0xf91e7d97e4dbb5303f047b135247073d7991cbdb]
+- DelegatableResolver = [0x9B3f2e110e27EAe077B581b4880f5BD777121C66](https://sepolia.basescan.org/address/0x9B3f2e110e27EAe077B581b4880f5BD777121C66#code) = this is used as a template so cannot interact directly
+- DelegatableResolverFactory = [0x0e8DA38565915B7e74e2d78F80ba1BF815F34116](https://sepolia.basescan.org/address/0x0e8DA38565915B7e74e2d78F80ba1BF815F34116#code)
 
 #### L1
-- ArbVerifier = [0x9E46DeE08Ad370bEFa7858c0E9a6c87f2D7E57A1](https://goerli.etherscan.io/address/0x9E46DeE08Ad370bEFa7858c0E9a6c87f2D7E57A1#code)
-- L1Resolver = [0xFb42a2d1A28A10607ee426764BdcdA7d121731AD](https://goerli.etherscan.io/address/0xFb42a2d1A28A10607ee426764BdcdA7d121731AD#code)
+- OPVerifier = [0xAdef74372444e716C0473dEe1F9Cb3108EFa3818](https://sepolia.etherscan.io/address/0xAdef74372444e716C0473dEe1F9Cb3108EFa3818#code
+)
+- L1Resolver = [0xc3C252341f1A3896AfD9Ab821Bd9D1D452146a53](https://sepolia.etherscan.io/address/0xc3C252341f1A3896AfD9Ab821Bd9D1D452146a53#code) = Currently `base.evmgateway.eth` is set to the resolver
+
+### Arbitrum on Sepolia
+
+#### L2
+- DelegatableResolver = [0x5F5e99139a17c56eadC3B1d01535224d003B7E5b](https://api-sepolia.arbiscan.io/address/0x5F5e99139a17c56eadC3B1d01535224d003B7E5b#code) this is used as a template so cannot interact directly
+- DelegatableResolverFactory = [0x94fbCE7ca1a0152cfC99F90f4421d31cf356c896](https://api-sepolia.arbiscan.io/address/0x94fbCE7ca1a0152cfC99F90f4421d31cf356c896#code)
+
+#### L1
+- ArbVerifier = [0x6820E47CED34D6F275c6d26C3876D48B2c1fdf27](https://sepolia.etherscan.io/address/0x6820E47CED34D6F275c6d26C3876D48B2c1fdf27#code)
+- L1Resolver = [0xf96975c83A7d9d87332b86f8A14835234745C7F9](https://sepolia.etherscan.io/address/0xf96975c83A7d9d87332b86f8A14835234745C7F9#code) = Currently `arb.evmgateway.eth` is set to the resolver
 
 ## Usage
 
@@ -167,7 +170,7 @@ DEPLOYER_PRIVATE_KEY=$DEPLOYER_PRIVATE_KEY L1_PROVIDER_URL=$L1_PROVIDER_URL L2_P
 ```
 
 ```
-DEPLOYER_PRIVATE_KEY=$DEPLOYER_PRIVATE_KEY L1_PROVIDER_URL=$L1_PROVIDER_URL L2_PROVIDER_URL=$L2_PROVIDER_URL L1_ETHERSCAN_API_KEY=$L1_ETHERSCAN_API_KEY L2_ETHERSCAN_API_KEY=$L2_ETHERSCAN_API_KEY L2_PROVIDER_URL=$L2_PROVIDER_URL L2_RESOLVER_FACTORY_ADDRESS=$L2_RESOLVER_FACTORY_ADDRESS ENS_NAME=$ENS_NAME yarn setupl2
+DEPLOYER_PRIVATE_KEY=$DEPLOYER_PRIVATE_KEY L1_PROVIDER_URL=$L1_PROVIDER_URL L2_PROVIDER_URL=$L2_PROVIDER_URL L1_ETHERSCAN_API_KEY=$L1_ETHERSCAN_API_KEY L2_ETHERSCAN_API_KEY=$L2_ETHERSCAN_API_KEY L2_PROVIDER_URL=$L2_PROVIDER_URL L2_RESOLVER_FACTORY_ADDRESS=$L2_RESOLVER_FACTORY_ADDRESS ENS_NAME=$ENS_NAME yarn setupl2 --network optimismSepolia/baseSepolia/arbitrumSepolia
 ```
 
 ```

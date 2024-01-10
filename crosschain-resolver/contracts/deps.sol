@@ -6,6 +6,7 @@ import "@ensdomains/l1-verifier/contracts/L1Verifier.sol";
 import {ReverseRegistrar} from "@ensdomains/ens-contracts/contracts/reverseRegistrar/ReverseRegistrar.sol";
 import {PublicResolver} from "@ensdomains/ens-contracts/contracts/resolvers/PublicResolver.sol";
 import {DelegatableResolverFactory} from "@ensdomains/ens-contracts/contracts/resolvers/DelegatableResolverFactory.sol";
+import {DelegatableResolver} from "@ensdomains/ens-contracts/contracts/resolvers/DelegatableResolver.sol";
 // Storage slot
 // ┌────────────────────────────┬──────────────────────────────┬──────────────┬
 // │      contract              │        state_variable        │ storage_slot │ 

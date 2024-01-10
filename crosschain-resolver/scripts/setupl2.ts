@@ -21,17 +21,13 @@ export const main = async () => {
   const l2provider        = new ethers.JsonRpcProvider(L2_PROVIDER_URL);
   const l2FactoryRead = new ethers.Contract(L2_RESOLVER_FACTORY_ADDRESS, abi, l2provider);
   const l2resolverAddress = await l2FactoryRead.predictAddress(ETH_ADDRESS)
-  const tx1  = await l2Factory.create(ETH_ADDRESS, {
-    gasPrice: "900000",
-    gasLimit: 500000,
-  })
+  const tx1  = await l2Factory.create(ETH_ADDRESS)
   console.log(`4, Creating l2 resolver ${l2resolverAddress} as a target`, (await tx1.wait()).hash)
-  const l2Resolver       = (await ethers.getContractFactory('DelegatableResolver', signer)).attach(l2resolverAddress);
-  const tx2 = await l2Resolver['setAddr(bytes32,address)'](node, ETH_ADDRESS, {
-    gasPrice: "900000",
-    gasLimit: 500000,
-  });
+  const l2Resolver = (await ethers.getContractFactory('DelegatableResolver', signer)).attach(l2resolverAddress);
+  const tx2 = await l2Resolver['setAddr(bytes32,address)'](node, ETH_ADDRESS);
+  console.log({node, ETH_ADDRESS, a:l2Resolver.interface.fragments})
   console.log(`5, Setting l2 ETH address of ${ENS_NAME} to ${ETH_ADDRESS} as a target`, (await tx2.wait()).hash)
+  console.log(6, await l2Resolver['addr(bytes32)'](node))
 };
 
 main();

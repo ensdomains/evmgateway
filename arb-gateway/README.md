@@ -27,7 +27,7 @@ wrngler login
 wrangler secret put L1_PROVIDER_URL
 wrangler secret put L2_PROVIDER_URL
 wrangler secret put L2_ROLLUP
-yarn deploy
+yarn deploy --env sepolia
 ```
 
 ## How to test
