@@ -40,21 +40,23 @@ After deployment is complete, set the rersolver of $REVERSE_NAMESPACE to L1Rever
 
 ### OP
 #### L2
-- L2ReverseRegistrar = [0x7bB1207A7C23d620Cb22C2DcC96424CCb92272ae](https://sepolia-optimism.etherscan.io/address/0x7bB1207A7C23d620Cb22C2DcC96424CCb92272ae#code) = REVERSE_NAMESPACE is set to `2158639068.reverse.evmgateway.eth`
+- L2ReverseRegistrar = [0xc40cdB59896D02a500D892A5bdA1CDf54a392A1d](https://sepolia-optimism.etherscan.io/address/0xc40cdB59896D02a500D892A5bdA1CDf54a392A1d#code
+) = REVERSE_NAMESPACE is set to `2158639068.reverse.evmgateway.eth`
 #### L1
 - L1ReverseResolver = [0x83C058D2139a6eFA32E42BeB415409000C075563](https://sepolia.etherscan.io/address/0x83C058D2139a6eFA32E42BeB415409000C075563#code)
 
 ### Base
 
 #### L2
-- L2ReverseRegistrar = [0x00198c6c94522A81698190ADF411641995Eb180c](https://sepolia.basescan.org/address/0x00198c6c94522A81698190ADF411641995Eb180c#code) = REVERSE_NAMESPACE is set to `2147568180.reverse.evmgateway.eth`
+- L2ReverseRegistrar = [0x4166B7e70F14C48980Da362256D1Da9Cc8F95e13](https://sepolia.basescan.org/address/0x4166B7e70F14C48980Da362256D1Da9Cc8F95e13#code) = REVERSE_NAMESPACE is set to `2147568180.reverse.evmgateway.eth`
 #### L1
 - L1ReverseResolver = [0x3d6BBfDCe5C484D9177F3a7d30e3bfe7Add5051E](https://sepolia.etherscan.io/address/0x3d6BBfDCe5C484D9177F3a7d30e3bfe7Add5051E#code)
 
 ### Arbitrum
 
 #### L2
-- L2ReverseRegistrar = [0x9B3f2e110e27EAe077B581b4880f5BD777121C66](https://sepolia.arbiscan.io/address/0x9B3f2e110e27EAe077B581b4880f5BD777121C66#code) = REVERSE_NAMESPACE is set to `2147905262.reverse.evmgateway.eth`
+- L2ReverseRegistrar = [0x7bB1207A7C23d620Cb22C2DcC96424CCb92272ae](https://api-sepolia.arbiscan.io/address/0x7bB1207A7C23d620Cb22C2DcC96424CCb92272ae#code
+) = REVERSE_NAMESPACE is set to `2147905262.reverse.evmgateway.eth`
 #### L1
 - L1ReverseResolver = [0xDC317ef697b3A9903a24abcC325d9C1C80B19D87](https://sepolia.etherscan.io/address/0xDC317ef697b3A9903a24abcC325d9C1C80B19D87#code)
 
