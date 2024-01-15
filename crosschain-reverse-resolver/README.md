@@ -29,7 +29,7 @@ Create `.env` and set the following variables
 - VERIFIER_ADDRESS
 - REVERSE_NAMESPACE
 - L2_REVERSE_REGISTRAR_ADDRESS
-
+- CHAIN_NAME (Op/Base/Arb)
 ```
 bun run hardhat deploy --network sepolia
 ```
@@ -43,7 +43,7 @@ After deployment is complete, set the rersolver of $REVERSE_NAMESPACE to L1Rever
 - L2ReverseRegistrar = [0xc40cdB59896D02a500D892A5bdA1CDf54a392A1d](https://sepolia-optimism.etherscan.io/address/0xc40cdB59896D02a500D892A5bdA1CDf54a392A1d#code
 ) = REVERSE_NAMESPACE is set to `2158639068.reverse.evmgateway.eth`
 #### L1
-- L1ReverseResolver = [0x83C058D2139a6eFA32E42BeB415409000C075563](https://sepolia.etherscan.io/address/0x83C058D2139a6eFA32E42BeB415409000C075563#code)
+- L1ReverseResolver = [0x2D6e4FDbC2CF9422CEa8fA79c4b6AC517D32cd18](https://sepolia.etherscan.io/address/0x2D6e4FDbC2CF9422CEa8fA79c4b6AC517D32cd18#code)
 
 ### Base
 
