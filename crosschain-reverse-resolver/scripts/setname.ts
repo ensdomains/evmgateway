@@ -11,8 +11,6 @@ export const main = async () => {
     throw 'Set L2_REVERSE_REGISTRAR_ADDRESS';
   if (!process.env.ENS_NAME)
     throw 'Set ENS_NAME';
-  // if (!process.env.REVERSE_NAMESPACE || !process.env.L2_PROVIDER_URL || !process.env.L2_REVERSE_REGISTRAR_ADDRESS  || !process.env.ENS_NAME)
-  //   throw 'Set REVERSE_NAMESPACE, L2_PROVIDER_URL, L2_REVERSE_REGISTRAR_ADDRESS, and ENS_NAME';
 
   const L2_PROVIDER_URL = process.env.L2_PROVIDER_URL;
   const L2_REVERSE_REGISTRAR_ADDRESS = process.env.L2_REVERSE_REGISTRAR_ADDRESS;
