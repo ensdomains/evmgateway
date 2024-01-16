@@ -5,8 +5,6 @@ A reverse resolver contract that is built on top of evm-verifier.
 For a detailed readme and usage instructions, see the [monorepo readme](https://github.com/ensdomains/evmgateway/tree/main).
 
 
-## Deploying (Goerli)
-
 ## Deploying (Sepolia)
 
 Before deploying l1 contracts, deploy l2 contracts on https://github.com/ensdomains/ens-contracts
