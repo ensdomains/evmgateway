@@ -107,7 +107,6 @@ const l2resolverAddress = await l2Factory.predictAddress(ETH_ADDRESS)
 #### L2
 - DelegatableResolver = [0x50200c7Ccb1abD927184396547ea8dD1A18CAA3A](https://sepolia-optimism.etherscan.io/address/0x50200c7Ccb1abD927184396547ea8dD1A18CAA3A#code) = this is used as a template so cannot interact directly
 - DelegatableResolverFactory = [0x4166B7e70F14C48980Da362256D1Da9Cc8F95e13](https://sepolia-optimism.etherscan.io/address/0x4166B7e70F14C48980Da362256D1Da9Cc8F95e13#code)
-- L2ReverseRegistrar = [0x7bB1207A7C23d620Cb22C2DcC96424CCb92272ae](https://sepolia-optimism.etherscan.io/address/0x7bB1207A7C23d620Cb22C2DcC96424CCb92272ae#code)
 
 #### L1
 - OPVerifier = [0x0e8DA38565915B7e74e2d78F80ba1BF815F34116](https://sepolia.etherscan.io/address/0x0e8DA38565915B7e74e2d78F80ba1BF815F34116#code)
