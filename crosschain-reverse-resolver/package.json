@@ -42,7 +42,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@ensdomains/ens-contracts": "ensdomains/ens-contracts#feature/crosschain-resolver-with-reverse-registrar",
+    "@ensdomains/ens-contracts": "ensdomains/ens-contracts#l2-deployment",
     "@ensdomains/evm-verifier": "^0.1.0",
     "@eth-optimism/contracts": "^0.6.0"
   }
