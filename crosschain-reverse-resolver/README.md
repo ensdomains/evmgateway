@@ -48,7 +48,7 @@ After deployment is complete, set the rersolver of $REVERSE_NAMESPACE to L1Rever
 #### L2
 - L2ReverseRegistrar = [0x4166B7e70F14C48980Da362256D1Da9Cc8F95e13](https://sepolia.basescan.org/address/0x4166B7e70F14C48980Da362256D1Da9Cc8F95e13#code) = REVERSE_NAMESPACE is set to `2147568180.reverse.evmgateway.eth`
 #### L1
-- L1ReverseResolver = [0x3d6BBfDCe5C484D9177F3a7d30e3bfe7Add5051E](https://sepolia.etherscan.io/address/0x3d6BBfDCe5C484D9177F3a7d30e3bfe7Add5051E#code)
+- L1ReverseResolver = [0xDf11Ca83b42F94336E50D02AF0016D5A1c866C5e](https://sepolia.etherscan.io/address/0xDf11Ca83b42F94336E50D02AF0016D5A1c866C5e#code)
 
 ### Arbitrum
 
