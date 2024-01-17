@@ -121,7 +121,7 @@ const l2resolverAddress = await l2Factory.predictAddress(ETH_ADDRESS)
 #### L1
 - OPVerifier = [0xAdef74372444e716C0473dEe1F9Cb3108EFa3818](https://sepolia.etherscan.io/address/0xAdef74372444e716C0473dEe1F9Cb3108EFa3818#code
 )
-- L1Resolver = [0xE00739Fc93e27aBf44343fD5FAA151c67C0A0Aa3](https://sepolia.etherscan.io/address/0xE00739Fc93e27aBf44343fD5FAA151c67C0A0Aa3#code) = Currently `base.evmgateway.eth` is set to the resolver
+- L1Resolver = [0xF9610D220975D38346B2355A32ed854aa798C883](https://sepolia.etherscan.io/address/0xF9610D220975D38346B2355A32ed854aa798C883#code) = Currently `base.evmgateway.eth` is set to the resolver
 
 ### Arbitrum on Sepolia
 
