@@ -42,6 +42,7 @@ const config: HardhatUserConfig = {
       url: L1_PROVIDER_URL,
       accounts: [DEPLOYER_PRIVATE_KEY],
       deploy: ['deploy_l1/'],
+      chainId:11155111,
       companionNetworks: {
         l2: 'arbitrumSepolia',
       },
@@ -52,6 +53,7 @@ const config: HardhatUserConfig = {
       deploy: ['deploy_l2/'],
     },
     arbitrumSepolia: {
+      chainId: 421614,
       url: 'https://sepolia-rollup.arbitrum.io/rpc',
       accounts: [DEPLOYER_PRIVATE_KEY],
       deploy: [ "deploy_l2/" ],
