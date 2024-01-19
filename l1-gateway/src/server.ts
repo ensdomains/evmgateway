@@ -1,6 +1,6 @@
 import { Server } from '@chainlink/ccip-read-server';
 import { Command } from '@commander-js/extra-typings';
-import { EVMGateway } from '@ensdomains/evm-gateway';
+import { EVMGateway } from '../../evm-gateway';
 import { ethers } from 'ethers';
 import { L1ProofService } from './L1ProofService.js';
 

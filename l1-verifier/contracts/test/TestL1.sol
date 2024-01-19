@@ -10,10 +10,12 @@ contract TestL1 is EVMFetchTarget {
 
     IEVMVerifier verifier;                  // Slot 0
     address target;
+    address target2;
 
-    constructor(IEVMVerifier _verifier, address _target) {
+    constructor(IEVMVerifier _verifier, address _target, address _target2) {
         verifier = _verifier;
         target = _target;
+        target2 = _target2;
     }
 
     function getLatest() public view returns(uint256) {
@@ -26,9 +28,47 @@ contract TestL1 is EVMFetchTarget {
         return abi.decode(values[0], (uint256));
     }
 
+    function getSecondAddress() public view returns(address) {
+        EVMFetcher.newFetchRequest(verifier, target)
+            .getStatic(1)
+            .fetch(this.getSecondAddressCallback.selector, "");
+    }
+
+    function getSecondAddressCallback(bytes[] memory values, bytes memory) public pure returns(address) {
+        return abi.decode(values[0], (address));
+    }
+
+    function getValueFromSecondContract() public view returns(address) {
+        EVMFetcher.newFetchRequest(verifier, target)
+            .getStatic(1)
+                .setTargetRef(0)
+            .getStatic(1)   
+            .fetch(this.getValueFromSecondContractCallback.selector, "");
+    }
+
+    function getValueFromSecondContractCallback(bytes[] memory values, bytes memory) public pure returns(address) {
+        return abi.decode(values[1], (address));
+    }
+
+    function getLatestFromTwoTargets() public view returns(uint256) {
+
+        EVMFetcher.newFetchRequest(verifier, target)
+            .getStatic(0)
+            .setTarget(target2)
+            .getStatic(0)
+            .fetch(this.getLatestFromTwoTargetsCallback.selector, "");
+    }
+
+    function getLatestFromTwoTargetsCallback(bytes[] memory values, bytes memory) public pure returns(uint256) {
+        uint256 l1 = abi.decode(values[0], (uint256));
+        uint256 l2 = abi.decode(values[1], (uint256));
+
+        return l1 + l2;
+    }
+
     function getName() public view returns(string memory) {
         EVMFetcher.newFetchRequest(verifier, target)
-            .getDynamic(1)
+            .getDynamic(2)
             .fetch(this.getNameCallback.selector, "");
     }
 
@@ -38,7 +78,7 @@ contract TestL1 is EVMFetchTarget {
 
     function getHighscorer(uint256 idx) public view returns(string memory) {
         EVMFetcher.newFetchRequest(verifier, target)
-            .getDynamic(3)
+            .getDynamic(4)
                 .element(idx)
             .fetch(this.getHighscorerCallback.selector, "");
     }
@@ -50,7 +90,7 @@ contract TestL1 is EVMFetchTarget {
     function getLatestHighscore() public view returns(uint256) {
         EVMFetcher.newFetchRequest(verifier, target)
             .getStatic(0)
-            .getStatic(2)
+            .getStatic(3)
                 .ref(0)
             .fetch(this.getLatestHighscoreCallback.selector, "");
     }
@@ -62,7 +102,7 @@ contract TestL1 is EVMFetchTarget {
     function getLatestHighscorer() public view returns(string memory) {
         EVMFetcher.newFetchRequest(verifier, target)
             .getStatic(0)
-            .getDynamic(3)
+            .getDynamic(4)
                 .ref(0)
             .fetch(this.getLatestHighscorerCallback.selector, "");
     }
@@ -73,7 +113,7 @@ contract TestL1 is EVMFetchTarget {
 
     function getNickname(string memory _name) public view returns(string memory) {
         EVMFetcher.newFetchRequest(verifier, target)
-            .getDynamic(4)
+            .getDynamic(5)
                 .element(_name)
             .fetch(this.getNicknameCallback.selector, "");
     }
@@ -84,8 +124,8 @@ contract TestL1 is EVMFetchTarget {
 
     function getPrimaryNickname() public view returns(string memory) {
         EVMFetcher.newFetchRequest(verifier, target)
-            .getDynamic(1)
-            .getDynamic(4)
+            .getDynamic(2)
+            .getDynamic(5)
                 .ref(0)
             .fetch(this.getPrimaryNicknameCallback.selector, "");
     }
@@ -96,7 +136,7 @@ contract TestL1 is EVMFetchTarget {
 
     function getZero() public view returns(uint256) {
         EVMFetcher.newFetchRequest(verifier, target)
-            .getStatic(5)
+            .getStatic(6)
             .fetch(this.getZeroCallback.selector, "");
     }
 
@@ -106,8 +146,8 @@ contract TestL1 is EVMFetchTarget {
 
     function getZeroIndex() public view returns(uint256) {
         EVMFetcher.newFetchRequest(verifier, target)
-            .getStatic(5)
-            .getStatic(2)
+            .getStatic(6)
+            .getStatic(3)
                 .ref(0)
             .fetch(this.getZeroIndexCallback.selector, "");
     }

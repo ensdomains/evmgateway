@@ -5,7 +5,7 @@ import {
   type JsonRpcProvider,
 } from 'ethers';
 
-import { EVMProofHelper, type IProofService } from '@ensdomains/evm-gateway';
+import { EVMProofHelper, type IProofService } from '../../evm-gateway';
 import { Block, type JsonRpcBlock } from '@ethereumjs/block';
 
 type RlpObject = Uint8Array | Array<RlpObject>;
