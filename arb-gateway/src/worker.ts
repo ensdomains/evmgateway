@@ -17,16 +17,19 @@ const logResult = async (
   request: CFWRequest,
   result: Response
 ): Promise<Response> => {
+  if (request.url.match(/favicon/)) {
+    return result;
+  }
   if (!result.body) {
     return result;
   }
   const [streamForLog, streamForResult] = result.body.tee();
   const logResult = await new Response(streamForLog).json();
-
+  const logResultData = logResult.data.substring(0, 200)
   await tracker.trackEvent(
     'result',
     request,
-    { props: { result: logResult.data.substring(0, 200) } },
+    { props: { result: logResultData } },
     true
   );
   return new Response(streamForResult, result);
