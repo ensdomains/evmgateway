@@ -26,6 +26,7 @@ const logResult = async (
   const [streamForLog, streamForResult] = result.body.tee();
   const logResult = await new Response(streamForLog).json();
   const logResultData = logResult.data.substring(0, 200);
+  console.log('***TrackingEvent', logResultData)
   await tracker.trackEvent(
     'result',
     request,
