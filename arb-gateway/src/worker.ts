@@ -10,7 +10,7 @@ interface Env {
 }
 
 let app: Router;
-const tracker = new Tracker('arb-gateway-worker.ens-cf.workers.dev', {
+const tracker = new Tracker('arb-sepolia-gateway-worker.ens-cf.workers.dev', {
   enableLogging: true,
 });
 const logResult = async (
