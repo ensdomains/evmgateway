@@ -23,8 +23,8 @@ interface RequestBody {
 export class Tracker {
   domain = '';
   enableLogging = false;
-  apiEndpoint = 'https://plausible.io/api/event';
-
+  apiEndpoint = 'https://plausible.pff.sh';
+  
   constructor(domain: string, options: TrackerOptions = {}) {
     this.domain = domain;
     this.apiEndpoint = options.apiEndpoint || this.apiEndpoint;
