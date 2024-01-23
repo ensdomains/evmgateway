@@ -105,33 +105,34 @@ const l2resolverAddress = await l2Factory.predictAddress(ETH_ADDRESS)
 ### OP on Sepolia
 
 #### L2
-- DelegatableResolver = [0x50200c7Ccb1abD927184396547ea8dD1A18CAA3A](https://sepolia-optimism.etherscan.io/address/0x50200c7Ccb1abD927184396547ea8dD1A18CAA3A#code) = this is used as a template so cannot interact directly
-- DelegatableResolverFactory = [0x4166B7e70F14C48980Da362256D1Da9Cc8F95e13](https://sepolia-optimism.etherscan.io/address/0x4166B7e70F14C48980Da362256D1Da9Cc8F95e13#code)
+- DelegatableResolver = [0x017845E4518dB01EFCAFd7Acb192aF924B432d66](https://sepolia-optimism.etherscan.io/address/0x017845E4518dB01EFCAFd7Acb192aF924B432d66#code
+) = this is used as a template so cannot interact directly
+- DelegatableResolverFactory = [0x79b784075600c5C420aC3CEd45f04EEA50306a96](https://sepolia-optimism.etherscan.io/address/0x79b784075600c5C420aC3CEd45f04EEA50306a96#code)
 
 #### L1
 - OPVerifier = [0x0e8DA38565915B7e74e2d78F80ba1BF815F34116](https://sepolia.etherscan.io/address/0x0e8DA38565915B7e74e2d78F80ba1BF815F34116#code)
-- L1Resolver = [0xE0356133C3c43cbb623543488E607E4e349eAA10](https://sepolia.etherscan.io/address/0xE0356133C3c43cbb623543488E607E4e349eAA10#code) = Currently `op.evmgateway.eth` is set to the resolver
+- L1Resolver = [0x57C1f50093C1017AE81EBAF336511ACcc48061e2](https://sepolia.etherscan.io/address/0x57C1f50093C1017AE81EBAF336511ACcc48061e2#code) = Currently `op.evmgateway.eth` is set to the resolver
 
 ### Base on Sepolia
 
 #### L2
-- DelegatableResolver = [0x9B3f2e110e27EAe077B581b4880f5BD777121C66](https://sepolia.basescan.org/address/0x9B3f2e110e27EAe077B581b4880f5BD777121C66#code) = this is used as a template so cannot interact directly
-- DelegatableResolverFactory = [0x0e8DA38565915B7e74e2d78F80ba1BF815F34116](https://sepolia.basescan.org/address/0x0e8DA38565915B7e74e2d78F80ba1BF815F34116#code)
+- DelegatableResolver = [0xd8A6B88b0a0B419fCce6cfBD60F21f1b7761eeB2](https://sepolia.basescan.org/address/0xd8A6B88b0a0B419fCce6cfBD60F21f1b7761eeB2#code) = this is used as a template so cannot interact directly
+- DelegatableResolverFactory = [0xCcFC8Be7f65E1D46Af71cf6C06668DDA25f51e3e](https://sepolia.basescan.org/address/0xCcFC8Be7f65E1D46Af71cf6C06668DDA25f51e3e#code)
 
 #### L1
 - OPVerifier = [0xAdef74372444e716C0473dEe1F9Cb3108EFa3818](https://sepolia.etherscan.io/address/0xAdef74372444e716C0473dEe1F9Cb3108EFa3818#code
 )
-- L1Resolver = [0xF9610D220975D38346B2355A32ed854aa798C883](https://sepolia.etherscan.io/address/0xF9610D220975D38346B2355A32ed854aa798C883#code) = Currently `base.evmgateway.eth` is set to the resolver
+- L1Resolver = [0xF6EfB10e47d6D4C1023BBFa5e6396B00915FbD41](https://sepolia.etherscan.io/address/0xF6EfB10e47d6D4C1023BBFa5e6396B00915FbD41#code) = Currently `base.evmgateway.eth` is set to the resolver
 
 ### Arbitrum on Sepolia
 
 #### L2
-- DelegatableResolver = [0x5F5e99139a17c56eadC3B1d01535224d003B7E5b](https://api-sepolia.arbiscan.io/address/0x5F5e99139a17c56eadC3B1d01535224d003B7E5b#code) this is used as a template so cannot interact directly
-- DelegatableResolverFactory = [0x94fbCE7ca1a0152cfC99F90f4421d31cf356c896](https://api-sepolia.arbiscan.io/address/0x94fbCE7ca1a0152cfC99F90f4421d31cf356c896#code)
+- DelegatableResolver = [0xCcFC8Be7f65E1D46Af71cf6C06668DDA25f51e3e](https://api-sepolia.arbiscan.io/address/0xCcFC8Be7f65E1D46Af71cf6C06668DDA25f51e3e#code) this is used as a template so cannot interact directly
+- DelegatableResolverFactory = [0xF2c102E96A183fC598d83fDccF4e30cfE83aedCd](https://api-sepolia.arbiscan.io/address/0xF2c102E96A183fC598d83fDccF4e30cfE83aedCd#code)
 
 #### L1
 - ArbVerifier = [0x6820E47CED34D6F275c6d26C3876D48B2c1fdf27](https://sepolia.etherscan.io/address/0x6820E47CED34D6F275c6d26C3876D48B2c1fdf27#code)
-- L1Resolver = [0x9F3C37A6cDd5ECA7b27140856753EDBF387c06bB](https://sepolia.etherscan.io/address/0x9F3C37A6cDd5ECA7b27140856753EDBF387c06bB#code) = Currently `arb.evmgateway.eth` is set to the resolver
+- L1Resolver = [0xA47b9B72571e23604f067dfd4F22785c33E9cF9c](https://sepolia.etherscan.io/address/0xA47b9B72571e23604f067dfd4F22785c33E9cF9c#code) = Currently `arb.evmgateway.eth` is set to the resolver
 
 ## Usage
 

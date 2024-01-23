@@ -12,3 +12,4 @@ artifacts
 cache
 .env
 typechain-types
+.wrangler
