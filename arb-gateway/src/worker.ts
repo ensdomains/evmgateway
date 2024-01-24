@@ -1,8 +1,8 @@
 import { Request as CFWRequest } from '@cloudflare/workers-types';
 import { Server } from '@ensdomains/ccip-read-cf-worker';
 import type { Router } from '@ensdomains/evm-gateway';
+import { Tracker } from '@ensdomains/evm-gateway';
 import { InMemoryBlockCache } from './blockCache/InMemoryBlockCache.js';
-import { Tracker } from './tracker.js';
 interface Env {
   L1_PROVIDER_URL: string;
   L2_PROVIDER_URL: string;
