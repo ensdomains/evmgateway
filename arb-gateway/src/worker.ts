@@ -26,7 +26,6 @@ const logResult = async (
   const [streamForLog, streamForResult] = result.body.tee();
   const logResult = await new Response(streamForLog).json();
   const logResultData = logResult.data.substring(0, 200);
-  console.log('***TrackingEvent', logResultData)
   await tracker.trackEvent(
     'result',
     request,
@@ -64,7 +63,10 @@ async function fetch(request: CFWRequest, env: Env) {
     gateway.add(server);
     app = server.makeApp('/');
   }
-  // return app.handle(request);
+  await tracker.trackEvent(
+    'request', request,{},true
+  );
+
   return app.handle(request).then(logResult.bind(null, request));
 }
 

@@ -69,9 +69,13 @@ export class Tracker {
       if (requestInfo.get('Referrer')) {
         body.referrer = requestInfo.get('Referrer') || '';
       }
-
-      if (props) {
-        body.props = props;
+      body.props = props || {}
+      const trackingData = (body.url).match(/\/0x[a-fA-F0-9]{40}\/0x[a-fA-F0-9]{1,}\.json/)
+      if (trackingData) {
+        body.props = Object.assign(body.props, {
+          sender:trackingData[0].slice(1,42),
+          calldata:trackingData[0].slice(44).replace(".json","")
+        })
       }
 
       if (data) {
