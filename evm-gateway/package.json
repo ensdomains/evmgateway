@@ -6,7 +6,6 @@
   "module": "./_esm/index.js",
   "dependencies": {
     "@chainlink/ccip-read-server": "^0.2.1",
-    "@cloudflare/workers-types": "^4.20240117.0",
     "@ensdomains/ccip-read-cf-worker": "^0.0.1",
     "ethers": "^6.7.1"
   },

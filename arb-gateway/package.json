@@ -57,6 +57,7 @@
   },
   "dependencies": {
     "@chainlink/ccip-read-server": "^0.2.1",
+    "@cloudflare/workers-types": "^4.20240117.0",
     "@ensdomains/evm-gateway": "^0.1.0",
     "@ethereumjs/block": "^5.0.0",
     "@nomicfoundation/ethereumjs-block": "^5.0.2",
