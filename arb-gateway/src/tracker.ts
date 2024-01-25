@@ -1,4 +1,4 @@
-import { Request as CFWRequest } from '@cloudflare/workers-types';
+import { type Request as CFWRequest } from '@cloudflare/workers-types';
 import { type Request as ExpressRequest } from 'express';
 
 interface TrackerOptions {
