@@ -4,10 +4,12 @@ main = "./src/worker.ts"
 node_compat = true
 compatibility_date = "2023-10-13"
 
+
 [dev]
 port = 8080
 
 [build]
 command = "yarn build"
 
-[vars]
+[env.sepolia]
+name = "arb-sepolia-gateway-worker"
