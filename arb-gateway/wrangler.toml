@@ -2,7 +2,7 @@ name = "arb-gateway-worker"
 account_id = "15dcc9085cb794bb4f29d3e8177ac880"
 main = "./src/worker.ts"
 node_compat = true
-compatibility_date = "2023-10-13"
+compatibility_date = "2023-02-14"
 
 
 [dev]

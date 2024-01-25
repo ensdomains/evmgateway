@@ -2,7 +2,10 @@ import { Request as CFWRequest } from '@cloudflare/workers-types';
 import { Server } from '@ensdomains/ccip-read-cf-worker';
 import type { Router } from '@ensdomains/evm-gateway';
 import { InMemoryBlockCache } from './blockCache/InMemoryBlockCache.js';
-import { Tracker } from './tracker.js';
+// Importing this Tracker throws `✘ [ERROR] A request to the Cloudflare API (/accounts/**/workers/scripts/arb-sepolia-gateway-worker) failed.` error
+import { Tracker } from '@ensdomains/evm-gateway';
+// Importing this Tracker works
+// import { Tracker } from './tracker.js';
 interface Env {
   L1_PROVIDER_URL: string;
   L2_PROVIDER_URL: string;
@@ -24,7 +27,7 @@ const logResult = async (
     return result;
   }
   const [streamForLog, streamForResult] = result.body.tee();
-  const logResult = await new Response(streamForLog).json();
+  const logResult:any = await new Response(streamForLog).json();
   const logResultData = logResult.data.substring(0, 200);
   await tracker.trackEvent(
     'result',
