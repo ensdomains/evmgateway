@@ -11,8 +11,22 @@ interface Env {
 
 let app: Router;
 const tracker = new Tracker('arb-sepolia-gateway-worker.ens-cf.workers.dev', {
+  apiEndpoint:'https://plausible.pff.sh/api/event',
   enableLogging: true,
 });
+
+const decodeUrl = (url:string) => {
+  const trackingData = (url).match(/\/0x[a-fA-F0-9]{40}\/0x[a-fA-F0-9]{1,}\.json/)
+  if(trackingData){
+    return{
+      sender: trackingData[0].slice(1,42),
+      calldata:trackingData[0].slice(44).replace(".json","")
+    }
+  }else{
+    return {}
+  }
+}
+
 const logResult = async (
   request: CFWRequest,
   result: Response
@@ -26,10 +40,11 @@ const logResult = async (
   const [streamForLog, streamForResult] = result.body.tee();
   const logResult:any = await new Response(streamForLog).json();
   const logResultData = logResult.data.substring(0, 200);
+  const props = decodeUrl(request.url)
   await tracker.trackEvent(
     request,
     'result',
-    { props: { result: logResultData } },
+    { props: {...props, result: logResultData } },
     true
   );
   return new Response(streamForResult, result);
@@ -63,8 +78,12 @@ async function fetch(request: CFWRequest, env: Env) {
     gateway.add(server);
     app = server.makeApp('/');
   }
+  const props = decodeUrl(request.url)
   await tracker.trackEvent(
-    request, 'request',{},true
+    request,
+    'request',
+    { props: {...props, ...{} } },
+    true
   );
 
   return app.handle(request).then(logResult.bind(null, request));
