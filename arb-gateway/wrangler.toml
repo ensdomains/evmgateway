@@ -13,3 +13,5 @@ command = "yarn build"
 
 [env.sepolia]
 name = "arb-sepolia-gateway-worker"
+[env.sepolia.vars]
+GATEWAY_DOMAIN="arb-sepolia-gateway-worker.ens-cf.workers.dev"

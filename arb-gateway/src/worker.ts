@@ -7,13 +7,11 @@ interface Env {
   L1_PROVIDER_URL: string;
   L2_PROVIDER_URL: string;
   L2_ROLLUP: string;
+  GATEWAY_DOMAIN: string;
+  ENDPOINT_URL: string;
 }
 
-let app: Router;
-const tracker = new Tracker('arb-sepolia-gateway-worker.ens-cf.workers.dev', {
-  apiEndpoint:'https://plausible.pff.sh/api/event',
-  enableLogging: true,
-});
+let app: Router, logResult: any;
 
 const decodeUrl = (url:string) => {
   const trackingData = (url).match(/\/0x[a-fA-F0-9]{40}\/0x[a-fA-F0-9]{1,}\.json/)
@@ -27,29 +25,17 @@ const decodeUrl = (url:string) => {
   }
 }
 
-const logResult = async (
-  request: CFWRequest,
-  result: Response
-): Promise<Response> => {
-  if (request.url.match(/favicon/)) {
-    return result;
-  }
-  if (!result.body) {
-    return result;
-  }
-  const [streamForLog, streamForResult] = result.body.tee();
-  const logResult:any = await new Response(streamForLog).json();
-  const logResultData = logResult.data.substring(0, 200);
-  const props = decodeUrl(request.url)
-  await tracker.trackEvent(
-    request,
-    'result',
-    { props: {...props, result: logResultData } },
-    true
-  );
-  return new Response(streamForResult, result);
-};
 async function fetch(request: CFWRequest, env: Env) {
+  console.log(1, {env})
+  // Set PROVIDER_URL under .dev.vars locally. Set the key as secret remotely with `wrangler secret put WORKER_PROVIDER_URL`
+  const {
+    L1_PROVIDER_URL, L2_PROVIDER_URL, L2_ROLLUP, GATEWAY_DOMAIN, ENDPOINT_URL
+  } = env;
+  const tracker = new Tracker(GATEWAY_DOMAIN, {
+    apiEndpoint:ENDPOINT_URL,
+    enableLogging: true,
+  });
+
   // Loading libraries dynamically as a temp work around.
   // Otherwise, deployment thorws "Error: Script startup exceeded CPU time limit." error
   if (!app) {
@@ -58,13 +44,34 @@ async function fetch(request: CFWRequest, env: Env) {
     const EVMGateway = (await import('@ensdomains/evm-gateway')).EVMGateway;
     const ArbProofService = (await import('./ArbProofService.js'))
       .ArbProofService;
-    // Set PROVIDER_URL under .dev.vars locally. Set the key as secret remotely with `wrangler secret put WORKER_PROVIDER_URL`
-    const { L1_PROVIDER_URL, L2_PROVIDER_URL, L2_ROLLUP } = env;
 
     const l1Provider = new ethers.JsonRpcProvider(L1_PROVIDER_URL);
     const l2Provider = new ethers.JsonRpcProvider(L2_PROVIDER_URL);
 
-    console.log({ L1_PROVIDER_URL, L2_PROVIDER_URL });
+    logResult = async (  
+      request: CFWRequest,
+      result: Response
+    ): Promise<Response> => {
+      if (request.url.match(/favicon/)) {
+        return result;
+      }
+      if (!result.body) {
+        return result;
+      }
+      const [streamForLog, streamForResult] = result.body.tee();
+      const logResult:any = await new Response(streamForLog).json();
+      const logResultData = logResult.data.substring(0, 200);
+      const props = decodeUrl(request.url)
+      await tracker.trackEvent(
+        request,
+        'result',
+        { props: {...props, result: logResultData } },
+        true
+      );
+      return new Response(streamForResult, result);
+    };
+
+    console.log(2, { L1_PROVIDER_URL, L2_PROVIDER_URL, GATEWAY_DOMAIN, ENDPOINT_URL });
     const gateway = new EVMGateway(
       new ArbProofService(
         l1Provider,
@@ -78,6 +85,7 @@ async function fetch(request: CFWRequest, env: Env) {
     gateway.add(server);
     app = server.makeApp('/');
   }
+
   const props = decodeUrl(request.url)
   await tracker.trackEvent(
     request,
