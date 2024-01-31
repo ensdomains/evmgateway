@@ -68,7 +68,12 @@ async function fetch(request: CFWRequest, env: Env) {
         { props: {...props, result: logResultData } },
         true
       );
-      return new Response(streamForResult, result);
+      const myHeaders = new Headers();
+      myHeaders.set("Access-Control-Allow-Origin", '*');
+      myHeaders.set("Access-Control-Allow-Methods", "GET,HEAD,POST,OPTIONS");
+      myHeaders.set("Access-Control-Max-Age", "86400",);
+      return new Response(streamForResult, {...result, headers: myHeaders })
+      // return new Response(streamForResult, result);
     };
 
     console.log(2, { L1_PROVIDER_URL, L2_PROVIDER_URL, GATEWAY_DOMAIN, ENDPOINT_URL });
@@ -93,7 +98,6 @@ async function fetch(request: CFWRequest, env: Env) {
     { props: {...props, ...{} } },
     true
   );
-
   return app.handle(request).then(logResult.bind(null, request));
 }
 
