@@ -10,29 +10,37 @@ interface Env {
   GATEWAY_DOMAIN: string;
   ENDPOINT_URL: string;
 }
-
-let app: Router, logResult: any;
-
-const decodeUrl = (url:string) => {
-  const trackingData = (url).match(/\/0x[a-fA-F0-9]{40}\/0x[a-fA-F0-9]{1,}\.json/)
-  if(trackingData){
-    return{
-      sender: trackingData[0].slice(1,42),
-      calldata:trackingData[0].slice(44).replace(".json","")
-    }
-  }else{
-    return {}
-  }
+interface LogResult {
+  (request: CFWRequest, result: Response): Promise<Response>;
 }
 
+let app: Router, logResult: LogResult;
+
+const decodeUrl = (url: string) => {
+  const trackingData = url.match(
+    /\/0x[a-fA-F0-9]{40}\/0x[a-fA-F0-9]{1,}\.json/
+  );
+  if (trackingData) {
+    return {
+      sender: trackingData[0].slice(1, 42),
+      calldata: trackingData[0].slice(44).replace('.json', ''),
+    };
+  } else {
+    return {};
+  }
+};
+
 async function fetch(request: CFWRequest, env: Env) {
-  console.log(1, {env})
   // Set PROVIDER_URL under .dev.vars locally. Set the key as secret remotely with `wrangler secret put WORKER_PROVIDER_URL`
   const {
-    L1_PROVIDER_URL, L2_PROVIDER_URL, L2_ROLLUP, GATEWAY_DOMAIN, ENDPOINT_URL
+    L1_PROVIDER_URL,
+    L2_PROVIDER_URL,
+    L2_ROLLUP,
+    GATEWAY_DOMAIN,
+    ENDPOINT_URL,
   } = env;
   const tracker = new Tracker(GATEWAY_DOMAIN, {
-    apiEndpoint:ENDPOINT_URL,
+    apiEndpoint: ENDPOINT_URL,
     enableLogging: true,
   });
 
@@ -48,7 +56,7 @@ async function fetch(request: CFWRequest, env: Env) {
     const l1Provider = new ethers.JsonRpcProvider(L1_PROVIDER_URL);
     const l2Provider = new ethers.JsonRpcProvider(L2_PROVIDER_URL);
 
-    logResult = async (  
+    logResult = async (
       request: CFWRequest,
       result: Response
     ): Promise<Response> => {
@@ -59,24 +67,22 @@ async function fetch(request: CFWRequest, env: Env) {
         return result;
       }
       const [streamForLog, streamForResult] = result.body.tee();
-      const logResult:any = await new Response(streamForLog).json();
-      const logResultData = logResult.data.substring(0, 200);
-      const props = decodeUrl(request.url)
+      const logResultData = (
+        await new Response(streamForLog).json()
+      ).data.substring(0, 200);
+      const props = decodeUrl(request.url);
       await tracker.trackEvent(
         request,
         'result',
-        { props: {...props, result: logResultData } },
+        { props: { ...props, result: logResultData } },
         true
       );
       const myHeaders = new Headers();
-      myHeaders.set("Access-Control-Allow-Origin", '*');
-      myHeaders.set("Access-Control-Allow-Methods", "GET,HEAD,POST,OPTIONS");
-      myHeaders.set("Access-Control-Max-Age", "86400",);
-      return new Response(streamForResult, {...result, headers: myHeaders })
-      // return new Response(streamForResult, result);
+      myHeaders.set('Access-Control-Allow-Origin', '*');
+      myHeaders.set('Access-Control-Allow-Methods', 'GET,HEAD,POST,OPTIONS');
+      myHeaders.set('Access-Control-Max-Age', '86400');
+      return new Response(streamForResult, { ...result, headers: myHeaders });
     };
-
-    console.log(2, { L1_PROVIDER_URL, L2_PROVIDER_URL, GATEWAY_DOMAIN, ENDPOINT_URL });
     const gateway = new EVMGateway(
       new ArbProofService(
         l1Provider,
@@ -91,11 +97,11 @@ async function fetch(request: CFWRequest, env: Env) {
     app = server.makeApp('/');
   }
 
-  const props = decodeUrl(request.url)
+  const props = decodeUrl(request.url);
   await tracker.trackEvent(
     request,
     'request',
-    { props: {...props, ...{} } },
+    { props: { ...props, ...{} } },
     true
   );
   return app.handle(request).then(logResult.bind(null, request));
