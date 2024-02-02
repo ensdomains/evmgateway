@@ -25,10 +25,7 @@ export const main = async () => {
   const l2resolverAddress = await l2FactoryRead.predictAddress(ETH_ADDRESS)
   console.log(`l2 resolver address for ${ETH_ADDRESS} is ${l2resolverAddress}`)
   const l2Resolver   = (await ethers.getContractFactory('DelegatableResolver', signer)).attach(l2resolverAddress);
-  const tx2 = await l2Resolver.approve(encodedName, OPERATOR_ADDRESS, true, {
-    gasPrice: "900000",
-    gasLimit: 500000,
-  });
+  const tx2 = await l2Resolver.approve(encodedName, OPERATOR_ADDRESS, true);
   console.log(`Approving ${OPERATOR_ADDRESS} to update ${ENS_SUBNAME}`, (await tx2.wait()).hash)
 };
 

@@ -316,7 +316,7 @@ describe('Crosschain Resolver', () => {
       await target.setTarget(encodedname, signerAddress)
 
       const [coinType, graphqlUrl, storageType, storageLocation, context] = await target.metadata(encodedname);
-      expect(coinType).to.equal(l2ResolverCoinType);
+      expect(parseInt(coinType)).to.equal(l2ResolverCoinType);
       expect(graphqlUrl).to.equal(l2graphqlUrl);
       expect(storageType).to.equal(storageType);
       expect(ethers.getAddress(storageLocation)).to.equal(signerAddress);
@@ -329,7 +329,7 @@ describe('Crosschain Resolver', () => {
       const logs = await target.queryFilter("MetadataChanged")
       const [name, coinType, graphqlUrl, storageType, storageLocation, context] = logs[0].args
       expect(name).to.equal(encodedname);
-      expect(coinType).to.equal(l2ResolverCoinType);
+      expect(parseInt(coinType)).to.equal(l2ResolverCoinType);
       expect(graphqlUrl).to.equal(l2graphqlUrl);
       expect(storageType).to.equal(storageType);
       expect(ethers.getAddress(storageLocation)).to.equal(signerAddress);

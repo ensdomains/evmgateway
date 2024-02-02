@@ -24,10 +24,11 @@ cd arb-gateway
 npm install -g wrangler
 wrngler login
 
-wrangler secret put L1_PROVIDER_URL
-wrangler secret put L2_PROVIDER_URL
-wrangler secret put L2_ROLLUP
-yarn deploy
+wrangler secret put L1_PROVIDER_URL --env sepolia
+wrangler secret put L2_PROVIDER_URL --env sepolia
+wrangler secret put L2_ROLLUP --env sepolia
+wrangler secret put ENDPOINT_URL --env sepolia
+yarn deploy --env sepolia
 ```
 
 ## How to test

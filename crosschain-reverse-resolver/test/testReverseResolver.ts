@@ -76,7 +76,7 @@ describe('Crosschain Reverse Resolver', () => {
       'L2ReverseRegistrar',
       signer
     );
-    l2contract = await testL2Factory.deploy(ethers.namehash(`${NAMESPACE}.reverse`));
+    l2contract = await testL2Factory.deploy(ethers.namehash(`${NAMESPACE}.reverse`), NAMESPACE);
 
     const testL1Factory = await ethers.getContractFactory(
       'L1ReverseResolver',
