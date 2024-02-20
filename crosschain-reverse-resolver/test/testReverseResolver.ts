@@ -35,6 +35,7 @@ describe('Crosschain Reverse Resolver', () => {
   let verifier: Contract;
   let target: Contract;
   let l2contract: Contract;
+  let defaultReverseResolver: Contract;
 
   before(async () => {
     // Hack to get a 'real' ethers provider from hardhat. The default `HardhatProvider`
@@ -71,7 +72,11 @@ describe('Crosschain Reverse Resolver', () => {
       signer
     );
     verifier = await l1VerifierFactory.deploy(['test:']);
-
+    const DefaultReverseResolverFactory = await ethers.getContractFactory(
+      'DefaultReverseResolver',
+    )
+    defaultReverseResolver = await DefaultReverseResolverFactory.deploy()
+    await provider.send('evm_mine', []);
     const testL2Factory = await ethers.getContractFactory(
       'L2ReverseRegistrar',
       signer
@@ -82,7 +87,11 @@ describe('Crosschain Reverse Resolver', () => {
       'L1ReverseResolver',
       signer
     );
-    target = await testL1Factory.deploy(await verifier.getAddress(), await l2contract.getAddress());
+    target = await testL1Factory.deploy(
+      await verifier.getAddress(),
+      await l2contract.getAddress(),
+      await defaultReverseResolver.getAddress()
+    );
     // Mine an empty block so we have something to prove against
     await provider.send('evm_mine', []);
   });
@@ -97,6 +106,57 @@ describe('Crosschain Reverse Resolver', () => {
     await provider.send("evm_mine", []);
     const result2 = await target.name(node, { enableCcipRead: true })
     expect(result2).to.equal(name);
+  })
+
+  it.only("should test fallback name", async() => {
+    const testSigner = new ethers.Wallet('0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'); 
+    const testAddress = testSigner.address
+    console.log(1, {testSigner})
+    const name = 'myname.eth'
+    console.log(2)
+    const node = await defaultReverseResolver.node(testAddress)
+    console.log(3)
+    const funcId = ethers
+      .id('setNameForAddrWithSignature(address,string,uint256,bytes)')
+      .substring(0, 10)
+    console.log(4)
+    const block = await provider.getBlock('latest')
+    console.log(5, {signer})
+    const inceptionDate = block?.timestamp
+    const account = await signer.getAddress()
+    console.log(6, {funcId, name, inceptionDate, account})
+    const message =  ethers.solidityPackedKeccak256(
+      ['bytes32', 'address', 'uint256', 'uint256'],
+      [ethers.solidityPackedKeccak256(['bytes4', 'string'], [funcId, name]), testAddress, inceptionDate, 0],
+    )
+    console.log(62, {message})
+    const signature = await testSigner.signMessage(ethers.toBeArray(message))
+    
+    console.log(63, {signature})
+    await defaultReverseResolver['setNameForAddrWithSignature'](
+      testAddress,
+      name,
+      inceptionDate,
+      signature,
+    )
+    console.log(8)
+    // await l2contract.clearRecords(await  signer.getAddress())
+    await l2contract.setName(name)
+
+    await provider.send("evm_mine", []);
+    console.log(10)
+    const result2 = await target.name(node, { enableCcipRead: true })
+    console.log(11, {result2})
+    expect(result2).to.equal(name);
+    // const name = 'vitalik.eth'
+    // const node = await l2contract.node(
+    //   await signer.getAddress(),
+    // )
+    // await l2contract.clearRecords(await  signer.getAddress())
+    // await l2contract.setName(name)
+    // await provider.send("evm_mine", []);
+    // const result2 = await target.name(node, { enableCcipRead: true })
+    // expect(result2).to.equal(name);
   })
 
   it("should test text record", async() => {
