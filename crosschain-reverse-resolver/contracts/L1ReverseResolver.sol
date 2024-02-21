@@ -46,14 +46,14 @@ contract L1ReverseResolver is EVMFetchTarget, IExtendedResolver, ERC165 {
 
     function resolve(bytes calldata name, bytes calldata data) external view returns (bytes memory result) {
         bytes4 selector = bytes4(data);
+        (address addr,) = HexUtils.hexToAddress(name, 1, ADDRESS_LENGTH + 1);
         if (selector == INameResolver.name.selector) {
             (bytes32 node) = abi.decode(data[4:], (bytes32));
-            (address addr,) = HexUtils.hexToAddress(name, 1, ADDRESS_LENGTH + 1);
             return bytes(_name(node, addr));
         }
         if (selector == ITextResolver.text.selector) {
             (bytes32 node, string memory key) = abi.decode(data[4:], (bytes32, string));
-            return bytes(text(node, key));
+            return bytes(_text(node, key, addr));
         }
     }
 
@@ -92,9 +92,10 @@ contract L1ReverseResolver is EVMFetchTarget, IExtendedResolver, ERC165 {
      * @param key The text data key to query.
      * @return The associated text data.
      */
-    function text(
+    function _text(
         bytes32 node,
-        string memory key
+        string memory key,
+        address addr
     ) public view returns (string memory) {
         EVMFetcher.newFetchRequest(verifier, target)
             .getStatic(RECORD_VERSIONS_SLOT)
@@ -103,14 +104,19 @@ contract L1ReverseResolver is EVMFetchTarget, IExtendedResolver, ERC165 {
               .ref(0)
               .element(node)
               .element(key)
-            .fetch(this.textCallback.selector, '');
+            .fetch(this.textCallback.selector, abi.encode(addr, key));
     }
 
     function textCallback(
         bytes[] memory values,
-        bytes memory
-    ) public pure returns (string memory) {
-        return string(values[1]);
+        bytes memory callbackdata
+    ) public view returns (string memory) {
+        if(values[1].length == 0 ){
+            (address addr, string memory key) = abi.decode(callbackdata, (address, string));
+            return defaultReverseResolver.text(addr, key);
+        }else{
+            return string(values[1]);
+        }
     }
 
     function supportsInterface(

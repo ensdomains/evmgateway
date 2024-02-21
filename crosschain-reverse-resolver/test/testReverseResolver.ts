@@ -158,16 +158,59 @@ describe('Crosschain Reverse Resolver', () => {
   it("should test text record", async() => {
     const key = 'name'
     const value = 'nick.eth'
+    const testAddress = await signer.getAddress()
     const node = await l2contract.node(
-      await signer.getAddress()
+      testAddress
     )
+    const reverseLabel = testAddress.substring(2).toLowerCase()
+    const l2ReverseName = `${reverseLabel}.${NAMESPACE}.reverse`
+    const encodedL2ReverseName = encodeName(l2ReverseName)
+
     await l2contract.clearRecords(await  signer.getAddress())
     await l2contract.setText(key, value)
     await provider.send("evm_mine", []);
     const result = await l2contract.text(node, key)
     expect(result).to.equal(value);
-    const result2 = await target.text(node, key, { enableCcipRead: true })
-    expect(result2).to.equal(value);
+    const i = new ethers.Interface(["function text(bytes32, string) returns(string)"])
+    const calldata = i.encodeFunctionData("text", [node, key])
+    const result2 = await target.resolve(encodedL2ReverseName, calldata, { enableCcipRead: true })
+    expect(ethers.toUtf8String(result2)).to.equal(value);
+  })
+
+  it("should test fallback text", async() => {
+    const testSigner = new ethers.Wallet('0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'); 
+    const testAddress = testSigner.address
+    const key = 'name'
+    const value = 'myname.eth'
+    const reverseLabel = testAddress.substring(2).toLowerCase()
+    const l2ReverseName = `${reverseLabel}.${NAMESPACE}.reverse`
+    const l2ReverseNode = ethers.namehash(l2ReverseName)
+    const encodedL2ReverseName = encodeName(l2ReverseName)
+
+    const funcId = ethers
+      .id('setTextForAddrWithSignature(address,string,string,uint256,bytes)')
+      .substring(0, 10)
+  
+    const block = await provider.getBlock('latest')
+    const inceptionDate = block?.timestamp
+    const message =  ethers.solidityPackedKeccak256(
+      ['bytes32', 'address', 'uint256', 'uint256'],
+      [ethers.solidityPackedKeccak256(['bytes4', 'string', 'string'], [funcId, key, value]), testAddress, inceptionDate, 0],
+    )
+    const signature = await testSigner.signMessage(ethers.toBeArray(message))    
+    await defaultReverseResolver['setTextForAddrWithSignature'](
+      testAddress,
+      key,
+      value,
+      inceptionDate,
+      signature,
+    )
+    await provider.send("evm_mine", []);
+    expect(await defaultReverseResolver.text(testAddress, key)).to.equal(value)
+    const i = new ethers.Interface(["function text(bytes32,string) returns(string)"])
+    const calldata = i.encodeFunctionData("text", [l2ReverseNode, key])
+    const result2 = await target.resolve(encodedL2ReverseName, calldata, { enableCcipRead: true })
+    expect(ethers.toUtf8String(result2)).to.equal(value);
   })
 
   it("should support interface", async() => {
