@@ -7,11 +7,8 @@ import {IEVMVerifier} from '@ensdomains/evm-verifier/contracts/IEVMVerifier.sol'
 import "@ensdomains/ens-contracts/contracts/resolvers/profiles/INameResolver.sol";
 import "@ensdomains/ens-contracts/contracts/resolvers/profiles/ITextResolver.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-// import "@ensdomains/ens-contracts/contracts/reverseRegistrar/IDefaultReverseResolver.sol";
 import "@ensdomains/ens-contracts/contracts/utils/HexUtils.sol";
-// import "@ensdomains/ens-contracts/contracts/wrapper/BytesUtils.sol";
-import "@ensdomains/ens-contracts/contracts/dnssec-oracle/BytesUtils.sol";
-import "hardhat/console.sol";
+import "@ensdomains/ens-contracts/contracts/resolvers/profiles/IExtendedResolver.sol";
 
 interface IDefaultReverseResolver {
     event NameChanged(bytes32 indexed node, string name);
@@ -30,7 +27,7 @@ interface IDefaultReverseResolver {
     ) external view returns (string memory);
 }
 
-contract L1ReverseResolver is EVMFetchTarget, ERC165 {
+contract L1ReverseResolver is EVMFetchTarget, IExtendedResolver, ERC165 {
     using EVMFetcher for EVMFetcher.EVMFetchRequest;
     IEVMVerifier immutable verifier;
     address immutable target;
@@ -38,6 +35,7 @@ contract L1ReverseResolver is EVMFetchTarget, ERC165 {
     uint256 constant VERSIONABLE_TEXTS_SLOT = 2;
     uint256 constant VERSIONABLE_NAME_SLOT = 3;
     uint256 constant RECORD_VERSIONS_SLOT = 4;
+    uint256 constant ADDRESS_LENGTH = 40;
     using HexUtils for bytes;
 
     constructor(IEVMVerifier _verifier, address _target, IDefaultReverseResolver _defaultReverseResolver ) {
@@ -50,7 +48,7 @@ contract L1ReverseResolver is EVMFetchTarget, ERC165 {
         bytes4 selector = bytes4(data);
         if (selector == INameResolver.name.selector) {
             (bytes32 node) = abi.decode(data[4:], (bytes32));
-            (address addr,) = HexUtils.hexToAddress(name, 0, BytesUtils.readUint8(name,0));
+            (address addr,) = HexUtils.hexToAddress(name, 1, ADDRESS_LENGTH + 1);
             return bytes(_name(node, addr));
         }
         if (selector == ITextResolver.text.selector) {
@@ -73,20 +71,16 @@ contract L1ReverseResolver is EVMFetchTarget, ERC165 {
             .getDynamic(VERSIONABLE_NAME_SLOT)
               .ref(0)
               .element(node)
-                .fetch(this.nameCallback.selector, abi.encodePacked(addr)); // recordVersions
+                .fetch(this.nameCallback.selector, abi.encode(addr)); // recordVersions
     }
 
     function nameCallback(
         bytes[] memory values,
         bytes memory callbackdata
-    ) public view returns (string memory) {
-    // ) public view returns (string memory) {        
+    ) public view returns (string memory) {        
         if(values[1].length == 0 ){
-            (address addr, ) = callbackdata.hexToAddress(0, callbackdata.length);
-            // This returns 0x0000000000000000000000000000000000000000
-            return string(abi.encodePacked(addr));
-            // return addr;
-            // return defaultReverseResolver.name(addr);
+            (address addr) = abi.decode(callbackdata, (address));
+            return defaultReverseResolver.name(addr);
         }else{
             return string(values[1]);
         }
@@ -123,6 +117,7 @@ contract L1ReverseResolver is EVMFetchTarget, ERC165 {
         bytes4 interfaceId
     ) public override view returns (bool) {
         return
+            interfaceId == type(IExtendedResolver).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 }
