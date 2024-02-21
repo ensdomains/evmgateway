@@ -28,6 +28,12 @@ contract L1ReverseResolver is EVMFetchTarget, IExtendedResolver, ERC165 {
         defaultReverseResolver = _defaultReverseResolver;
     }
 
+    /** 
+     * @dev Resolve and verify a record stored in l2 target address. It supports fallback to the default resolver
+     * @param name DNS encoded ENS name to query
+     * @param data The actual calldata
+     * @return result result of the call
+     */
     function resolve(bytes calldata name, bytes calldata data) external view returns (bytes memory result) {
         bytes4 selector = bytes4(data);
         (address addr,) = HexUtils.hexToAddress(name, 1, ADDRESS_LENGTH + 1);
@@ -41,13 +47,6 @@ contract L1ReverseResolver is EVMFetchTarget, IExtendedResolver, ERC165 {
         }
     }
 
-    /**
-     * Returns the address associated with an ENS node.
-     * @param node The ENS node to query.
-     * @return The associated name.
-     */
-            //  return versionable_names[recordVersions[node]][node];
-    // function name(bytes32 node) public view returns (string memory) {
     function _name(bytes32 node, address addr) private view returns (string memory) {
         EVMFetcher.newFetchRequest(verifier, target)
             .getStatic(RECORD_VERSIONS_SLOT)
@@ -55,7 +54,7 @@ contract L1ReverseResolver is EVMFetchTarget, IExtendedResolver, ERC165 {
             .getDynamic(VERSIONABLE_NAME_SLOT)
               .ref(0)
               .element(node)
-                .fetch(this.nameCallback.selector, abi.encode(addr)); // recordVersions
+            .fetch(this.nameCallback.selector, abi.encode(addr));
     }
 
     function nameCallback(
@@ -70,17 +69,11 @@ contract L1ReverseResolver is EVMFetchTarget, IExtendedResolver, ERC165 {
         }
     }
 
-    /**
-     * Returns the text data associated with an ENS node and key.
-     * @param node The ENS node to query.
-     * @param key The text data key to query.
-     * @return The associated text data.
-     */
     function _text(
         bytes32 node,
         string memory key,
         address addr
-    ) public view returns (string memory) {
+    ) private view returns (string memory) {
         EVMFetcher.newFetchRequest(verifier, target)
             .getStatic(RECORD_VERSIONS_SLOT)
               .element(node)
