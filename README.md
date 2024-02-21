@@ -116,4 +116,6 @@ bun run test
 
 ```
 rm -rf *-*/node_modules/hardhat
+rm bun.lockb
+bun install
 ```
