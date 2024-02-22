@@ -129,6 +129,10 @@ describe('Crosschain Reverse Resolver', () => {
     const l2ReverseNode = ethers.namehash(l2ReverseName)
     const encodedL2ReverseName = encodeName(l2ReverseName)
 
+    const defaultReverseName = `${reverseLabel}.default.reverse`
+    const defaultReverseNode = ethers.namehash(defaultReverseName)
+    const encodedDefaultReverseName = encodeName(defaultReverseName)
+
     const funcId = ethers
       .id('setNameForAddrWithSignature(address,string,uint256,bytes)')
       .substring(0, 10)
@@ -147,10 +151,15 @@ describe('Crosschain Reverse Resolver', () => {
       signature,
     )
     await provider.send("evm_mine", []);
-    expect(await defaultReverseResolver.name(testAddress)).to.equal(name)
     const i = new ethers.Interface(["function name(bytes32) returns(string)"])
-    const calldata = i.encodeFunctionData("name", [l2ReverseNode])
-    const result2 = await target.resolve(encodedL2ReverseName, calldata, { enableCcipRead: true })
+    expect(await defaultReverseResolver.name(testAddress)).to.equal(name)
+
+    const defaultcalldata = i.encodeFunctionData("name", [defaultReverseNode])
+    const defaultResult = await defaultReverseResolver.resolve(encodedDefaultReverseName, defaultcalldata)
+    expect(ethers.toUtf8String(defaultResult)).to.equal(name);
+
+    const l2calldata = i.encodeFunctionData("name", [l2ReverseNode])
+    const result2 = await target.resolve(encodedL2ReverseName, l2calldata, { enableCcipRead: true })
     expect(ethers.toUtf8String(result2)).to.equal(name);
   })
 
@@ -186,6 +195,10 @@ describe('Crosschain Reverse Resolver', () => {
     const l2ReverseNode = ethers.namehash(l2ReverseName)
     const encodedL2ReverseName = encodeName(l2ReverseName)
 
+    const defaultReverseName = `${reverseLabel}.default.reverse`
+    const defaultReverseNode = ethers.namehash(defaultReverseName)
+    const encodedDefaultReverseName = encodeName(defaultReverseName)
+
     const funcId = ethers
       .id('setTextForAddrWithSignature(address,string,string,uint256,bytes)')
       .substring(0, 10)
@@ -207,12 +220,18 @@ describe('Crosschain Reverse Resolver', () => {
     await provider.send("evm_mine", []);
     expect(await defaultReverseResolver.text(testAddress, key)).to.equal(value)
     const i = new ethers.Interface(["function text(bytes32,string) returns(string)"])
+
+    const defaultcalldata = i.encodeFunctionData("text", [defaultReverseNode, key])
+    const defaultResult = await defaultReverseResolver.resolve(encodedDefaultReverseName, defaultcalldata)
+    expect(ethers.toUtf8String(defaultResult)).to.equal(value);
+
     const calldata = i.encodeFunctionData("text", [l2ReverseNode, key])
     const result2 = await target.resolve(encodedL2ReverseName, calldata, { enableCcipRead: true })
     expect(ethers.toUtf8String(result2)).to.equal(value);
   })
 
   it("should support interface", async() => {
+    expect(await defaultReverseResolver.supportsInterface('0x9061b923')).to.equal(true) // IExtendedResolver
     expect(await target.supportsInterface('0x9061b923')).to.equal(true) // IExtendedResolver
     expect(await target.supportsInterface('0x01ffc9a7')).to.equal(true) // ERC-165 support
   })

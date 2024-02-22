@@ -6,6 +6,10 @@ import "@ensdomains/ens-contracts/contracts/wrapper/BytesUtils.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import {ITextResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profiles/ITextResolver.sol";
+import {INameResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profiles/INameResolver.sol";
+import "@ensdomains/ens-contracts/contracts/utils/HexUtils.sol";
+import "@ensdomains/ens-contracts/contracts/resolvers/profiles/IExtendedResolver.sol";
 
 /**
  * A fallback reverser resolver to resolve when L2 reverse resolver has no names set.
@@ -15,9 +19,11 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 contract DefaultReverseResolver is
     Ownable,
     IDefaultReverseResolver,
+    IExtendedResolver,
     ERC165,
     SignatureReverseResolver
 {
+    uint256 constant ADDRESS_LENGTH = 40;
     using ECDSA for bytes32;
     using BytesUtils for bytes;
     // The namehash of 'default.reverse'
@@ -60,11 +66,30 @@ contract DefaultReverseResolver is
         return versionable_texts[recordVersions[node]][node][key];
     }
 
+    /*
+     * @dev Resolve and verify a record stored in l2 target address. It supports fallback to the default resolver
+     * @param name DNS encoded ENS name to query
+     * @param data The actual calldata
+     * @return result result of the call
+     */
+    function resolve(bytes calldata _name, bytes calldata data) external view returns (bytes memory result) {
+        bytes4 selector = bytes4(data);
+        (address addr,) = HexUtils.hexToAddress(_name, 1, ADDRESS_LENGTH + 1);
+        if (selector == INameResolver.name.selector) {
+            return bytes(name(addr));
+        }
+        if (selector == ITextResolver.text.selector) {
+            (,string memory key) = abi.decode(data[4:], (bytes32, string));
+            return bytes(text(addr, key));
+        }
+    }
+
     function supportsInterface(
         bytes4 interfaceID
     ) public view override(ERC165, SignatureReverseResolver) returns (bool) {
         return
             interfaceID == type(IDefaultReverseResolver).interfaceId ||
+            interfaceID == type(IExtendedResolver).interfaceId ||
             super.supportsInterface(interfaceID);
     }
 }
