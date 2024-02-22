@@ -190,7 +190,7 @@ describe('Crosschain Reverse Resolver', () => {
     const funcId = ethers
       .id('setTextForAddrWithSignature(address,string,string,uint256,bytes)')
       .substring(0, 10)
-  
+
     const block = await provider.getBlock('latest')
     const inceptionDate = block?.timestamp
     const message =  ethers.solidityPackedKeccak256(

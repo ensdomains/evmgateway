@@ -9,7 +9,7 @@ import "@ensdomains/ens-contracts/contracts/resolvers/profiles/ITextResolver.sol
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@ensdomains/ens-contracts/contracts/utils/HexUtils.sol";
 import "@ensdomains/ens-contracts/contracts/resolvers/profiles/IExtendedResolver.sol";
-import "@ensdomains/ens-contracts/contracts/reverseRegistrar/IDefaultReverseResolver.sol";
+import "./IDefaultReverseResolver.sol";
 
 contract L1ReverseResolver is EVMFetchTarget, IExtendedResolver, ERC165 {
     using EVMFetcher for EVMFetcher.EVMFetchRequest;
