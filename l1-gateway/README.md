@@ -12,29 +12,29 @@ or historic values for storage variables of any contract.
 ## How to use l1-gateway locally via cloudflare dev env (aka wrangler)
 
 ```
-npm install -g bun
 cd l1-gateway
+npm install -g bun wrangler
 bun install
 touch .dev.vars
 ## set WORKER_PROVIDER_URL
-yarn dev
+bun run dev
 ```
 
 ## How to deploy l1-gateway to cloudflare
 
 ```
 cd l1-gateway
-npm install -g wrangler
-wrngler login
+npm install -g bun wrangler
+wrangler login
 wrangler secret put WORKER_PROVIDER_URL
-yarn deploy
+bun run deploy
 ```
 
 ## How to test
 
 ```
 cd ../l1-verifier l1-gateway
-PROVIDER_URL=$PROVIDER_URL TARGET_ADDRESS=$TARGET_ADDRESS yarn remote_test
+PROVIDER_URL=$PROVIDER_URL TARGET_ADDRESS=$TARGET_ADDRESS bun run remote_test
 ```
 
 ## Current deployments
