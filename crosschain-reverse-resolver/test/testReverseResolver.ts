@@ -17,7 +17,6 @@ import request from 'supertest';
 import packet from 'dns-packet';
 const NAMESPACE = 2147483658 // OP
 const encodeName = (name) => '0x' + packet.name.encode(name).toString('hex')
-const labelhash = (label) => ethers.keccak256(ethers.toUtf8Bytes(label))
 
 type ethersObj = typeof ethersT &
   Omit<HardhatEthersHelpers, 'provider'> & {
