@@ -36,13 +36,11 @@ export const main = async () => {
   }
   const l1resolver = new ethers.Contract(reverseresolver.address, abi, provider);
   if(await l1resolver.supportsInterface(extendedResolverInterface)){
-    console.log('new interface')
     const i = new ethers.Interface(abi)
     const calldata = i.encodeFunctionData("name", [reversenode])
     const result = await l1resolver.resolve(encodedname, calldata, { enableCcipRead: true })
     console.log(`l1: Reverse node for ${name} is set to `, ethers.toUtf8String(result))  
   }else {
-    console.log('old interface')
     const result = await l1resolver.name(reversenode, { enableCcipRead: true })
     console.log(`l1: Reverse node for ${name} is set to `, result)  
   }
