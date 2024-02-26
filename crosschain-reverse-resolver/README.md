@@ -70,8 +70,35 @@ After deployment is complete, set the rersolver of $REVERSE_NAMESPACE to L1Rever
 ### Set Default Primary name on L1
 
 ```
-const name = 'evmgateway.eth'
-const registrar = registrar.setNameWithSignature(name)
+const testSigner = new ethers.Wallet(PRIVATE_KEY); 
+const testAddress = testSigner.address
+const name = 'myname.eth'
+const reverseLabel = testAddress.substring(2).toLowerCase()
+const l2ReverseName = `${reverseLabel}.${NAMESPACE}.reverse`
+const l2ReverseNode = ethers.namehash(l2ReverseName)
+const encodedL2ReverseName = encodeName(l2ReverseName)
+
+const defaultReverseName = `${reverseLabel}.default.reverse`
+const defaultReverseNode = ethers.namehash(defaultReverseName)
+const encodedDefaultReverseName = encodeName(defaultReverseName)
+
+const funcId = ethers
+    .id('setNameForAddrWithSignature(address,string,uint256,bytes)')
+    .substring(0, 10)
+
+const block = await provider.getBlock('latest')
+const inceptionDate = block?.timestamp
+const message =  ethers.solidityPackedKeccak256(
+    ['bytes32', 'address', 'uint256', 'uint256'],
+    [ethers.solidityPackedKeccak256(['bytes4', 'string'], [funcId, name]), testAddress, inceptionDate, 0],
+)
+const signature = await testSigner.signMessage(ethers.toBeArray(message))    
+await defaultReverseResolver.setNameForAddrWithSignature(
+    testAddress,
+    name,
+    inceptionDate,
+    signature,
+)
 ```
 
 or run the script
