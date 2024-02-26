@@ -15,6 +15,7 @@ import "@ensdomains/ens-contracts/contracts/resolvers/profiles/IExtendedResolver
 import {ITargetResolver} from './ITargetResolver.sol';
 import {IMetadataResolver} from './IMetadataResolver.sol';
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import { IResolverSetter } from './IResolverSetter.sol';
 
 contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExtendedResolver, ERC165 {
     using EVMFetcher for EVMFetcher.EVMFetchRequest;
@@ -44,6 +45,16 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
         }
         return owner == msg.sender;
     }
+
+    /**
+     * @dev EIP-5559 - Error to raise when mutations are being deferred to an L2.
+     * @param chainId Chain ID to perform the deferred mutation to.
+     * @param contractAddress Contract Address at which the deferred mutation should transact with.
+     */
+    error StorageHandledByL2(
+        uint256 chainId,
+        address contractAddress
+    );
 
     /**
      * @param _verifier     The chain verifier address
@@ -161,6 +172,9 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
             (bytes32 node) = abi.decode(data[4:], (bytes32));
             return _contenthash(node, target);
         }
+        if (selector == IResolverSetter.setAddr.selector) {
+            _writeDeferral(target);
+        }
     }
 
     function _addr(bytes32 node, address target) private view returns (bytes memory) {
@@ -274,5 +288,16 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
             interfaceId == type(ITargetResolver).interfaceId ||
             interfaceId == type(IMetadataResolver).interfaceId ||
             super.supportsInterface(interfaceId);
+    }
+
+    function convertCoinTypeToEVMChainId(uint256 coinType) private pure returns (uint256) {
+        return (0x7fffffff & coinType) >> 0;
+    }
+
+    function _writeDeferral(address target) internal view {
+        revert StorageHandledByL2(
+            convertCoinTypeToEVMChainId(l2ResolverCoinType),
+            target
+        );
     }
 }
