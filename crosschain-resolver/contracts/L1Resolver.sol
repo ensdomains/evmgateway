@@ -90,19 +90,9 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
       require(isAuthorised(node));
       targets[node] = target;
       emit TargetSet(name, target);
-      (
-        ,,
-        uint8 storageType,
-        bytes memory storageLocation,
-        bytes memory context
-      ) = metadata(name);
       emit MetadataChanged(
         name,
-        l2ResolverCoinType,
-        graphqlUrl,
-        storageType,
-        storageLocation,
-        context
+        graphqlUrl
       );
     }
 
@@ -260,23 +250,13 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
      * @notice Get metadata about the L1 Resolver
      * @dev This function provides metadata about the L1 Resolver, including its name, coin type, GraphQL URL, storage type, and encoded information.
      * @param name The domain name in format (dnsEncoded)
-     * @return coinType The cointype of the chain the target contract locates such as Optimism, Base, Arb, etc
      * @return graphqlUrl The GraphQL URL used by the resolver
-     * @return storageType Storage Type (0 for EVM)
-     * @return storageLocation The storage identifier. For EVM chains, this is the address of the resolver contract.
-     * @return context. An identifier used by l2 graph indexer for Domain schema id (`context-namehash`) allowing multiple resolver contracts to have own namespace.
      */
     function metadata(
         bytes calldata name
-    ) public view returns (uint256, string memory, uint8, bytes memory, bytes memory) {
-        (, address target) = getTarget(name);
-
+    ) public view returns (string memory) {
         return (
-            l2ResolverCoinType,
-            graphqlUrl,
-            uint8(0), // storage Type 0 => EVM
-            abi.encodePacked(address(target)), // storage location => l2 resolver address
-            abi.encodePacked(address(target))  // context => l2 resolver address
+            graphqlUrl
         );
     }
 
@@ -287,6 +267,7 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
             interfaceId == type(IExtendedResolver).interfaceId ||
             interfaceId == type(ITargetResolver).interfaceId ||
             interfaceId == type(IMetadataResolver).interfaceId ||
+            interfaceId == type(IResolverSetter).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 
