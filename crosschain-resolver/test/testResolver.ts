@@ -233,7 +233,7 @@ describe('Crosschain Resolver', () => {
     const result = await l2contract['addr(bytes32)'](node)
     expect(ethers.getAddress(result)).to.equal(addr);
     await provider.send("evm_mine", []);
-    
+
     const i = new ethers.Interface(["function addr(bytes32) returns(address)"])
     const calldata = i.encodeFunctionData("addr", [node])
     const result2 = await target.resolve(encodedname, calldata, { enableCcipRead: true })
@@ -261,6 +261,7 @@ describe('Crosschain Resolver', () => {
   })
 
   it("should resolve non ETH Address", async() => {
+
     await target.setTarget(encodedname, resolverAddress)
     const addr = '0x76a91462e907b15cbf27d5425399ebf6f0fb50ebb88f1888ac'
     const coinType = 0 // BTC
