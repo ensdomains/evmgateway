@@ -20,7 +20,8 @@ const labelhash = (label) => ethers.keccak256(ethers.toUtf8Bytes(label))
 const encodeName = (name) => '0x' + packet.name.encode(name).toString('hex')
 
 const l2graphqlUrl = 'http://graphql'
-const l2ResolverCoinType = convertEVMChainIdToCoinType(420) // Optimism Goerli
+const l2ResolverChainId = 420
+const l2ResolverCoinType = convertEVMChainIdToCoinType(l2ResolverChainId) // Optimism Goerli
 
 const name = 'foo.eth'
 const node = ethers.namehash(name)
@@ -311,6 +312,17 @@ describe('Crosschain Resolver', () => {
     expect(await target.supportsInterface('0x8a596ebe')).to.equal(true) // IMetadataResolver
     expect(await target.supportsInterface('0x01ffc9a7')).to.equal(true) // ERC-165 support
   })
+
+  describe('EIP 5559', () => {
+    it('throws StorageHandledByL2 error', async () => {
+      await target.setTarget(encodedname, resolverAddress)
+      const i = new ethers.Interface(["function setAddr(bytes32 node, address addr)"])
+      const calldata = i.encodeFunctionData("setAddr", [node, EMPTY_ADDRESS])
+      await expect(target.resolve(encodedname, calldata)).to.be
+        .revertedWithCustomError(target, 'StorageHandledByL2')
+        .withArgs(l2ResolverChainId, resolverAddress)
+    });
+  });
 
   describe('Metadata', () => {
     it('returns metadata', async () => {
