@@ -61,10 +61,10 @@ contract L1ReverseResolver is EVMFetchTarget, IExtendedResolver, ERC165 {
         bytes[] memory values,
         bytes memory callbackdata
     ) public view returns (string memory) {        
-        if(values[1].length == 0 ){
+        if (values[1].length == 0 ) {
             (address addr) = abi.decode(callbackdata, (address));
             return defaultReverseResolver.name(addr);
-        }else{
+        } else {
             return string(values[1]);
         }
     }
@@ -88,10 +88,10 @@ contract L1ReverseResolver is EVMFetchTarget, IExtendedResolver, ERC165 {
         bytes[] memory values,
         bytes memory callbackdata
     ) public view returns (string memory) {
-        if(values[1].length == 0 ){
+        if (values[1].length == 0 ) {
             (address addr, string memory key) = abi.decode(callbackdata, (address, string));
             return defaultReverseResolver.text(addr, key);
-        }else{
+        } else {
             return string(values[1]);
         }
     }
