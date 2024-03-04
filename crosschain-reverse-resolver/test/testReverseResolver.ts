@@ -152,7 +152,7 @@ describe('Crosschain Reverse Resolver', () => {
     )
     await provider.send("evm_mine", []);
     const i = new ethers.Interface(["function name(bytes32) returns(string)"])
-    expect(await defaultReverseResolver.name(testAddress)).to.equal(name)
+    expect(await defaultReverseResolver['name(address)'](testAddress)).to.equal(name)
 
     const defaultcalldata = i.encodeFunctionData("name", [defaultReverseNode])
     const defaultResult = await defaultReverseResolver.resolve(encodedDefaultReverseName, defaultcalldata)
@@ -218,7 +218,7 @@ describe('Crosschain Reverse Resolver', () => {
       signature,
     )
     await provider.send("evm_mine", []);
-    expect(await defaultReverseResolver.text(testAddress, key)).to.equal(value)
+    expect(await defaultReverseResolver["text(address,string)"](testAddress, key)).to.equal(value)
     const i = new ethers.Interface(["function text(bytes32,string) returns(string)"])
 
     const defaultcalldata = i.encodeFunctionData("text", [defaultReverseNode, key])
