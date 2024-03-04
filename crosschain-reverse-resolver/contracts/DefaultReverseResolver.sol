@@ -61,7 +61,7 @@ contract DefaultReverseResolver is
     function text(
         address addr,
         string memory key
-    ) public view returns (string memory) {
+    ) public view override returns (string memory) {
         bytes32 node = _getNamehash(addr);
         return versionable_texts[recordVersions[node]][node][key];
     }

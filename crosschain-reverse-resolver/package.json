@@ -43,7 +43,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@ensdomains/ens-contracts": "ensdomains/ens-contracts#default-reverse-resolver",
+    "@ensdomains/ens-contracts": "ensdomains/ens-contracts#default-reverse-resolver-3",
     "@ensdomains/evm-verifier": "^0.1.0",
     "@eth-optimism/contracts": "^0.6.0"
   }
