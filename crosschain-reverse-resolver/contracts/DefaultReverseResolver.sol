@@ -74,7 +74,9 @@ contract DefaultReverseResolver is
      */
     function resolve(bytes calldata _name, bytes calldata data) external view returns (bytes memory result) {
         bytes4 selector = bytes4(data);
-        (address addr,) = HexUtils.hexToAddress(_name, 1, ADDRESS_LENGTH + 1);
+        (address addr,bool valid) = HexUtils.hexToAddress(_name, 1, ADDRESS_LENGTH + 1);
+        require(valid, "Invalid address");
+
         if (selector == INameResolver.name.selector) {
             return bytes(name(addr));
         }
