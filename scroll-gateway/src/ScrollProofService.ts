@@ -3,7 +3,7 @@ import { EVMProofHelper, type IProofService } from '@ensdomains/evm-gateway';
 import { AbiCoder, Contract, EventLog, ethers, toBeHex, type AddressLike, toNumber } from 'ethers';
 import rollupAbi from "./abi/rollupABI.js";
 import type { IBlockCache } from './blockCache/IBlockCache.js';
-export interface ArbProvableBlock {
+export interface ScrollProvableBlock {
     number: number
     sendRoot: string,
     nodeIndex: string,
@@ -16,7 +16,7 @@ export interface ArbProvableBlock {
  * It's also capable of proofing long types such as mappings or string by using all included slots in the proof.
  *
  */
-export class ArbProofService implements IProofService<ArbProvableBlock> {
+export class ScrollProofService implements IProofService<ScrollProvableBlock> {
     private readonly l2Provider: ethers.JsonRpcProvider;
     private readonly rollup: Contract;
     private readonly helper: EVMProofHelper;
@@ -40,7 +40,7 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
         this.cache = cache
     }
 
-    async getStorageAt(block: ArbProvableBlock, address: AddressLike, slot: bigint): Promise<string> {
+    async getStorageAt(block: ScrollProvableBlock, address: AddressLike, slot: bigint): Promise<string> {
         return this.helper.getStorageAt(block.number, address, slot);
     }
 
@@ -54,7 +54,7 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
      *   corresponding decoding library will understand.
      */
     async getProofs(
-        block: ArbProvableBlock,
+        block: ScrollProvableBlock,
         address: AddressLike,
         slots: bigint[]
     ): Promise<string> {
@@ -80,17 +80,17 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
     /**
     * Retrieves information about the latest provable block in the Scroll Rollup.
     *
-    * @returns { Promise<ArbProvableBlock> } A promise that resolves to an object containing information about the provable block.
+    * @returns { Promise<ScrollProvableBlock> } A promise that resolves to an object containing information about the provable block.
     * @throws Throws an error if any of the underlying operations fail.
     *
-    * @typedef { Object } ArbProvableBlock
+    * @typedef { Object } ScrollProvableBlock
     * @property { string } rlpEncodedBlock - The RLP - encoded block information.
     * @property { string } sendRoot - The send root of the provable block.
     * @property { string } blockHash - The hash of the provable block.
     * @property { number } nodeIndex - The index of the node corresponding to the provable block.
     * @property { number } number - The block number of the provable block.
     */
-    public async getProvableBlock(): Promise<ArbProvableBlock> {
+    public async getProvableBlock(): Promise<ScrollProvableBlock> {
         //Retrieve the latest pending node that has been committed to the rollup.
         const nodeIndex = await this.rollup.latestNodeCreated()
         const [l2blockRaw, sendRoot] = await this.getL2BlockForNode(nodeIndex)
