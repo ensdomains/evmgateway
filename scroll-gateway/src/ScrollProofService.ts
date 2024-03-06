@@ -12,7 +12,7 @@ export interface ArbProvableBlock {
 
 
 /**
- * The proofService class can be used to calculate proofs for a given target and slot on the Arbitrum network.
+ * The proofService class can be used to calculate proofs for a given target and slot on the Scroll network.
  * It's also capable of proofing long types such as mappings or string by using all included slots in the proof.
  *
  */
@@ -78,7 +78,7 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
         );
     }
     /**
-    * Retrieves information about the latest provable block in the Arbitrum Rollup.
+    * Retrieves information about the latest provable block in the Scroll Rollup.
     *
     * @returns { Promise<ArbProvableBlock> } A promise that resolves to an object containing information about the provable block.
     * @throws Throws an error if any of the underlying operations fail.

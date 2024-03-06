@@ -1,4 +1,4 @@
-name = "arb-gateway-worker"
+name = "scroll-gateway-worker"
 account_id = "15dcc9085cb794bb4f29d3e8177ac880"
 main = "./src/worker.ts"
 node_compat = true
@@ -12,4 +12,4 @@ port = 8080
 command = "yarn build"
 
 [env.sepolia]
-name = "arb-sepolia-gateway-worker"
+name = "scroll-sepolia-gateway-worker"
