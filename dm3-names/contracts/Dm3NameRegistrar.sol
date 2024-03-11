@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-contract Dm3NameRegistrar {
+import {IAddrResolver} from '@ensdomains/ens-contracts/contracts/resolvers/profiles/IAddrResolver.sol';
 
-    bytes32 public  PARENT_NODE;
+contract Dm3NameRegistrar is IAddrResolver {
+    bytes32 public PARENT_NODE;
 
     mapping(bytes32 => address) public owner;
     mapping(address => string) public name;
@@ -15,9 +16,8 @@ contract Dm3NameRegistrar {
     }
 
     function register(string calldata _name) external {
-
         string memory oldName = name[msg.sender];
-        if(bytes(_name).length == 0) {
+        if (bytes(_name).length == 0) {
             //Clear name
             bytes32 labelhash = keccak256(bytes(oldName));
             bytes32 node = _makeNode(PARENT_NODE, labelhash);
@@ -26,8 +26,8 @@ contract Dm3NameRegistrar {
             return;
         }
 
-        if(bytes(oldName).length > 0) {
-         //Clear name
+        if (bytes(oldName).length > 0) {
+            //Clear name
             bytes32 labelhash = keccak256(bytes(oldName));
             bytes32 node = _makeNode(PARENT_NODE, labelhash);
             delete owner[node];
@@ -40,7 +40,10 @@ contract Dm3NameRegistrar {
         emit NameRegistered(msg.sender, _name);
     }
 
-      function _makeNode(
+    function addr(bytes32 node) external view returns (address payable) {
+        return payable(owner[node]);
+    }
+    function _makeNode(
         bytes32 node,
         bytes32 labelhash
     ) private pure returns (bytes32) {

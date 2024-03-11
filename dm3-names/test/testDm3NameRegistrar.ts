@@ -40,6 +40,12 @@ describe.only('Dm3 name registrar', () => {
     expect(owner).to.equal(signer.address);
     expect(name).to.equal('alice');
   });
+  it('can use addr to retrive address of node', async () => {
+    await target.register('alice');
+
+    const addr = await target.addr(ethers.namehash('alice.op.dm3.eth'));
+    expect(addr).to.equal(signer.address);
+  });
   it('registering a new name would overwrite the old name', async () => {
     await target.register('alice');
 
