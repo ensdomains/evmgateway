@@ -1,15 +1,14 @@
 /* eslint-disable prettier/prettier */
 import { EVMProofHelper, type IProofService } from '@ensdomains/evm-gateway';
-import { AbiCoder, Contract, EventLog, ethers, toBeHex, type AddressLike, toNumber } from 'ethers';
+import { AbiCoder, Contract, ethers, toBeHex, type AddressLike, } from 'ethers';
+// import { AbiCoder, Contract, EventLog, ethers, toBeHex, type AddressLike, toNumber } from 'ethers';
+import { concat } from "ethers";
+
 import rollupAbi from "./abi/rollupABI.js";
 import type { IBlockCache } from './blockCache/IBlockCache.js';
 export interface ScrollProvableBlock {
     number: number
-    sendRoot: string,
-    nodeIndex: string,
-    rlpEncodedBlock: string
 }
-
 
 /**
  * The proofService class can be used to calculate proofs for a given target and slot on the Scroll network.
@@ -28,19 +27,24 @@ export class ScrollProofService implements IProofService<ScrollProvableBlock> {
         l2Provider: ethers.JsonRpcProvider,
         l2RollupAddress: string,
         cache: IBlockCache
-
     ) {
+        console.log('***', {
+            l1Provider,l2Provider,l2RollupAddress
+        })
         this.l2Provider = l2Provider;
         this.rollup = new Contract(
             l2RollupAddress,
             rollupAbi,
             l1Provider
         );
+        console.log({l1Provider, l2Provider})
         this.helper = new EVMProofHelper(l2Provider);
         this.cache = cache
     }
 
     async getStorageAt(block: ScrollProvableBlock, address: AddressLike, slot: bigint): Promise<string> {
+        console.log(typeof(this.cache))
+        console.log(typeof(this.rollup))
         return this.helper.getStorageAt(block.number, address, slot);
     }
 
@@ -58,103 +62,60 @@ export class ScrollProofService implements IProofService<ScrollProvableBlock> {
         address: AddressLike,
         slots: bigint[]
     ): Promise<string> {
-        const proof = await this.helper.getProofs(block.number, address, slots);
-
-        return AbiCoder.defaultAbiCoder().encode(
+        const searchUrl = 'https://sepolia-api-re.scroll.io/api/search';
+        const resp:any = await fetch(`${searchUrl}?keyword=${block.number}`)
+        const obj:any = await resp.json()
+        const batchIndex = obj.batch_index
+        const FOO_ADDRESS="0x94fbce7ca1a0152cfc99f90f4421d31cf356c896"
+        const EMPTY_ADDRESS="0x0000000000000000000000000000000000000000"
+        console.log(22, {batchIndex, address, slots, FOO_ADDRESS, EMPTY_ADDRESS, blockNumber:block.number})
+        console.log(23, [FOO_ADDRESS, [EMPTY_ADDRESS], toBeHex(block.number)])      
+        const proof = await this.l2Provider.send("eth_getProof", [FOO_ADDRESS, [EMPTY_ADDRESS], toBeHex(block.number)]);
+        console.log(3, JSON.stringify(proof, null, 2))
+        const accountProof: Array<string> = proof.accountProof;
+        const storageProof: Array<string> = proof.storageProof[0].proof;
+        console.log(4, {accountProof})
+        console.log(5, {storageProof})
+        const compressedProof = concat([
+            `0x${accountProof.length.toString(16).padStart(2, "0")}`,
+            ...accountProof,
+            `0x${storageProof.length.toString(16).padStart(2, "0")}`,
+            ...storageProof,
+        ]);
+        console.log(6, {compressedProof})
+        // struct ScrollWitnessData {
+        //     uint256 batchIndex;
+        //     bytes32 storageKey;
+        //     bytes compressedProof;
+        // }
+        const res:any =  AbiCoder.defaultAbiCoder().encode(
             [
-                'tuple(bytes32 version, bytes32 sendRoot, uint64 nodeIndex,bytes rlpEncodedBlock)',
+                'tuple(uint256 batchIndex, bytes32 storageKey, bytes compressedProof)',
                 'tuple(bytes[] stateTrieWitness, bytes[][] storageProofs)',
             ],
             [
                 {
-                    version:
-                        '0x0000000000000000000000000000000000000000000000000000000000000000',
-                    sendRoot: block.sendRoot,
-                    nodeIndex: block.nodeIndex,
-                    rlpEncodedBlock: block.rlpEncodedBlock
+                    batchIndex,
+                    // storageKey:slots[0], // Check how to handle multiple storage
+                    storageKey:EMPTY_ADDRESS,
+                    compressedProof
                 },
                 proof,
             ]
         );
+        console.log(7, res)
+        return res;
     }
-    /**
-    * Retrieves information about the latest provable block in the Scroll Rollup.
-    *
-    * @returns { Promise<ScrollProvableBlock> } A promise that resolves to an object containing information about the provable block.
-    * @throws Throws an error if any of the underlying operations fail.
-    *
-    * @typedef { Object } ScrollProvableBlock
-    * @property { string } rlpEncodedBlock - The RLP - encoded block information.
-    * @property { string } sendRoot - The send root of the provable block.
-    * @property { string } blockHash - The hash of the provable block.
-    * @property { number } nodeIndex - The index of the node corresponding to the provable block.
-    * @property { number } number - The block number of the provable block.
-    */
-    public async getProvableBlock(): Promise<ScrollProvableBlock> {
-        //Retrieve the latest pending node that has been committed to the rollup.
-        const nodeIndex = await this.rollup.latestNodeCreated()
-        const [l2blockRaw, sendRoot] = await this.getL2BlockForNode(nodeIndex)
-
-        const blockarray = [
-            l2blockRaw.parentHash,
-            l2blockRaw.sha3Uncles,
-            l2blockRaw.miner,
-            l2blockRaw.stateRoot,
-            l2blockRaw.transactionsRoot,
-            l2blockRaw.receiptsRoot,
-            l2blockRaw.logsBloom,
-            toBeHex(l2blockRaw.difficulty),
-            toBeHex(l2blockRaw.number),
-            toBeHex(l2blockRaw.gasLimit),
-            toBeHex(l2blockRaw.gasUsed),
-            toBeHex(l2blockRaw.timestamp),
-            l2blockRaw.extraData,
-            l2blockRaw.mixHash,
-            l2blockRaw.nonce,
-            toBeHex(l2blockRaw.baseFeePerGas)
-        ]
-
-        //Rlp encode the block to pass it as an argument
-        const rlpEncodedBlock = ethers.encodeRlp(blockarray)
-
+  /**
+   * @dev Returns an object representing a block whose state can be proven on L1.
+   */
+  public async getProvableBlock(): Promise<ScrollProvableBlock> {
+        const block = await this.l2Provider.send("eth_getBlockByNumber", ["finalized", false]);
+        console.log('***getProvableBlock', block)
+        if (!block) throw new Error('No block found');
         return {
-            rlpEncodedBlock,
-            sendRoot,
-            nodeIndex: nodeIndex,
-            number: toNumber(l2blockRaw.number)
-        }
+            number: block.number
+            // number: block.number - 1
+        };
     }
-    /**
-     * Fetches the corrospending L2 block for a given node index and returns it along with the send root.
-     * @param {bigint} nodeIndex - The index of the node for which to fetch the block.
-     * @returns {Promise<[Record<string, string>, string]>} A promise that resolves to a tuple containing the fetched block and the send root.
-     */
-    private async getL2BlockForNode(nodeIndex: bigint): Promise<[Record<string, string>, string]> {
-
-        //We first check if we have the block cached
-        const cachedBlock = await this.cache.getBlock(nodeIndex)
-        if (cachedBlock) {
-            return [cachedBlock.block, cachedBlock.sendRoot]
-        }
-
-        //We fetch the node created event for the node index we just retrieved.
-        const nodeEventFilter = await this.rollup.filters.NodeCreated(nodeIndex);
-        const nodeEvents = await this.rollup.queryFilter(nodeEventFilter);
-        const assertion = (nodeEvents[0] as EventLog).args!.assertion
-        //Instead of using the AssertionHelper contract we can extract sendRoot from the assertion. Avoiding the deployment of the AssertionHelper contract and an additional RPC call.
-        const [blockHash, sendRoot] = assertion[1][0][0]
-
-
-        //The L1 rollup only provides us with the block hash. In order to ensure that the stateRoot we're using for the proof is indeed part of the block, we need to fetch the block. And provide it to the proof.
-        const l2blockRaw = await this.l2Provider.send('eth_getBlockByHash', [
-            blockHash,
-            false
-        ]);
-
-        //Cache the block for future use
-        await this.cache.setBlock(nodeIndex, l2blockRaw, sendRoot)
-
-        return [l2blockRaw, sendRoot]
-    }
-
 }
