@@ -25,30 +25,21 @@ contract Dm3NameRegistrar is IAddrResolver, INameResolver {
         string memory oldName = reverse[makeReverseNode(msg.sender)];
         if (bytes(_name).length == 0) {
             //Clear name
-            bytes32 labelhash = keccak256(bytes(oldName));
-            bytes32 node = _makeNode(PARENT_NODE, labelhash);
-            delete owner[node];
+            delete owner[makeLabelNode(oldName)];
             delete reverse[makeReverseNode(msg.sender)];
             return;
         }
 
         if (bytes(oldName).length > 0) {
             //Clear name
-            bytes32 labelhash = keccak256(bytes(oldName));
-            bytes32 node = _makeNode(PARENT_NODE, labelhash);
-            delete owner[node];
+            delete owner[makeLabelNode(oldName)];
         }
-        bytes32 labelhash = keccak256(bytes(_name));
-        bytes32 node = _makeNode(PARENT_NODE, labelhash);
-        owner[node] = msg.sender;
 
-        //register reverse record
-        bytes32 reverseNode = _makeNode(
-            ADDR_REVERSE_NODE,
-            sha3HexAddress(msg.sender)
-        );
+        owner[makeLabelNode(_name)] = msg.sender;
 
-        reverse[reverseNode] = _name;
+        //set reverse record
+        reverse[makeReverseNode(msg.sender)] = _name;
+
         emit NameRegistered(msg.sender, _name);
     }
 
@@ -58,24 +49,17 @@ contract Dm3NameRegistrar is IAddrResolver, INameResolver {
     function name(bytes32 node) external view returns (string memory) {
         return reverse[node];
     }
-    function _makeNode(
-        bytes32 node,
-        bytes32 labelhash
-    ) private pure returns (bytes32) {
-        return keccak256(abi.encodePacked(node, labelhash));
+    function makeLabelNode(string memory label) private view returns (bytes32) {
+        return
+            keccak256(abi.encodePacked(PARENT_NODE, keccak256(bytes(label))));
     }
-    function makeReverseNode(
-        address addr
-    ) private pure returns (bytes32) {
-        return _makeNode(ADDR_REVERSE_NODE, sha3HexAddress(addr));
+    function makeReverseNode(address addr) private pure returns (bytes32) {
+        return
+            keccak256(
+                abi.encodePacked(ADDR_REVERSE_NODE, sha3HexAddress(addr))
+            );
     }
-    /**
-     * @dev An optimised function to compute the sha3 of the lower-case
-     *      hexadecimal representation of an Ethereum address.
-     * @param addr The address to hash
-     * @return ret The SHA3 hash of the lower-case hexadecimal encoding of the
-     *         input address.
-     */
+
     function sha3HexAddress(address addr) private pure returns (bytes32 ret) {
         assembly {
             for {
