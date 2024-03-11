@@ -33,9 +33,12 @@ describe.only('Dm3 name registrar', () => {
 
   it('can set dm3 name', async () => {
     await target.register('alice');
+    const reverseRecord = `${signer.address
+      .slice(2)
+      .toLowerCase()}.addr.reverse`;
 
     const owner = await target.owner(ethers.namehash('alice.op.dm3.eth'));
-    const name = await target._names(signer.address);
+    const name = await target.reverse(ethers.namehash(reverseRecord));
 
     expect(owner).to.equal(signer.address);
     expect(name).to.equal('alice');
@@ -46,19 +49,24 @@ describe.only('Dm3 name registrar', () => {
     const addr = await target.addr(ethers.namehash('alice.op.dm3.eth'));
     expect(addr).to.equal(signer.address);
   });
-  it.only('can use reverse record to retrive name of address', async () => {
+  it('can use reverse record to retrive name of address', async () => {
     await target.register('alice');
-    const reverseAddr = `${signer.address.slice(2).toLowerCase()}.addr.reverse`;
-    const reverseNode = ethers.namehash(reverseAddr);
+    const reverseRecord = `${signer.address
+      .slice(2)
+      .toLowerCase()}.addr.reverse`;
+    const reverseNode = ethers.namehash(reverseRecord);
 
     const name = await target.name(reverseNode);
     expect(name).to.equal('alice');
   });
-  it('registering a new name would overwrite the old name', async () => {
+  it('registering a new name overrides the old name', async () => {
     await target.register('alice');
+    const reverseRecord = `${signer.address
+      .slice(2)
+      .toLowerCase()}.addr.reverse`;
 
     let owner = await target.owner(ethers.namehash('alice.op.dm3.eth'));
-    let name = await target._names(signer.address);
+    let name = await target.reverse(ethers.namehash(reverseRecord));
 
     expect(owner).to.equal(signer.address);
     expect(name).to.equal('alice');
@@ -66,7 +74,7 @@ describe.only('Dm3 name registrar', () => {
     await target.register('bob');
 
     owner = await target.owner(ethers.namehash('bob.op.dm3.eth'));
-    name = await target._names(signer.address);
+    name = await target.reverse(ethers.namehash(reverseRecord));
 
     const oldOwner = await target.owner(ethers.namehash('alice.op.dm3.eth'));
 
@@ -77,9 +85,12 @@ describe.only('Dm3 name registrar', () => {
   });
   it('passing an empty name deletes an existing record', async () => {
     await target.register('alice');
+    const reverseRecord = `${signer.address
+      .slice(2)
+      .toLowerCase()}.addr.reverse`;
 
     let owner = await target.owner(ethers.namehash('alice.op.dm3.eth'));
-    let name = await target._names(signer.address);
+    let name = await target.reverse(ethers.namehash(reverseRecord));
 
     expect(owner).to.equal(signer.address);
     expect(name).to.equal('alice');
@@ -87,7 +98,7 @@ describe.only('Dm3 name registrar', () => {
     await target.register(ethers.toUtf8Bytes(''));
 
     owner = await target.owner(ethers.namehash('alice.op.dm3.eth'));
-    name = await target._names(signer.address);
+    name = await target.reverse(ethers.namehash(reverseRecord));
 
     expect(owner).to.equal(ethers.ZeroAddress);
     expect(name).to.equal('');

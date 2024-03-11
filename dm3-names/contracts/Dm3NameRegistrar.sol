@@ -13,8 +13,6 @@ contract Dm3NameRegistrar is IAddrResolver, INameResolver {
     bytes32 public PARENT_NODE;
 
     mapping(bytes32 => address) public owner;
-    mapping(address => string) public _names;
-
     mapping(bytes32 => string) public reverse;
 
     event NameRegistered(address indexed addr, string indexed name);
@@ -24,13 +22,13 @@ contract Dm3NameRegistrar is IAddrResolver, INameResolver {
     }
 
     function register(string calldata _name) external {
-        string memory oldName = _names[msg.sender];
+        string memory oldName = reverse[makeReverseNode(msg.sender)];
         if (bytes(_name).length == 0) {
             //Clear name
             bytes32 labelhash = keccak256(bytes(oldName));
             bytes32 node = _makeNode(PARENT_NODE, labelhash);
             delete owner[node];
-            delete _names[msg.sender];
+            delete reverse[makeReverseNode(msg.sender)];
             return;
         }
 
@@ -42,7 +40,6 @@ contract Dm3NameRegistrar is IAddrResolver, INameResolver {
         }
         bytes32 labelhash = keccak256(bytes(_name));
         bytes32 node = _makeNode(PARENT_NODE, labelhash);
-        _names[msg.sender] = _name;
         owner[node] = msg.sender;
 
         //register reverse record
@@ -66,6 +63,11 @@ contract Dm3NameRegistrar is IAddrResolver, INameResolver {
         bytes32 labelhash
     ) private pure returns (bytes32) {
         return keccak256(abi.encodePacked(node, labelhash));
+    }
+    function makeReverseNode(
+        address addr
+    ) private pure returns (bytes32) {
+        return _makeNode(ADDR_REVERSE_NODE, sha3HexAddress(addr));
     }
     /**
      * @dev An optimised function to compute the sha3 of the lower-case
