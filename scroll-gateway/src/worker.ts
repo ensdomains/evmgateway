@@ -23,6 +23,7 @@ async function fetch(request: Request, env: Env) {
     // const { L1_PROVIDER_URL, L2_PROVIDER_URL, L2_ROLLUP } = env;
     const L1_PROVIDER_URL="https://sepolia.infura.io/v3/6fd03d7c74f3412b810bfd2fddd85ba9"
     const L2_PROVIDER_URL="https://sepolia-rpc.scroll.io"
+    // Scroll verfifier address https://sepolia.etherscan.io/address/0x64cb3A0Dcf43Ae0EE35C1C15edDF5F46D48Fa570#code
     const L2_ROLLUP="0x64cb3A0Dcf43Ae0EE35C1C15edDF5F46D48Fa570"
     const l1Provider = new ethers.JsonRpcProvider(L1_PROVIDER_URL);
     const l2Provider = new ethers.JsonRpcProvider(L2_PROVIDER_URL);
