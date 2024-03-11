@@ -16,6 +16,7 @@ contract Dm3NameRegistrar is IAddrResolver, INameResolver {
     mapping(bytes32 => string) public reverse;
 
     event NameRegistered(address indexed addr, string indexed name);
+    event NameRemoved(address indexed addr, string indexed name);
 
     constructor(bytes32 _parentNode) {
         PARENT_NODE = _parentNode;
@@ -27,12 +28,14 @@ contract Dm3NameRegistrar is IAddrResolver, INameResolver {
             //Clear name
             delete owner[makeLabelNode(oldName)];
             delete reverse[makeReverseNode(msg.sender)];
+            emit NameRemoved(msg.sender, oldName);
             return;
         }
 
         if (bytes(oldName).length > 0) {
             //Clear name
             delete owner[makeLabelNode(oldName)];
+            emit NameRemoved(msg.sender, oldName);
         }
 
         owner[makeLabelNode(_name)] = msg.sender;
