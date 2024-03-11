@@ -1,10 +1,9 @@
 import { HardhatEthersProvider } from '@nomicfoundation/hardhat-ethers/internal/hardhat-ethers-provider';
 import type { HardhatEthersHelpers } from '@nomicfoundation/hardhat-ethers/types';
 import { expect } from 'chai';
-import { Contract, dnsEncode, ethers as ethersT, keccak256 } from 'ethers';
+import { Contract, ethers as ethersT } from 'ethers';
 import { ethers } from 'hardhat';
 import { EthereumProvider } from 'hardhat/types';
-import { ens_normalize } from '@adraffy/ens-normalize'; // or require()
 
 type ethersObj = typeof ethersT &
   Omit<HardhatEthersHelpers, 'provider'> & {
@@ -27,69 +26,56 @@ describe.only('Dm3 name registrar', () => {
   before(async () => {
     const Dm3NameRegistrarFactory =
       await ethers.getContractFactory('Dm3NameRegistrar');
-    target = await Dm3NameRegistrarFactory.deploy();
+    const parentNode = ethers.namehash('op.dm3.eth');
+    target = await Dm3NameRegistrarFactory.deploy(parentNode);
     signer = (await ethers.getSigners())[0];
   });
 
   it('can set dm3 name', async () => {
-    await target.register(ethers.dnsEncode('alice.dm3'));
+    await target.register('alice');
 
-    const owner = await target.owner(ethers.namehash('alice.dm3'));
+    const owner = await target.owner(ethers.namehash('alice.op.dm3.eth'));
     const name = await target.name(signer.address);
 
     expect(owner).to.equal(signer.address);
-    expect(decodeDnsName(name)).to.equal('alice.dm3');
+    expect(name).to.equal('alice');
   });
   it('registering a new name would overwrite the old name', async () => {
-    await target.register(ethers.dnsEncode('alice.dm3'));
+    await target.register('alice');
 
-    let owner = await target.owner(ethers.namehash('alice.dm3'));
+    let owner = await target.owner(ethers.namehash('alice.op.dm3.eth'));
     let name = await target.name(signer.address);
 
     expect(owner).to.equal(signer.address);
-    expect(decodeDnsName(name)).to.equal('alice.dm3');
+    expect(name).to.equal('alice');
 
-    await target.register(ethers.dnsEncode('bob.dm3'));
+    await target.register('bob');
 
-    owner = await target.owner(ethers.namehash('bob.dm3'));
+    owner = await target.owner(ethers.namehash('bob.op.dm3.eth'));
     name = await target.name(signer.address);
 
-    const oldOwner = await target.owner(ethers.namehash('alice.dm3'));
-    const oldName = await target.name(signer.address);
+    const oldOwner = await target.owner(ethers.namehash('alice.op.dm3.eth'));
 
     expect(owner).to.equal(signer.address);
-    expect(decodeDnsName(name)).to.equal('bob.dm3');
+    expect(name).to.equal('bob');
 
     expect(oldOwner).to.equal(ethers.ZeroAddress);
-    expect(decodeDnsName(oldName)).to.equal('bob.dm3');
   });
   it('passing an empty name deletes an existing record', async () => {
-    await target.register(ethers.dnsEncode('alice.dm3'));
+    await target.register('alice');
 
-    let owner = await target.owner(ethers.namehash('alice.dm3'));
+    let owner = await target.owner(ethers.namehash('alice.op.dm3.eth'));
     let name = await target.name(signer.address);
 
     expect(owner).to.equal(signer.address);
-    expect(decodeDnsName(name)).to.equal('alice.dm3');
+    expect(name).to.equal('alice');
 
     await target.register(ethers.toUtf8Bytes(''));
 
-    owner = await target.owner(ethers.namehash('alice.dm3'));
+    owner = await target.owner(ethers.namehash('alice.op.dm3.eth'));
     name = await target.name(signer.address);
 
     expect(owner).to.equal(ethers.ZeroAddress);
-    expect(name).to.equal('0x');
+    expect(name).to.equal('');
   });
 });
-function decodeDnsName(dnsName: string) {
-  const buffer = Buffer.from(dnsName.slice(2), 'hex');
-  const labels = [];
-  let idx = 0;
-  while (true) {
-    const len = buffer.readUInt8(idx);
-    if (len === 0) break;
-    labels.push(buffer.slice(idx + 1, idx + len + 1).toString('utf8'));
-    idx += len + 1;
-  }
-  return labels.join('.');
-}

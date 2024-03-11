@@ -1,33 +1,49 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
-import {BytesUtils} from "@ensdomains/ens-contracts/contracts/wrapper/BytesUtils.sol";
-
 
 contract Dm3NameRegistrar {
-    using BytesUtils for bytes;
 
+    bytes32 public  PARENT_NODE;
 
     mapping(bytes32 => address) public owner;
-    mapping(address => bytes) public name;
+    mapping(address => string) public name;
 
-    event NameRegistered(address indexed addr, bytes name);
+    event NameRegistered(address indexed addr, string indexed name);
 
-    function register(bytes calldata _name) external {
-        bytes memory oldName = name[msg.sender];
-        if(_name.length == 0) {
+    constructor(bytes32 _parentNode) {
+        PARENT_NODE = _parentNode;
+    }
+
+    function register(string calldata _name) external {
+
+        string memory oldName = name[msg.sender];
+        if(bytes(_name).length == 0) {
             //Clear name
-            delete owner[bytes(oldName).namehash(0)];
+            bytes32 labelhash = keccak256(bytes(oldName));
+            bytes32 node = _makeNode(PARENT_NODE, labelhash);
+            delete owner[node];
             delete name[msg.sender];
             return;
         }
 
         if(bytes(oldName).length > 0) {
          //Clear name
-            delete owner[bytes(oldName).namehash(0)];
+            bytes32 labelhash = keccak256(bytes(oldName));
+            bytes32 node = _makeNode(PARENT_NODE, labelhash);
+            delete owner[node];
         }
+        bytes32 labelhash = keccak256(bytes(_name));
+        bytes32 node = _makeNode(PARENT_NODE, labelhash);
         name[msg.sender] = _name;
-        owner[_name.namehash(0)] = msg.sender;
+        owner[node] = msg.sender;
 
         emit NameRegistered(msg.sender, _name);
+    }
+
+      function _makeNode(
+        bytes32 node,
+        bytes32 labelhash
+    ) private pure returns (bytes32) {
+        return keccak256(abi.encodePacked(node, labelhash));
     }
 }
