@@ -1,9 +1,9 @@
 import { EVMGateway } from '@ensdomains/evm-gateway';
 import { JsonRpcProvider } from 'ethers';
-import { ArbProofService, type ArbProvableBlock } from './ArbProofService.js';
+import { ScrollProofService, type ScrollProvableBlock } from './ScrollProofService.js';
 import { InMemoryBlockCache } from './blockCache/InMemoryBlockCache.js';
 
-export type ArbGateway = EVMGateway<ArbProvableBlock>;
+export type ArbGateway = EVMGateway<ScrollProvableBlock>;
 
 export async function makeArbGateway(
   l1providerUrl: string,
@@ -13,7 +13,7 @@ export async function makeArbGateway(
   const l1Provider = new JsonRpcProvider(l1providerUrl);
   const l2Provider = new JsonRpcProvider(l2providerUrl);
   return new EVMGateway(
-    new ArbProofService(
+    new ScrollProofService(
       l1Provider,
       l2Provider,
       l2RollupAddress,
@@ -22,4 +22,4 @@ export async function makeArbGateway(
   );
 }
 
-export { ArbProofService, type ArbProvableBlock };
+export { ScrollProofService, type ScrollProvableBlock };

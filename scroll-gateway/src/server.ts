@@ -2,7 +2,7 @@ import { Server } from '@chainlink/ccip-read-server';
 import { Command } from '@commander-js/extra-typings';
 import { EVMGateway } from '@ensdomains/evm-gateway';
 import { JsonRpcProvider } from 'ethers';
-import { ArbProofService } from './ArbProofService.js';
+import { ScrollProofService } from './ScrollProofService.js';
 import { InMemoryBlockCache } from './blockCache/InMemoryBlockCache.js';
 
 const program = new Command()
@@ -32,7 +32,7 @@ program.parse();
   const l2Provider = new JsonRpcProvider(options.l2ProviderUrl);
 
   const gateway = new EVMGateway(
-    new ArbProofService(
+    new ScrollProofService(
       l1Provider,
       l2Provider,
       options.l2RollupAddress,

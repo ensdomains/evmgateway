@@ -2,22 +2,34 @@
 pragma solidity ^0.8.17;
 import {StateProof, EVMProofHelper} from '@ensdomains/evm-verifier/contracts/EVMProofHelper.sol';
 import {IEVMVerifier} from '@ensdomains/evm-verifier/contracts/IEVMVerifier.sol';
-import {Node, IRollupCore} from '@scroll/nitro-contracts/src/rollup/IRollupCore.sol';
-import {RLPReader} from '@eth-optimism/contracts-bedrock/src/libraries/rlp/RLPReader.sol';
+
+interface IScrollChainCommitmentVerifier {
+    function verifyZkTrieProof(
+        address account,
+        bytes32 storageKey,
+        bytes calldata proof
+    ) public view returns (bytes32 stateRoot, bytes32 storageValue);
+
+    function verifyStateCommitment(
+        uint256 batchIndex,
+        address account,
+        bytes32 storageKey,
+        bytes calldata proof
+    ) external view returns (bytes32 storageValue);
+}
 
 struct ScrollWitnessData {
-    bytes32 version;
-    bytes32 sendRoot;
-    uint64 nodeIndex;
-    bytes rlpEncodedBlock;
+    uint256 batchIndex;
+    bytes32 storageKey;
+    bytes compressedProof;
 }
 
 contract ScrollVerifier is IEVMVerifier {
-    IRollupCore public immutable rollup;
+    IScrollChainCommitmentVerifier public immutable verifier;
     string[] _gatewayURLs;
 
-    constructor(string[] memory _urls, IRollupCore _rollupAddress) {
-        rollup = _rollupAddress;
+    constructor(string[] memory _urls, IScrollChainCommitmentVerifier _verifierAddress) {
+        verifier = _verifierAddress;
         _gatewayURLs = _urls;
     }
 
@@ -41,49 +53,16 @@ contract ScrollVerifier is IEVMVerifier {
         address target,
         bytes32[] memory commands,
         bytes[] memory constants,
-        bytes memory proof
+        bytes memory compressedProof
     ) external view returns (bytes[] memory values) {
-        (ScrollWitnessData memory scrollData, StateProof memory stateProof) = abi
-            .decode(proof, (ScrollWitnessData, StateProof));
-
-        //Get the node from the rollup contract
-        Node memory rblock = rollup.getNode(scrollData.nodeIndex);
-
-        //The confirm data is the keccak256 hash of the block hash and the send root. It is used to verify that the rblock is a subject of the layer 2 block that is being proven.
-        bytes32 confirmData = keccak256(
-            abi.encodePacked(
-                keccak256(scrollData.rlpEncodedBlock),
-                scrollData.sendRoot
-            )
-        );
-
-        //Verify that the block hash is correct
-        require(rblock.confirmData == confirmData, 'confirmData mismatch');
-        //Verifiy that the block that is being proven is the same as the block that was passed in
-
-        //Now that we know that the block is valid, we can get the state root from the block.
-        bytes32 stateRoot = getStateRootFromBlock(scrollData.rlpEncodedBlock);
-
-        values = EVMProofHelper.getStorageValues(
-            target,
-            commands,
-            constants,
-            stateRoot,
-            stateProof
-        );
-    }
-
-    /*
-     * Decodes a block by extracting and converting the bytes32 value from the RLP-encoded block to get the stateRoot.
-     *
-     * @param {bytes} rlpEncodedBlock - The RLP-encoded block information.
-     * @returns {bytes32} The stateRoot extracted from the RLP-encoded block information.
-     */
-    function getStateRootFromBlock(
-        bytes memory rlpEncodedBlock
-    ) internal pure returns (bytes32) {
-        RLPReader.RLPItem[] memory i = RLPReader.readList(rlpEncodedBlock);
-        //StateRoot is located at idx 3
-        return bytes32(RLPReader.readBytes(i[3]));
+        (ScrollWitnessData memory scrollData, StateProof memory stateProof) = abi.decode(proof, (ScrollWitnessData, StateProof));
+        require(
+            verifier.verifyStateCommitment(
+                scrollData.batchIndex, target, scrollData.storageKey, scrollData.compressedProof
+            ),
+            "compressed proof mismatch"
+        )
+        (bytes32 storageValue) = verifier.verifyZkTrieProof(account, scrollData.storageKey, scrollData.compressedProof);
+        values = [storageValue];
     }
 }
