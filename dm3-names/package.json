@@ -5,6 +5,7 @@
   "scripts": {
     "build": "echo 'building dm3-name-registrar' && hardhat compile",
     "test": "node scripts/test.js",
+    "test-hh": "npx hardhat test",
     "storage": "hardhat check",
     "clean": "rm -fr artifacts cache node_modules typechain-types",
     "lint": "exit 0"
