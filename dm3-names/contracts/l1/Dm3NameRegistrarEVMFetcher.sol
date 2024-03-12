@@ -17,6 +17,7 @@ contract Dm3NameRegistrarEVMFetcher is EVMFetchTarget {
     address public target;
     string public parentDomain;
 
+    uint256 private constant OWNER_SLOT = 1;
     uint256 private constant TEXTS_SLOT = 3;
     error Debug(address target);
 
@@ -37,10 +38,6 @@ contract Dm3NameRegistrarEVMFetcher is EVMFetchTarget {
     ) external view returns (bytes memory result) {
         bytes4 selector = bytes4(data);
 
-        // if (selector == IAddrResolver.addr.selector) {
-        //     bytes32 node = abi.decode(data[4:], (bytes32));
-        //     return _addr(node, target);
-        // }
         // if (selector == INameResolver.name.selector) {
         //     bytes32 node = abi.decode(data[4:], (bytes32));
         //     return _name(node, target);
@@ -52,6 +49,17 @@ contract Dm3NameRegistrarEVMFetcher is EVMFetchTarget {
             );
             return bytes(_text(node, key));
         }
+        if (selector == IAddrResolver.addr.selector) {
+            bytes32 node = abi.decode(data[4:], (bytes32));
+            return _addr(node);
+        }
+    }
+    function _addr(bytes32 node) private view returns (bytes memory) {
+        EVMFetcher
+            .newFetchRequest(verifier, target)
+            .getStatic(OWNER_SLOT)
+            .element(node)
+            .fetch(this.addrCallback.selector, '');
     }
     function _text(
         bytes32 node,
@@ -69,5 +77,11 @@ contract Dm3NameRegistrarEVMFetcher is EVMFetchTarget {
         bytes memory
     ) public pure returns (bytes memory) {
         return abi.encode(string(values[0]));
+    }
+    function addrCallback(
+        bytes[] memory values,
+        bytes memory
+    ) public view returns (bytes memory) {
+        return abi.encode(address(uint160(uint256(bytes32(values[0])))));
     }
 }

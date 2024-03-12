@@ -8,7 +8,7 @@ import {
   Contract,
   JsonRpcProvider,
   Signer,
-  ethers as ethersT
+  ethers as ethersT,
 } from 'ethers';
 import { FetchRequest } from 'ethers';
 import { ethers } from 'hardhat';
@@ -37,7 +37,6 @@ describe.only('Dm3 Name Registrar Fetcher', () => {
   let dm3NameRegistrarEVMFetcher: Contract;
 
   let parentDomain: string;
-
 
   beforeEach(async () => {
     // Hack to get a 'real' ethers provider from hardhat. The default `HardhatProvider`
@@ -79,7 +78,10 @@ describe.only('Dm3 Name Registrar Fetcher', () => {
 
     //Deploy Dm3NameRegistrar
     parentDomain = 'l2.dm3.eth';
-    const dm3NameRegistrarFactory = await ethers.getContractFactory('Dm3NameRegistrar', signer);
+    const dm3NameRegistrarFactory = await ethers.getContractFactory(
+      'Dm3NameRegistrar',
+      signer
+    );
     dm3NameRegistrar = await dm3NameRegistrarFactory.deploy(
       ethers.namehash(parentDomain)
     );
@@ -101,38 +103,30 @@ describe.only('Dm3 Name Registrar Fetcher', () => {
     await provider.send('evm_mine', []);
   });
 
-  // it("should resolve empty ETH Address", async () => {
-  //   await dm3NameRegistrar.setTarget(node, resolverAddress)
-  //   const addr = '0x0000000000000000000000000000000000000000'
-  //   await l2contract.clearRecords(node)
-  //   const result = await l2contract['addr(bytes32)'](node)
-  //   expect(ethers.getAddress(result)).to.equal(addr);
-  //   await provider.send("evm_mine", []);
+  it('should resolve ETH Address', async () => {
+    await dm3NameRegistrar.register('alice');
+    await provider.send('evm_mine', []);
 
-  //   const i = new ethers.Interface(["function addr(bytes32) returns(address)"])
-  //   const calldata = i.encodeFunctionData("addr", [node])
-  //   const result2 = await dm3NameRegistrar.resolve(encodedname, calldata, { enableCcipRead: true })
-  //   const decoded = i.decodeFunctionResult("addr", result2)
-  //   expect(decoded[0]).to.equal(addr);
-  // })
+    const node = ethers.namehash(`alice.${parentDomain}`);
+    const encodedName = ethers.dnsEncode(`alice.${parentDomain}`);
 
-  // it("should resolve ETH Address", async () => {
-  //   await dm3NameRegistrar.setTarget(node, resolverAddress)
-  //   const addr = '0x5A384227B65FA093DEC03Ec34e111Db80A040615'
-  //   await l2contract.clearRecords(node)
-  //   await l2contract['setAddr(bytes32,address)'](node, addr)
-  //   const result = await l2contract['addr(bytes32)'](node)
-  //   expect(ethers.getAddress(result)).to.equal(addr);
-  //   await provider.send("evm_mine", []);
+    const i = new ethers.Interface(['function addr(bytes32) returns(address)']);
+    const calldata = i.encodeFunctionData('addr', [node]);
 
-  //   const i = new ethers.Interface(["function addr(bytes32) returns(address)"])
-  //   const calldata = i.encodeFunctionData("addr", [node])
-  //   const result2 = await dm3NameRegistrar.resolve(encodedname, calldata, { enableCcipRead: true })
-  //   const decoded = i.decodeFunctionResult("addr", result2)
-  //   expect(decoded[0]).to.equal(addr);
-  // })
+    const result2 = await dm3NameRegistrarEVMFetcher.resolve(
+      encodedName,
+      calldata,
+      {
+        enableCcipRead: true,
+      }
+    );
+    const decoded = i.decodeFunctionResult('addr', result2);
 
-  it("should resolve text record", async () => {
+    console.log('result', result2);
+    expect(decoded[0]).to.equal(await signer.getAddress());
+  });
+
+  it('should resolve text record', async () => {
     await dm3NameRegistrar.register('alice');
     const key = 'name';
     const value = 'hello world';
@@ -156,5 +150,4 @@ describe.only('Dm3 Name Registrar Fetcher', () => {
     const decoded = i.decodeFunctionResult('text', result2);
     expect(decoded[0]).to.equal(value);
   });
-
 });
