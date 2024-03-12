@@ -19,7 +19,7 @@ declare module 'hardhat/types/runtime' {
   }
 }
 
-describe.only('Dm3 name registrar', () => {
+describe('Dm3 name registrar', () => {
   let target: Contract;
   let signer: ethers.Signer;
 
