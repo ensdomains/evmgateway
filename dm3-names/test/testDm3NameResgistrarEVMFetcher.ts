@@ -93,7 +93,6 @@ describe.only('Dm3 Name Registrar Fetcher', () => {
       signer
     );
 
-    console.log(verifier.target, dm3NameRegistrar.target, parentDomain);
     dm3NameRegistrarEVMFetcher = await dm3NameRegistrarEVMFetcherFactory.deploy(
       verifier.target,
       dm3NameRegistrar.target,
@@ -124,6 +123,32 @@ describe.only('Dm3 Name Registrar Fetcher', () => {
 
     console.log('result', result2);
     expect(decoded[0]).to.equal(await signer.getAddress());
+  });
+  it('should resolve name', async () => {
+    await dm3NameRegistrar.register('alice');
+    await provider.send('evm_mine', []);
+
+    const reverseRecord = `${(await signer.getAddress())
+      .slice(2)
+      .toLowerCase()}.addr.reverse`;
+
+      const node = ethers.namehash(reverseRecord);
+    const encodedName = ethers.dnsEncode(`alice.${parentDomain}`);
+
+    const i = new ethers.Interface(['function name(bytes32) returns(string)']);
+    const calldata = i.encodeFunctionData('name', [node]);
+
+    const result2 = await dm3NameRegistrarEVMFetcher.resolve(
+      encodedName,
+      calldata,
+      {
+        enableCcipRead: true,
+      }
+    );
+    const decoded = i.decodeFunctionResult('name', result2);
+
+    console.log('result', result2);
+    expect(decoded[0]).to.equal(`alice.${parentDomain}`);
   });
 
   it('should resolve text record', async () => {

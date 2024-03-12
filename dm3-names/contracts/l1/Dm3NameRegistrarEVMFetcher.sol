@@ -8,18 +8,20 @@ import {IAddrResolver} from '@ensdomains/ens-contracts/contracts/resolvers/profi
 import {ITextResolver} from '@ensdomains/ens-contracts/contracts/resolvers/profiles/ITextResolver.sol';
 import {INameResolver} from '@ensdomains/ens-contracts/contracts/resolvers/profiles/INameResolver.sol';
 import {IEVMVerifier} from '@ensdomains/evm-verifier/contracts/IEVMVerifier.sol';
+import './strings.sol';
 
 contract Dm3NameRegistrarEVMFetcher is EVMFetchTarget {
     using EVMFetcher for EVMFetcher.EVMFetchRequest;
     using BytesUtils for bytes;
+    using strings for *;
 
     IEVMVerifier immutable verifier;
     address public target;
     string public parentDomain;
 
     uint256 private constant OWNER_SLOT = 1;
+    uint256 private constant REVERSE_SLOT = 2;
     uint256 private constant TEXTS_SLOT = 3;
-    error Debug(address target);
 
     //TODO add OZ ownable
     constructor(
@@ -38,10 +40,10 @@ contract Dm3NameRegistrarEVMFetcher is EVMFetchTarget {
     ) external view returns (bytes memory result) {
         bytes4 selector = bytes4(data);
 
-        // if (selector == INameResolver.name.selector) {
-        //     bytes32 node = abi.decode(data[4:], (bytes32));
-        //     return _name(node, target);
-        // }
+        if (selector == INameResolver.name.selector) {
+            bytes32 node = abi.decode(data[4:], (bytes32));
+            return _name(node);
+        }
         if (selector == ITextResolver.text.selector) {
             (bytes32 node, string memory key) = abi.decode(
                 data[4:],
@@ -61,6 +63,13 @@ contract Dm3NameRegistrarEVMFetcher is EVMFetchTarget {
             .element(node)
             .fetch(this.addrCallback.selector, '');
     }
+    function _name(bytes32 node) private view returns (bytes memory) {
+        EVMFetcher
+            .newFetchRequest(verifier, target)
+            .getDynamic(REVERSE_SLOT)
+            .element(node)
+            .fetch(this.nameCallback.selector, '');
+    }
     function _text(
         bytes32 node,
         string memory key
@@ -72,16 +81,30 @@ contract Dm3NameRegistrarEVMFetcher is EVMFetchTarget {
             .element(key)
             .fetch(this.textCallback.selector, '');
     }
+
     function textCallback(
         bytes[] memory values,
         bytes memory
     ) public pure returns (bytes memory) {
         return abi.encode(string(values[0]));
     }
-    function addrCallback(
+    function nameCallback(
         bytes[] memory values,
         bytes memory
     ) public view returns (bytes memory) {
+        strings.slice[] memory s = new strings.slice[](3);
+        //The label i.e alice
+        s[0] = string(values[0]).toSlice();
+        //Separator
+        s[1] = '.'.toSlice();
+        //The parent domain i.e example.com
+        s[2] = parentDomain.toSlice();
+        return abi.encode(''.toSlice().join(s));
+    }
+    function addrCallback(
+        bytes[] memory values,
+        bytes memory
+    ) public pure returns (bytes memory) {
         return abi.encode(address(uint160(uint256(bytes32(values[0])))));
     }
 }
