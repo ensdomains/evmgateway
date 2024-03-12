@@ -121,7 +121,6 @@ describe.only('Dm3 Name Registrar Fetcher', () => {
     );
     const decoded = i.decodeFunctionResult('addr', result2);
 
-    console.log('result', result2);
     expect(decoded[0]).to.equal(await signer.getAddress());
   });
   it('should resolve name', async () => {
@@ -132,7 +131,7 @@ describe.only('Dm3 Name Registrar Fetcher', () => {
       .slice(2)
       .toLowerCase()}.addr.reverse`;
 
-      const node = ethers.namehash(reverseRecord);
+    const node = ethers.namehash(reverseRecord);
     const encodedName = ethers.dnsEncode(`alice.${parentDomain}`);
 
     const i = new ethers.Interface(['function name(bytes32) returns(string)']);
@@ -174,5 +173,26 @@ describe.only('Dm3 Name Registrar Fetcher', () => {
     );
     const decoded = i.decodeFunctionResult('text', result2);
     expect(decoded[0]).to.equal(value);
+  });
+  it('Should set the verifier correctly', async function () {
+    const newVerifier = await (await provider.getSigner(1)).getAddress();
+    await dm3NameRegistrarEVMFetcher.connect(signer).setVerifier(newVerifier);
+    expect(await dm3NameRegistrarEVMFetcher.verifier()).to.equal(newVerifier);
+  });
+
+  it('Should set the target correctly', async function () {
+    const newTarget = await (await provider.getSigner(1)).getAddress();
+    await dm3NameRegistrarEVMFetcher.connect(signer).setTarget(newTarget);
+    expect(await dm3NameRegistrarEVMFetcher.getFunction('target')()).to.equal(newTarget);
+  });
+
+  it('Should set the parent domain correctly', async function () {
+    const parentDomain = 'foo.bar';
+    await dm3NameRegistrarEVMFetcher
+      .connect(signer)
+      .setParentDomain(parentDomain);
+    expect(await dm3NameRegistrarEVMFetcher.parentDomain()).to.equal(
+      parentDomain
+    );
   });
 });

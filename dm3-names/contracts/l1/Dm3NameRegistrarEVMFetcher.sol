@@ -8,17 +8,19 @@ import {IAddrResolver} from '@ensdomains/ens-contracts/contracts/resolvers/profi
 import {ITextResolver} from '@ensdomains/ens-contracts/contracts/resolvers/profiles/ITextResolver.sol';
 import {INameResolver} from '@ensdomains/ens-contracts/contracts/resolvers/profiles/INameResolver.sol';
 import {IEVMVerifier} from '@ensdomains/evm-verifier/contracts/IEVMVerifier.sol';
+import '@openzeppelin/contracts/access/Ownable.sol';
 import './strings.sol';
 
-contract Dm3NameRegistrarEVMFetcher is EVMFetchTarget {
+contract Dm3NameRegistrarEVMFetcher is EVMFetchTarget, Ownable {
     using EVMFetcher for EVMFetcher.EVMFetchRequest;
     using BytesUtils for bytes;
     using strings for *;
 
-    IEVMVerifier immutable verifier;
+    IEVMVerifier public verifier;
     address public target;
     string public parentDomain;
 
+    uint256 private constant PARENT_NODE_SLOT = 0;
     uint256 private constant OWNER_SLOT = 1;
     uint256 private constant REVERSE_SLOT = 2;
     uint256 private constant TEXTS_SLOT = 3;
@@ -31,6 +33,17 @@ contract Dm3NameRegistrarEVMFetcher is EVMFetchTarget {
     ) {
         verifier = _verifier;
         target = _target;
+        parentDomain = _parentDomain;
+    }
+
+    function setVerifier(IEVMVerifier _verifier) external onlyOwner {
+        verifier = _verifier;
+    }
+
+    function setTarget(address _target) external onlyOwner {
+        target = _target;
+    }
+    function setParentDomain(string memory _parentDomain) external onlyOwner {
         parentDomain = _parentDomain;
     }
 
@@ -66,6 +79,7 @@ contract Dm3NameRegistrarEVMFetcher is EVMFetchTarget {
     function _name(bytes32 node) private view returns (bytes memory) {
         EVMFetcher
             .newFetchRequest(verifier, target)
+            .getStatic(PARENT_NODE_SLOT)
             .getDynamic(REVERSE_SLOT)
             .element(node)
             .fetch(this.nameCallback.selector, '');
@@ -94,7 +108,7 @@ contract Dm3NameRegistrarEVMFetcher is EVMFetchTarget {
     ) public view returns (bytes memory) {
         strings.slice[] memory s = new strings.slice[](3);
         //The label i.e alice
-        s[0] = string(values[0]).toSlice();
+        s[0] = string(values[1]).toSlice();
         //Separator
         s[1] = '.'.toSlice();
         //The parent domain i.e example.com
