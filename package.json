@@ -11,7 +11,8 @@
     "l1-verifier",
     "op-verifier",
     "arb-verifier",
-    "crosschain-resolver"
+    "crosschain-resolver",
+    "dm3-names"
   ],
   "scripts": {
     "env": "env",
