@@ -72,17 +72,10 @@ export class OPDisputeGameProofService implements IProofService<OPProvableBlock>
       this.l1Provider,
     );
 
-    /**
-     *    struct OutputProposal {
-     *       bytes32 outputRoot;
-     *       uint128 timestamp;
-     *       uint128 l2BlockNumber;
-     *      }
-     */
-    const outputProposal = await disputeGame.rootClaim();
+    const l2BlockNumber = await disputeGame.l2BlockNumber();
 
     return {
-      number: outputProposal.l2BlockNumber,
+      number: l2BlockNumber,
       disputeGameIndex: disputeGameIndex,
     };
   }
