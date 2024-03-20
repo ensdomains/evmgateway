@@ -21,7 +21,8 @@ const program = new Command()
     'address for L2 output oracle on the L1',
     ''
   )
-  .option('-d, --delay <number>', 'number of blocks delay to use', '5');
+  .option('-d, --delay <number>', 'number of blocks delay to use', '5')
+  .option('-t, --type <number>', '0 - L2OutputOracle, 1 - DisputeGame', '0');
 
 program.parse();
 
