@@ -4,12 +4,20 @@ import { AbiCoder, Contract, JsonRpcProvider, type AddressLike } from 'ethers';
 
 export interface OPProvableBlock {
   number: number;
-  l2OutputIndex: number;
+  disputeGameIndex: number;
 }
 
-const L2_OUTPUT_ORACLE_ABI = [
-  'function latestOutputIndex() external view returns (uint256)',
-  'function getL2Output(uint256 _l2OutputIndex) external view returns (tuple(bytes32 outputRoot, uint128 timestamp, uint128 l2BlockNumber))',
+const DISPUTE_GAME_FACTORY_ABI = [
+  'function gameAtIndex(uint256 _index) external view returns (uint32 gameType_, uint64 timestamp_, address proxy_)',
+  'function gameCount() external view returns (uint256 gameCount_)',
+  // TODO: Use findLatestGames instead
+];
+
+const FAULT_DISPUTE_GAME_ABI = [
+  // The l2BlockNumber of the disputed output root in the `L2OutputOracle`.
+  'function l2BlockNumber() external view returns (uint256 l2BlockNumber_)',
+  // The output root of the game
+  'function rootClaim() external pure returns returns (bytes32 rootClaim_)',
 ];
 
 const L2_TO_L1_MESSAGE_PASSER_ADDRESS =
@@ -21,7 +29,8 @@ const L2_TO_L1_MESSAGE_PASSER_ADDRESS =
  *
  */
 export class OPDisputeGameProofService implements IProofService<OPProvableBlock> {
-  private readonly l2OutputOracle: Contract;
+  private readonly disputeGameFactory: Contract;
+  private readonly l1Provider: JsonRpcProvider;
   private readonly l2Provider: JsonRpcProvider;
   private readonly helper: EVMProofHelper;
   private readonly delay: number;
@@ -29,15 +38,16 @@ export class OPDisputeGameProofService implements IProofService<OPProvableBlock>
   constructor(
     l1Provider: JsonRpcProvider,
     l2Provider: JsonRpcProvider,
-    l2OutputOracleAddress: string,
+    disputeGameFactoryAddress: string,
     delay: number
   ) {
+    this.l1Provider = l1Provider;
     this.l2Provider = l2Provider;
     this.helper = new EVMProofHelper(l2Provider);
     this.delay = delay;
-    this.l2OutputOracle = new Contract(
-      l2OutputOracleAddress,
-      L2_OUTPUT_ORACLE_ABI,
+    this.disputeGameFactory = new Contract(
+      disputeGameFactoryAddress,
+      DISPUTE_GAME_FACTORY_ABI,
       l1Provider
     );
   }
@@ -51,8 +61,16 @@ export class OPDisputeGameProofService implements IProofService<OPProvableBlock>
      * We go a few batches backwards to avoid errors like delays between nodes
      *
      */
-    const l2OutputIndex =
-      Number(await this.l2OutputOracle.latestOutputIndex()) - this.delay;
+    const disputeGameIndex =
+      Number(await this.disputeGameFactory.gameCount()) - this.delay;
+
+    const game = await this.disputeGameFactory.gameAtIndex(disputeGameIndex);
+
+    const disputeGame = new Contract(
+      game[2],
+      FAULT_DISPUTE_GAME_ABI,
+      this.l1Provider,
+    );
 
     /**
      *    struct OutputProposal {
@@ -61,11 +79,11 @@ export class OPDisputeGameProofService implements IProofService<OPProvableBlock>
      *       uint128 l2BlockNumber;
      *      }
      */
-    const outputProposal = await this.l2OutputOracle.getL2Output(l2OutputIndex);
+    const outputProposal = await disputeGame.rootClaim();
 
     return {
       number: outputProposal.l2BlockNumber,
-      l2OutputIndex: l2OutputIndex,
+      disputeGameIndex: disputeGameIndex,
     };
   }
 
@@ -108,13 +126,13 @@ export class OPDisputeGameProofService implements IProofService<OPProvableBlock>
 
     return AbiCoder.defaultAbiCoder().encode(
       [
-        'tuple(uint256 l2OutputIndex, tuple(bytes32 version, bytes32 stateRoot, bytes32 messagePasserStorageRoot, bytes32 latestBlockhash) outputRootProof)',
+        'tuple(uint256 disputeGameIndex, tuple(bytes32 version, bytes32 stateRoot, bytes32 messagePasserStorageRoot, bytes32 latestBlockhash) outputRootProof)',
         'tuple(bytes[] stateTrieWitness, bytes[][] storageProofs)',
       ],
       [
         {
           blockNo: block.number,
-          l2OutputIndex: block.l2OutputIndex,
+          disputeGameIndex: block.disputeGameIndex,
           outputRootProof: {
             version:
               '0x0000000000000000000000000000000000000000000000000000000000000000',
