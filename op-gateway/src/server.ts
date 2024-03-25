@@ -34,7 +34,7 @@ program.parse();
   const l1Provider = new JsonRpcProvider(options.l1ProviderUrl);
   const l2Provider = new JsonRpcProvider(options.l2ProviderUrl);
 
-  let proofService: IProofService
+  let proofService: IProofService<any>
   
   if (Number(options.type) == 0) {
     proofService = new OPProofService(
@@ -50,9 +50,7 @@ program.parse();
       options.l2OutputOracle,
       Number(options.delay)
     )
-  }
-
-  if (!proofService) {
+  } else {
     throw new Error('Invalid output oracle type');
   }
 
