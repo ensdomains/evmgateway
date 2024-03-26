@@ -3,6 +3,8 @@ import { Command } from '@commander-js/extra-typings';
 import { EVMGateway } from '@ensdomains/evm-gateway';
 import { JsonRpcProvider } from 'ethers';
 import { OPProofService } from './OPProofService.js';
+import { OPDisputeGameProofService } from './OPDisputeGameProofService.js';
+import type { IProofService } from '@ensdomains/evm-gateway';
 
 const program = new Command()
   .option('-p, --port <port>', 'port to listen on', '8080')
@@ -21,7 +23,8 @@ const program = new Command()
     'address for L2 output oracle on the L1',
     ''
   )
-  .option('-d, --delay <number>', 'number of blocks delay to use', '5');
+  .option('-d, --delay <number>', 'number of blocks delay to use', '5')
+  .option('-t, --type <number>', '0 - L2OutputOracle, 1 - DisputeGame', '0');
 
 program.parse();
 
@@ -31,14 +34,27 @@ program.parse();
   const l1Provider = new JsonRpcProvider(options.l1ProviderUrl);
   const l2Provider = new JsonRpcProvider(options.l2ProviderUrl);
 
-  const gateway = new EVMGateway(
-    new OPProofService(
+  let proofService: IProofService<any>
+  
+  if (Number(options.type) == 0) {
+    proofService = new OPProofService(
       l1Provider,
       l2Provider,
       options.l2OutputOracle,
       Number(options.delay)
     )
-  );
+  } else if (Number(options.type) == 1) {
+    proofService = new OPDisputeGameProofService(
+      l1Provider,
+      l2Provider,
+      options.l2OutputOracle,
+      Number(options.delay)
+    )
+  } else {
+    throw new Error('Invalid output oracle type');
+  }
+
+  const gateway = new EVMGateway(proofService);
   const server = new Server();
   gateway.add(server);
   const app = server.makeApp('/');

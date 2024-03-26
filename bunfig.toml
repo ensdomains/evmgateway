@@ -1,0 +1,2 @@
+# Only run 1 script at a time to prevent race conditions (see https://github.com/ensdomains/evmgateway/issues/31) 
+install.concurrentScripts = 1
