@@ -10,7 +10,7 @@ export interface OPProvableBlock {
 const DISPUTE_GAME_FACTORY_ABI = [
   'function gameAtIndex(uint256 _index) external view returns (uint32 gameType_, uint64 timestamp_, address proxy_)',
   'function gameCount() external view returns (uint256 gameCount_)',
-  // TODO: Use findLatestGames instead
+  'function findLatestGames(uint32 _gameType, uint256 _start, uint256 _n) external view returns (tuple(uint256 index, bytes32 metadata, uint64 timestamp, bytes32 rootClaim, bytes extraData)[] memory games_)',
 ];
 
 const FAULT_DISPUTE_GAME_ABI = [
