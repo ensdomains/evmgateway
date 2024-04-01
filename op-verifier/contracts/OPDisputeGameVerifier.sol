@@ -18,6 +18,7 @@ struct OPWitnessData {
 contract OPDisputeGameVerifier is IEVMVerifier {
     error OutputRootMismatch(uint256 disputeGameIndex, bytes32 expected, bytes32 actual);
     error GameTypeMismatch(uint256 disputeGameIndex, GameType expected, GameType actual);
+    error GameChallenged(uint256 disputeGameIndex);
 
     IDisputeGameFactory public disputeGameFactory;
     string[] _gatewayURLs;
@@ -47,6 +48,10 @@ contract OPDisputeGameVerifier is IEVMVerifier {
         bytes32 expectedRoot = Hashing.hashOutputRootProof(opData.outputRootProof);
         if(outputRoot.raw() != expectedRoot) {
             revert OutputRootMismatch(opData.disputeGameIndex, expectedRoot, outputRoot.raw());
+        }
+
+        if (gameProxy.status() == GameStatus.CHALLENGER_WINS) {
+            revert GameChallenged(opData.disputeGameIndex);
         }
 
         return EVMProofHelper.getStorageValues(target, commands, constants, opData.outputRootProof.stateRoot, stateProof);

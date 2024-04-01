@@ -18,6 +18,8 @@ const FAULT_DISPUTE_GAME_ABI = [
   'function l2BlockNumber() external view returns (uint256 l2BlockNumber_)',
   // The output root of the game
   'function rootClaim() external pure returns returns (bytes32 rootClaim_)',
+  // Status of the game challenging
+  'function status() external view returns (uint8)'
 ];
 
 const L2_TO_L1_MESSAGE_PASSER_ADDRESS =
@@ -109,6 +111,12 @@ export class OPDisputeGameProofService
     );
 
     const l2BlockNumber = await disputeGame.l2BlockNumber();
+    const gameStatus = await disputeGame.status();
+
+    // gameStatus == CHALLENGER_WINS
+    if (gameStatus == 1) {
+      throw new Error('Dispute Game Challenged')
+    }
 
     return {
       number: l2BlockNumber,
