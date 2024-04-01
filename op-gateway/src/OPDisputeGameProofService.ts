@@ -23,12 +23,23 @@ const FAULT_DISPUTE_GAME_ABI = [
 const L2_TO_L1_MESSAGE_PASSER_ADDRESS =
   '0x4200000000000000000000000000000000000016';
 
+// uint256 index, bytes32 metadata, uint64 timestamp, bytes32 rootClaim, bytes extraData
+interface FindLatestGamesResult {
+  index: number;
+  metadata: string;
+  timestamp: number;
+  rootClaim: string;
+  extraData: string;
+}
+
 /**
  * The proofService class can be used to calculate proofs for a given target and slot on the Optimism Bedrock network.
- * It's also capable of proofing long types such as mappings or string by using all included slots in the proof.
+ * It's also capable of proving long types such as mappings or string by using all included slots in the proof.
  *
  */
-export class OPDisputeGameProofService implements IProofService<OPProvableBlock> {
+export class OPDisputeGameProofService
+  implements IProofService<OPProvableBlock>
+{
   private readonly disputeGameFactory: Contract;
   private readonly l1Provider: JsonRpcProvider;
   private readonly l2Provider: JsonRpcProvider;
@@ -56,20 +67,45 @@ export class OPDisputeGameProofService implements IProofService<OPProvableBlock>
    * @dev Returns an object representing a block whose state can be proven on L1.
    */
   async getProvableBlock(): Promise<OPProvableBlock> {
+    const respectedGameType = 0;
+
     /**
      * Get the latest output from the L2Oracle. We're building the proof with this batch
      * We go a few batches backwards to avoid errors like delays between nodes
      *
      */
-    const disputeGameIndex =
-      Number(await this.disputeGameFactory.gameCount()) - this.delay;
+    const gameCount = Number(await this.disputeGameFactory.gameCount());
 
-    const game = await this.disputeGameFactory.gameAtIndex(disputeGameIndex);
+    const games: FindLatestGamesResult[] =
+      await this.disputeGameFactory.findLatestGames(
+        respectedGameType,
+        gameCount - 1,
+        50
+      );
+
+    const timestampNow = Math.floor(Date.now() / 1000);
+    let disputeGameIndex = -1;
+
+    for (let i = 0; i < games.length; i++) {
+      if (timestampNow - games[i].timestamp >= this.delay) {
+        disputeGameIndex = games[i].index;
+        break;
+      }
+    }
+
+    if (disputeGameIndex == -1) throw new Error('Game Not Found');
+
+    const [gameType, timestamp, proxy] =
+      await this.disputeGameFactory.gameAtIndex(disputeGameIndex);
+
+    if (gameType != respectedGameType || timestamp != games[disputeGameIndex].timestamp) {
+      throw new Error('Mismatched Game Data');
+    }
 
     const disputeGame = new Contract(
-      game[2],
+      proxy,
       FAULT_DISPUTE_GAME_ABI,
-      this.l1Provider,
+      this.l1Provider
     );
 
     const l2BlockNumber = await disputeGame.l2BlockNumber();
