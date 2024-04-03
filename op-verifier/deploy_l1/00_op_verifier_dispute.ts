@@ -3,7 +3,7 @@ import {DeployFunction} from 'hardhat-deploy/types';
 import fs from 'fs';
 
 const GATEWAY_URLS = {
-  'sepolia': 'http://localhost:8080/{sender}/{data}.json',
+  'sepolia': 'https://op-gateway-worker.optidomains.workers.dev/{sender}/{data}.json',
 }
 
 const DISPUTE_GAME_ADDRESSES = {

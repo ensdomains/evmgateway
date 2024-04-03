@@ -1,6 +1,9 @@
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {DeployFunction} from 'hardhat-deploy/types';
 
+const NAMEWRAPPER = {
+  'sepolia': '0x0635513f179D50A207757E05759CbD106d7dFcE8',
+}
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const {deployments, getNamedAccounts} = hre;
@@ -13,7 +16,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log({OP_VERIFIER_ADDRESS})
   await deploy('L1Resolver', {
     from: deployer,
-    args: [OP_VERIFIER_ADDRESS],
+    args: [
+      OP_VERIFIER_ADDRESS,
+      '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e',
+      NAMEWRAPPER[hre.network.name],
+    ],
     log: true,
   });
 };

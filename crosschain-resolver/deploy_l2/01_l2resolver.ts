@@ -19,7 +19,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     args: [impl.address],
     log: true,
   });
-  await factory.wait()
   console.log(`DelegatableResolverFactory is deployed at ${factory.address}`)
 };
 export default func;
