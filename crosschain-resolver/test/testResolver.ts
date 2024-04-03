@@ -318,6 +318,7 @@ describe('Crosschain Resolver', () => {
     expect(await target.supportsInterface('0x9061b923')).to.equal(true) // IExtendedResolver
     expect(await target.supportsInterface('0x8a596ebe')).to.equal(true) // IMetadataResolver
     expect(await target.supportsInterface('0x01ffc9a7')).to.equal(true) // ERC-165 support
+    expect(await target.supportsInterface('0x41d40572')).to.equal(true) // IAddrSetter support
   })
 
   describe('EIP 5559', () => {
@@ -325,7 +326,7 @@ describe('Crosschain Resolver', () => {
       await target.setTarget(encodedname, resolverAddress)
       const i = new ethers.Interface(["function setAddr(bytes32 node, address addr)"])
       const calldata = i.encodeFunctionData("setAddr", [node, EMPTY_ADDRESS])
-      await expect(target.resolve(encodedname, calldata)).to.be
+      await expect(target.resolveDeferral(encodedname, calldata)).to.be
         .revertedWithCustomError(target, 'StorageHandledByL2')
         .withArgs(l2ResolverChainId, resolverAddress)
     });

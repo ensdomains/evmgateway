@@ -162,6 +162,18 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
             (bytes32 node) = abi.decode(data[4:], (bytes32));
             return _contenthash(node, target);
         }
+    }
+
+    /** 
+     * @dev Resolve and throws an EIP 3559 compliant error
+     * @param name DNS encoded ENS name to query
+     * @param data The actual calldata
+     * @return result result of the call
+     */
+    function resolveDeferral(bytes calldata name, bytes calldata data) external view returns (bytes memory result) {
+        (, address target) = _getTarget(name, 0);
+        bytes4 selector = bytes4(data);
+
         if (selector == IAddrSetter.setAddr.selector) {
             _writeDeferral(target);
         }
