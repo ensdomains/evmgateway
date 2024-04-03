@@ -32,6 +32,13 @@ declare module 'hardhat/types/runtime' {
   }
 }
 
+// looks like there are time dependencies for verification to success, hence adding a dalay
+const wait = async x => {
+  return new Promise(resolve => {
+    setTimeout(resolve, 3000, 2 * x);
+  });
+};
+
 describe('Crosschain Reverse Resolver', () => {
   let provider: BrowserProvider;
   let signer: Signer;
@@ -112,6 +119,8 @@ describe('Crosschain Reverse Resolver', () => {
     await l2contract.clearRecords(await signer.getAddress())
     await l2contract.setName(name)
     await provider.send("evm_mine", []);
+    await wait(1);
+
     const i = new ethers.Interface(["function name(bytes32) returns(string)"])
     const calldata = i.encodeFunctionData("name", [node])
     const result2 = await target.resolve(encodedL2ReverseName, calldata, { enableCcipRead: true })
@@ -151,8 +160,10 @@ describe('Crosschain Reverse Resolver', () => {
       signature,
     )
     await provider.send("evm_mine", []);
+    await wait(1);
+
     const i = new ethers.Interface(["function name(bytes32) returns(string)"])
-    expect(await defaultReverseResolver.name(testAddress)).to.equal(name)
+    expect(await defaultReverseResolver['name(address)'](testAddress)).to.equal(name)
 
     const defaultcalldata = i.encodeFunctionData("name", [defaultReverseNode])
     const defaultResult = await defaultReverseResolver.resolve(encodedDefaultReverseName, defaultcalldata)
@@ -177,6 +188,8 @@ describe('Crosschain Reverse Resolver', () => {
     await l2contract.clearRecords(await  signer.getAddress())
     await l2contract.setText(key, value)
     await provider.send("evm_mine", []);
+    await wait(1);
+
     const result = await l2contract.text(node, key)
     expect(result).to.equal(value);
     const i = new ethers.Interface(["function text(bytes32, string) returns(string)"])
@@ -218,7 +231,9 @@ describe('Crosschain Reverse Resolver', () => {
       signature,
     )
     await provider.send("evm_mine", []);
-    expect(await defaultReverseResolver.text(testAddress, key)).to.equal(value)
+    await wait(1);
+
+    expect(await defaultReverseResolver["text(address,string)"](testAddress, key)).to.equal(value)
     const i = new ethers.Interface(["function text(bytes32,string) returns(string)"])
 
     const defaultcalldata = i.encodeFunctionData("text", [defaultReverseNode, key])
