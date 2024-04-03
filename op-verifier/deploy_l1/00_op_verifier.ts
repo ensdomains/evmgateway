@@ -15,6 +15,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const {deployments, getNamedAccounts, network} = hre;
   const {deploy} = deployments;
   const {deployer} = await getNamedAccounts();
+
+  // Skip deployment if chain is not specified
+  if (!L2_OUTPUT_ORACLE_ADDRESSES[network.name] || !GATEWAY_URLS[network.name]) {
+    console.log('Skipping OPVerifier deployment...')
+    return
+  }
+
   let L2_OUTPUT_ORACLE_ADDRESS, GATEWAY_URL
   if(network.name === 'opDevnetL1'){
     const opAddresses = await (await fetch("http://localhost:8080/addresses.json")).json();
@@ -22,10 +29,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   }else{
     L2_OUTPUT_ORACLE_ADDRESS = L2_OUTPUT_ORACLE_ADDRESSES[network.name]
   }
+  GATEWAY_URL = GATEWAY_URLS[network.name]
   console.log('OPVerifier', [[GATEWAY_URL], L2_OUTPUT_ORACLE_ADDRESS])
   await deploy('OPVerifier', {
     from: deployer,
-    args: [[GATEWAY_URLS[network.name]], L2_OUTPUT_ORACLE_ADDRESS],
+    args: [[GATEWAY_URL], L2_OUTPUT_ORACLE_ADDRESS],
     log: true,
   });
 };

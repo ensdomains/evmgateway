@@ -8,7 +8,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const {deployer} = await getNamedAccounts();
 
-  const OPVerifier = await deployments.get('OPVerifier');
+  let OPVerifier;
+  try {
+    OPVerifier = await deployments.get('OPVerifier');
+  } catch (_) {
+    OPVerifier = await deployments.get('OPDisputeGameVerifier');
+  }
   const TestL2 = await hre.companionNetworks['l2'].deployments.get('TestL2');
 
   await deploy('TestL1', {

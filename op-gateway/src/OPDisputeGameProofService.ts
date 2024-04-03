@@ -17,7 +17,7 @@ const FAULT_DISPUTE_GAME_ABI = [
   // The l2BlockNumber of the disputed output root in the `L2OutputOracle`.
   'function l2BlockNumber() external view returns (uint256 l2BlockNumber_)',
   // The output root of the game
-  'function rootClaim() external pure returns returns (bytes32 rootClaim_)',
+  'function rootClaim() external view returns (bytes32 rootClaim_)',
   // Status of the game challenging
   'function status() external view returns (uint8)'
 ];
@@ -27,9 +27,9 @@ const L2_TO_L1_MESSAGE_PASSER_ADDRESS =
 
 // uint256 index, bytes32 metadata, uint64 timestamp, bytes32 rootClaim, bytes extraData
 interface FindLatestGamesResult {
-  index: number;
+  index: bigint;
   metadata: string;
-  timestamp: number;
+  timestamp: bigint;
   rootClaim: string;
   extraData: string;
 }
@@ -87,10 +87,12 @@ export class OPDisputeGameProofService
 
     const timestampNow = Math.floor(Date.now() / 1000);
     let disputeGameIndex = -1;
+    let disputeGameLocalIndex = -1;
 
     for (let i = 0; i < games.length; i++) {
-      if (timestampNow - games[i].timestamp >= this.delay) {
-        disputeGameIndex = games[i].index;
+      if (timestampNow - Number(games[i].timestamp) >= this.delay) {
+        disputeGameIndex = Number(games[i].index);
+        disputeGameLocalIndex = i;
         break;
       }
     }
@@ -100,7 +102,9 @@ export class OPDisputeGameProofService
     const [gameType, timestamp, proxy] =
       await this.disputeGameFactory.gameAtIndex(disputeGameIndex);
 
-    if (gameType != respectedGameType || timestamp != games[disputeGameIndex].timestamp) {
+    console.log(disputeGameIndex, proxy)
+
+    if (gameType != respectedGameType || timestamp != games[disputeGameLocalIndex].timestamp) {
       throw new Error('Mismatched Game Data');
     }
 
@@ -117,6 +121,8 @@ export class OPDisputeGameProofService
     if (gameStatus == 1) {
       throw new Error('Dispute Game Challenged')
     }
+
+    console.log('Finish')
 
     return {
       number: l2BlockNumber,

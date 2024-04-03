@@ -9,6 +9,10 @@ import { Hashing } from "@eth-optimism/contracts-bedrock/src/libraries/Hashing.s
 import "./interfaces/IDisputeGame.sol";
 import "./interfaces/IDisputeGameFactory.sol";
 
+interface IRespectedGameType {
+    function respectedGameType() external view returns(GameType);
+}
+
 struct OPWitnessData {
     uint256 disputeGameIndex;
     Types.OutputRootProof outputRootProof;
@@ -20,16 +24,14 @@ contract OPDisputeGameVerifier is IEVMVerifier {
     error GameTypeMismatch(uint256 disputeGameIndex, GameType expected, GameType actual);
     error GameChallenged(uint256 disputeGameIndex);
 
-    IDisputeGameFactory public disputeGameFactory;
+    IDisputeGameFactory public immutable disputeGameFactory;
+    IRespectedGameType public immutable optimismPortal;
     string[] _gatewayURLs;
 
-    // The game type that the OptimismPortal consults for output proposals.
-    GameType public respectedGameType;
-
-    constructor(string[] memory urls, address game, GameType gameType) {
+    constructor(string[] memory urls, address game, address portal) {
         _gatewayURLs = urls;
         disputeGameFactory = IDisputeGameFactory(game);
-        respectedGameType = gameType;
+        optimismPortal = IRespectedGameType(portal);
     }
 
     function gatewayURLs() external view returns(string[] memory) {
@@ -40,6 +42,8 @@ contract OPDisputeGameVerifier is IEVMVerifier {
         (OPWitnessData memory opData, StateProof memory stateProof) = abi.decode(proof, (OPWitnessData, StateProof));
         (GameType gameType,, IDisputeGame gameProxy) = disputeGameFactory.gameAtIndex(opData.disputeGameIndex);
         Claim outputRoot = gameProxy.rootClaim();
+
+        GameType respectedGameType = optimismPortal.respectedGameType();
 
         if (gameType.raw() != respectedGameType.raw()) {
             revert GameTypeMismatch(opData.disputeGameIndex, respectedGameType, gameType);

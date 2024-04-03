@@ -31,8 +31,21 @@ const config: HardhatUserConfig = {
         l2: "optimismGoerli",
       },
     },
+    sepolia: {
+      url: L1_PROVIDER_URL,
+      accounts: [DEPLOYER_PRIVATE_KEY],
+      deploy: [ "deploy_l1/" ],
+      companionNetworks: {
+        l2: "optimismSepolia",
+      },
+    },
     optimismGoerli: {
       url: "https://goerli.optimism.io",
+      accounts: [DEPLOYER_PRIVATE_KEY],
+      deploy: [ "deploy_l2/" ],
+    },
+    optimismSepolia: {
+      url: "https://sepolia.optimism.io",
       accounts: [DEPLOYER_PRIVATE_KEY],
       deploy: [ "deploy_l2/" ],
     }
@@ -40,7 +53,9 @@ const config: HardhatUserConfig = {
   etherscan: {
     apiKey: {
         goerli: L1_ETHERSCAN_API_KEY,
-        optimismGoerli: L2_ETHERSCAN_API_KEY
+        optimismGoerli: L2_ETHERSCAN_API_KEY,
+        sepolia: L1_ETHERSCAN_API_KEY,
+        optimismSepolia: L2_ETHERSCAN_API_KEY,
     },
     customChains: [
       {
@@ -50,7 +65,15 @@ const config: HardhatUserConfig = {
             apiURL: "https://api-goerli-optimism.etherscan.io/api",
             browserURL: "https://goerli-optimism.etherscan.io"
         }
-      }
+      },
+      {
+        network: "optimismSepolia",
+        chainId: 11155420,
+        urls: {
+            apiURL: "https://api-sepolia-optimism.etherscan.io/api",
+            browserURL: "https://sepolia-optimism.etherscan.io"
+        }
+      },
     ]
   },
   namedAccounts: {
