@@ -15,7 +15,7 @@ import "@ensdomains/ens-contracts/contracts/resolvers/profiles/IExtendedResolver
 import {ITargetResolver} from './ITargetResolver.sol';
 import {IMetadataResolver} from './IMetadataResolver.sol';
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
-import { IResolverSetter } from './IResolverSetter.sol';
+import { IAddrSetter } from './IAddrSetter.sol';
 
 contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExtendedResolver, ERC165 {
     using EVMFetcher for EVMFetcher.EVMFetchRequest;
@@ -162,7 +162,7 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
             (bytes32 node) = abi.decode(data[4:], (bytes32));
             return _contenthash(node, target);
         }
-        if (selector == IResolverSetter.setAddr.selector) {
+        if (selector == IAddrSetter.setAddr.selector) {
             _writeDeferral(target);
         }
     }
@@ -267,7 +267,7 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
             interfaceId == type(IExtendedResolver).interfaceId ||
             interfaceId == type(ITargetResolver).interfaceId ||
             interfaceId == type(IMetadataResolver).interfaceId ||
-            interfaceId == type(IResolverSetter).interfaceId ||
+            interfaceId == type(IAddrSetter).interfaceId ||
             super.supportsInterface(interfaceId);
     }
 
