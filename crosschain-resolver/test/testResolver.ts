@@ -15,13 +15,12 @@ import { ethers } from 'hardhat';
 import { EthereumProvider } from 'hardhat/types';
 import request from 'supertest';
 import packet from 'dns-packet';
-import {convertEVMChainIdToCoinType} from '@ensdomains/address-encoder'
+import { L2ChainID } from '@eth-optimism/sdk';
 const labelhash = (label) => ethers.keccak256(ethers.toUtf8Bytes(label))
 const encodeName = (name) => '0x' + packet.name.encode(name).toString('hex')
 
 const l2graphqlUrl = 'http://graphql'
-const l2ResolverChainId = 420
-const l2ResolverCoinType = convertEVMChainIdToCoinType(l2ResolverChainId) // Optimism Goerli
+const chainId = L2ChainID.OPTIMISM_SEPOLIA
 
 const name = 'foo.eth'
 const node = ethers.namehash(name)
@@ -155,7 +154,7 @@ describe('Crosschain Resolver', () => {
       signer
     );
     const verifierAddress = await verifier.getAddress()
-    target = await testL1Factory.deploy(verifierAddress, ensAddress, wrapperAddress, l2graphqlUrl, l2ResolverCoinType);
+    target = await testL1Factory.deploy(verifierAddress, ensAddress, wrapperAddress, l2graphqlUrl, chainId);
 
     // Mine an empty block so we have something to prove against
     await provider.send('evm_mine', []);
@@ -328,7 +327,7 @@ describe('Crosschain Resolver', () => {
       const calldata = i.encodeFunctionData("setAddr", [node, EMPTY_ADDRESS])
       await expect(target.resolveDeferral(encodedname, calldata)).to.be
         .revertedWithCustomError(target, 'StorageHandledByL2')
-        .withArgs(l2ResolverChainId, resolverAddress)
+        .withArgs(chainId, resolverAddress)
     });
   });
 

@@ -30,7 +30,7 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
     uint256 constant VERSIONABLE_HASHES_SLOT = 3;
     uint256 constant VERSIONABLE_TEXTS_SLOT = 10;
     string  public   graphqlUrl;
-    uint256 public   l2ResolverCoinType;
+    uint256 public   l2ChainId;
 
     event TargetSet(bytes name, address target);
     function isAuthorised(bytes32 node) internal view returns (bool) {
@@ -61,14 +61,14 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
      * @param _ens          The ENS registry address
      * @param _nameWrapper  The ENS name wrapper address
      * @param _graphqlUrl   The offchain/l2 graphql endpoint url
-     * @param _l2ResolverCoinType The chainId at which the resolver resolves data from. 0 if storageLocation is offChain
+     * @param _l2ChainId    The chainId at which the resolver resolves data from
      */
     constructor(
       IEVMVerifier _verifier,
       ENS _ens,
       INameWrapper _nameWrapper,
       string memory _graphqlUrl,
-      uint256 _l2ResolverCoinType
+      uint256 _l2ChainId
     ){
       require(address(_nameWrapper) != address(0), "Name Wrapper address must be set");
       require(address(_verifier) != address(0), "Verifier address must be set");
@@ -77,7 +77,7 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
       ens = _ens;
       nameWrapper = _nameWrapper;
       graphqlUrl = _graphqlUrl;
-      l2ResolverCoinType = _l2ResolverCoinType;
+      l2ChainId = _l2ChainId;
     }
 
     /**
@@ -283,13 +283,9 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
             super.supportsInterface(interfaceId);
     }
 
-    function convertCoinTypeToEVMChainId(uint256 coinType) private pure returns (uint256) {
-        return (0x7fffffff & coinType) >> 0;
-    }
-
     function _writeDeferral(address target) internal view {
         revert StorageHandledByL2(
-            convertCoinTypeToEVMChainId(l2ResolverCoinType),
+            l2ChainId,
             target
         );
     }
