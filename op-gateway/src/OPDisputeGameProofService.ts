@@ -19,7 +19,7 @@ const FAULT_DISPUTE_GAME_ABI = [
   // The output root of the game
   'function rootClaim() external view returns (bytes32 rootClaim_)',
   // Status of the game challenging
-  'function status() external view returns (uint8)'
+  'function status() external view returns (uint8)',
 ];
 
 const L2_TO_L1_MESSAGE_PASSER_ADDRESS =
@@ -102,9 +102,10 @@ export class OPDisputeGameProofService
     const [gameType, timestamp, proxy] =
       await this.disputeGameFactory.gameAtIndex(disputeGameIndex);
 
-    console.log(disputeGameIndex, proxy)
-
-    if (gameType != respectedGameType || timestamp != games[disputeGameLocalIndex].timestamp) {
+    if (
+      gameType != respectedGameType ||
+      timestamp != games[disputeGameLocalIndex].timestamp
+    ) {
       throw new Error('Mismatched Game Data');
     }
 
@@ -119,10 +120,8 @@ export class OPDisputeGameProofService
 
     // gameStatus == CHALLENGER_WINS
     if (gameStatus == 1) {
-      throw new Error('Dispute Game Challenged')
+      throw new Error('Dispute Game Challenged');
     }
-
-    console.log('Finish')
 
     return {
       number: l2BlockNumber,
