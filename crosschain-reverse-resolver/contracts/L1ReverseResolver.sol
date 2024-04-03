@@ -16,9 +16,9 @@ contract L1ReverseResolver is EVMFetchTarget, IExtendedResolver, ERC165 {
     IEVMVerifier immutable verifier;
     address immutable target;
     IDefaultReverseResolver immutable defaultReverseResolver;
-    uint256 constant VERSIONABLE_TEXTS_SLOT = 2;
-    uint256 constant VERSIONABLE_NAME_SLOT = 3;
-    uint256 constant RECORD_VERSIONS_SLOT = 4;
+    uint256 constant VERSIONABLE_TEXTS_SLOT = 1;
+    uint256 constant VERSIONABLE_NAME_SLOT = 2;
+    uint256 constant RECORD_VERSIONS_SLOT = 3;
     uint256 constant ADDRESS_LENGTH = 40;
     using HexUtils for bytes;
 

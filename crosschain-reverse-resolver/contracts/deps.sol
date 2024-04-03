@@ -5,8 +5,7 @@ import '@ensdomains/ens-contracts/contracts/resolvers/profiles/IVersionableResol
 // ┌────────────────────┬───────────────────┬──────────────┬
 // │      contract      │  state_variable   │ storage_slot │
 // ├────────────────────┼───────────────────┼──────────────┼
-// │ L2ReverseRegistrar │      _owner       │      0       │
-// │ L2ReverseRegistrar │    lastUpdated    │      1       │
-// │ L2ReverseRegistrar │ versionable_texts │      2       │
-// │ L2ReverseRegistrar │ versionable_names │      3       │
-// │ L2ReverseRegistrar │  recordVersions   │      4       │
+// │ L2ReverseRegistrar │    lastUpdated    │      0       │
+// │ L2ReverseRegistrar │ versionable_texts │      1       │
+// │ L2ReverseRegistrar │ versionable_names │      2       │
+// │ L2ReverseRegistrar │  recordVersions   │      3       │
