@@ -41,9 +41,9 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@ensdomains/ens-contracts": "ensdomains/ens-contracts#delegatable-resolver-with-factory",
+    "@ensdomains/ens-contracts": "ensdomains/ens-contracts#delegatable-resolver-wo-factory",
     "@ensdomains/evm-verifier": "workspace:*",
     "@eth-optimism/contracts": "^0.6.0",
-    "clones-with-immutable-args": "Chomtana/clones-with-immutable-args-for-evmgateway#evmgateway"
+    "clones-with-immutable-args": "wighawag/clones-with-immutable-args#master"
   }
 }

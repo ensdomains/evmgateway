@@ -153,14 +153,23 @@ contract L1Resolver is
             .ref(0)
             .element(node)
             .element(COIN_TYPE_ETH)
-            .fetch(this.addrCallback.selector, ''); // recordVersions
+            .fetch(this.addrCallback.selector, msg.data[0:4]); // recordVersions
     }
 
     function addrCallback(
         bytes[] memory values,
-        bytes memory
+        bytes memory sig
     ) public pure returns (bytes memory) {
-        return abi.encode(address(bytes20(values[1])));
+        address result = address(bytes20(values[1]));
+        if (keccak256(sig) != keccak256(hex"9061b923")) {
+            // Return address instead of bytes
+            assembly {
+                let freemem := mload(0x40)
+                mstore(freemem, result)
+                return(freemem, 0x20)
+            }
+        }
+        return abi.encode(result);
     }
 
     function _addr(
@@ -176,13 +185,16 @@ contract L1Resolver is
             .ref(0)
             .element(node)
             .element(coinType)
-            .fetch(this.addrCoinTypeCallback.selector, '');
+            .fetch(this.addrCoinTypeCallback.selector, msg.data[0:4]);
     }
 
     function addrCoinTypeCallback(
         bytes[] memory values,
-        bytes memory
+        bytes memory sig
     ) public pure returns (bytes memory) {
+        if (keccak256(sig) != keccak256(hex"9061b923")) {
+            return values[1];
+        }
         return abi.encode(values[1]);
     }
 
@@ -199,13 +211,16 @@ contract L1Resolver is
             .ref(0)
             .element(node)
             .element(key)
-            .fetch(this.textCallback.selector, '');
+            .fetch(this.textCallback.selector, msg.data[0:4]);
     }
 
     function textCallback(
         bytes[] memory values,
-        bytes memory
+        bytes memory sig
     ) public pure returns (bytes memory) {
+        if (keccak256(sig) != keccak256(hex"9061b923")) {
+            return bytes(string(values[1]));
+        }
         return abi.encode(string(values[1]));
     }
 
@@ -220,13 +235,16 @@ contract L1Resolver is
             .getDynamic(VERSIONABLE_HASHES_SLOT)
             .ref(0)
             .element(node)
-            .fetch(this.contenthashCallback.selector, '');
+            .fetch(this.contenthashCallback.selector, msg.data[0:4]);
     }
 
     function contenthashCallback(
         bytes[] memory values,
-        bytes memory
+        bytes memory sig
     ) public pure returns (bytes memory) {
+        if (keccak256(sig) != keccak256(hex"9061b923")) {
+            return values[1];
+        }
         return abi.encode(values[1]);
     }
 
