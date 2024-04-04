@@ -37,7 +37,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   console.log('OPDisputeGameVerifier', [[GATEWAY_URL], DISPUTE_GAME_ADDRESS, OPTIMISM_PORTAL_ADDRESS])
   await deploy('OPDisputeGameVerifier', {
     from: deployer,
-    args: [[GATEWAY_URL], DISPUTE_GAME_ADDRESS, OPTIMISM_PORTAL_ADDRESS],
+    args: [
+      [GATEWAY_URL],
+      DISPUTE_GAME_ADDRESS,
+      OPTIMISM_PORTAL_ADDRESS,
+      parseInt(process.env.DELAY!),
+    ],
     log: true,
   });
 };

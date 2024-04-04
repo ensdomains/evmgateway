@@ -23,15 +23,18 @@ contract OPDisputeGameVerifier is IEVMVerifier {
     error OutputRootMismatch(uint256 disputeGameIndex, bytes32 expected, bytes32 actual);
     error GameTypeMismatch(uint256 disputeGameIndex, GameType expected, GameType actual);
     error GameChallenged(uint256 disputeGameIndex);
+    error GameTooEarly(uint256 disputeGameIndex);
 
     IDisputeGameFactory public immutable disputeGameFactory;
     IRespectedGameType public immutable optimismPortal;
+    uint64 public immutable disputeGameDelay;
     string[] _gatewayURLs;
 
-    constructor(string[] memory urls, address game, address portal) {
+    constructor(string[] memory urls, address game, address portal, uint64 delay) {
         _gatewayURLs = urls;
         disputeGameFactory = IDisputeGameFactory(game);
         optimismPortal = IRespectedGameType(portal);
+        disputeGameDelay = delay;
     }
 
     function gatewayURLs() external view returns(string[] memory) {
@@ -40,8 +43,17 @@ contract OPDisputeGameVerifier is IEVMVerifier {
 
     function getStorageValues(address target, bytes32[] memory commands, bytes[] memory constants, bytes memory proof) external view returns(bytes[] memory values) {
         (OPWitnessData memory opData, StateProof memory stateProof) = abi.decode(proof, (OPWitnessData, StateProof));
-        (GameType gameType,, IDisputeGame gameProxy) = disputeGameFactory.gameAtIndex(opData.disputeGameIndex);
+        (GameType gameType, Timestamp gameCreationTimeRaw, IDisputeGame gameProxy) = disputeGameFactory.gameAtIndex(opData.disputeGameIndex);
         Claim outputRoot = gameProxy.rootClaim();
+
+        uint64 gameCreationTime;
+        assembly {
+            gameCreationTime := gameCreationTimeRaw
+        }
+
+        if (block.timestamp - gameCreationTime < disputeGameDelay) {
+            revert GameTooEarly(opData.disputeGameIndex);
+        }
 
         GameType respectedGameType = optimismPortal.respectedGameType();
 
