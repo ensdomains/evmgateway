@@ -17,8 +17,8 @@
     "@nomicfoundation/hardhat-toolbox": "^3.0.0",
     "@nomicfoundation/hardhat-verify": "^1.0.0",
     "@nomiclabs/hardhat-ganache": "^2.0.1",
-    "@typechain/ethers-v6": "^0.4.0",
-    "@typechain/hardhat": "^8.0.0",
+    "@typechain/ethers-v6": "^0.5.1",
+    "@typechain/hardhat": "^9.0.0",
     "@types/chai": "^4.2.0",
     "@types/express": "^4.17.18",
     "@types/mocha": ">=9.1.0",
@@ -29,7 +29,7 @@
     "express": "^4.18.2",
     "ganache": "^7.9.1",
     "hardhat": "^2.17.4",
-    "hardhat-deploy": "^0.11.43",
+    "hardhat-deploy": "^0.12.2",
     "hardhat-deploy-ethers": "^0.4.1",
     "hardhat-gas-reporter": "^1.0.8",
     "hardhat-storage-layout": "^0.1.7",
@@ -37,12 +37,13 @@
     "solidity-coverage": "^0.8.1",
     "supertest": "^6.3.3",
     "ts-node": "^10.9.1",
-    "typechain": "^8.2.0",
+    "typechain": "^8.3.1",
     "typescript": "^5.2.2"
   },
   "dependencies": {
     "@ensdomains/ens-contracts": "ensdomains/ens-contracts#delegatable-resolver-with-factory",
-    "@ensdomains/evm-verifier": "^0.1.0",
-    "@eth-optimism/contracts": "^0.6.0"
+    "@ensdomains/evm-verifier": "workspace:*",
+    "@eth-optimism/contracts": "^0.6.0",
+    "clones-with-immutable-args": "Chomtana/clones-with-immutable-args-for-evmgateway#evmgateway"
   }
 }
