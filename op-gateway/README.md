@@ -7,32 +7,32 @@ For a detailed readme and usage instructions, see the [monorepo readme](https://
 ## How to use op-gateway locally via cloudflare dev env (aka wrangler)
 
 ```
-npm install -g bun
 cd op-gateway
+npm install -g bun wrangler
 bun install
 touch .dev.vars
 ## set L1_PROVIDER_URL, L2_PROVIDER_URL, L2_OUTPUT_ORACLE, DELAY=5
-yarn dev
+bun run dev
 ```
 
 ## How to deploy op-gateway to cloudflare
 
 ```
 cd op-gateway
-npm install -g wrangler
-wrngler login
+npm install -g bun wrangler
+wrangler login
 wrangler secret put L1_PROVIDER_URL
 wrangler secret put L2_PROVIDER_URL
 wrangler secret put L2_OUTPUT_ORACLE
 wrangler secret put DELAY
-yarn deploy
+bun run deploy
 ```
 
 ## How to test
 
 ```
 cd ../l1-verifier l1-gateway
-PROVIDER_URL=$PROVIDER_URL TARGET_ADDRESS=$TARGET_ADDRESS yarn remote_test
+PROVIDER_URL=$PROVIDER_URL TARGET_ADDRESS=$TARGET_ADDRESS bun run remote_test
 ```
 
 ## Current deployments
