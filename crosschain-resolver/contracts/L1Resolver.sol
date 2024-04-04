@@ -4,16 +4,23 @@ pragma solidity ^0.8.17;
 import {EVMFetcher} from '@ensdomains/evm-verifier/contracts/EVMFetcher.sol';
 import {EVMFetchTarget} from '@ensdomains/evm-verifier/contracts/EVMFetchTarget.sol';
 import {IEVMVerifier} from '@ensdomains/evm-verifier/contracts/IEVMVerifier.sol';
-import "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
-import {INameWrapper} from "@ensdomains/ens-contracts/contracts/wrapper/INameWrapper.sol";
-import {BytesUtils} from "@ensdomains/ens-contracts/contracts/dnssec-oracle/BytesUtils.sol";
-import {IAddrResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profiles/IAddrResolver.sol";
-import {IAddressResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profiles/IAddressResolver.sol";
-import {ITextResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profiles/ITextResolver.sol";
-import {IContentHashResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profiles/IContentHashResolver.sol";
+import '@ensdomains/ens-contracts/contracts/registry/ENS.sol';
+import {INameWrapper} from '@ensdomains/ens-contracts/contracts/wrapper/INameWrapper.sol';
+import {BytesUtils} from '@ensdomains/ens-contracts/contracts/dnssec-oracle/BytesUtils.sol';
+import {IAddrResolver} from '@ensdomains/ens-contracts/contracts/resolvers/profiles/IAddrResolver.sol';
+import {IAddressResolver} from '@ensdomains/ens-contracts/contracts/resolvers/profiles/IAddressResolver.sol';
+import {ITextResolver} from '@ensdomains/ens-contracts/contracts/resolvers/profiles/ITextResolver.sol';
+import {IContentHashResolver} from '@ensdomains/ens-contracts/contracts/resolvers/profiles/IContentHashResolver.sol';
+import {IERC165} from '@openzeppelin/contracts/utils/introspection/IERC165.sol';
 
-
-contract L1Resolver is EVMFetchTarget {
+contract L1Resolver is
+    EVMFetchTarget,
+    IAddrResolver,
+    IAddressResolver,
+    ITextResolver,
+    IContentHashResolver,
+    IERC165
+{
     using EVMFetcher for EVMFetcher.EVMFetchRequest;
     using BytesUtils for bytes;
     IEVMVerifier immutable verifier;
@@ -36,7 +43,7 @@ contract L1Resolver is EVMFetchTarget {
         // isApprovedFor
         address owner = ens.owner(node);
         if (owner == address(nameWrapper)) {
-          owner = nameWrapper.ownerOf(uint256(node));
+            owner = nameWrapper.ownerOf(uint256(node));
         }
         return owner == msg.sender;
     }
@@ -46,17 +53,19 @@ contract L1Resolver is EVMFetchTarget {
         _;
     }
 
-    constructor(
-      IEVMVerifier _verifier,
-      ENS _ens,
-      INameWrapper _nameWrapper
-    ){
-      require(address(_nameWrapper) != address(0), "Name Wrapper address must be set");
-      require(address(_verifier) != address(0), "Verifier address must be set");
-      require(address(_ens)  != address(0), "Registry address must be set");
-      verifier = _verifier;
-      ens = _ens;
-      nameWrapper = _nameWrapper;
+    constructor(IEVMVerifier _verifier, ENS _ens, INameWrapper _nameWrapper) {
+        require(
+            address(_nameWrapper) != address(0),
+            'Name Wrapper address must be set'
+        );
+        require(
+            address(_verifier) != address(0),
+            'Verifier address must be set'
+        );
+        require(address(_ens) != address(0), 'Registry address must be set');
+        verifier = _verifier;
+        ens = _ens;
+        nameWrapper = _nameWrapper;
     }
 
     /**
@@ -64,9 +73,9 @@ contract L1Resolver is EVMFetchTarget {
      * @param node The ENS node to query.
      * @param target The L2 resolver address to verify against.
      */
-    function setTarget(bytes32 node, address target) public authorised(node){
-      targets[node] = target;
-      emit TargetSet(node, target);
+    function setTarget(bytes32 node, address target) public authorised(node) {
+        targets[node] = target;
+        emit TargetSet(node, target);
     }
 
     /**
@@ -84,62 +93,66 @@ contract L1Resolver is EVMFetchTarget {
         node = bytes32(0);
         if (len > 0) {
             bytes32 label = name.keccak(offset + 1, len);
-            (node, target) = getTarget(
-                name,
-                offset + len + 1
-            );
+            (node, target) = getTarget(name, offset + len + 1);
             node = keccak256(abi.encodePacked(node, label));
-            if(targets[node] != address(0)){
-                return (
-                    node,
-                    targets[node]
-                );
+            if (targets[node] != address(0)) {
+                return (node, targets[node]);
             }
         } else {
-            return (
-                bytes32(0),
-                address(0)
-            );
+            return (bytes32(0), address(0));
         }
         return (node, target);
     }
 
-    /** 
+    /**
      * @dev Resolve and verify a record stored in l2 target address. It supports subname by fetching target recursively to the nearlest parent.
      * @param name DNS encoded ENS name to query
      * @param data The actual calldata
      * @return result result of the call
      */
-    function resolve(bytes calldata name, bytes calldata data) external view returns (bytes memory result) {
+    function resolve(
+        bytes calldata name,
+        bytes calldata data
+    ) external view returns (bytes memory result) {
         (, address target) = getTarget(name, 0);
         bytes4 selector = bytes4(data);
 
         if (selector == IAddrResolver.addr.selector) {
-            (bytes32 node) = abi.decode(data[4:], (bytes32));
+            bytes32 node = abi.decode(data[4:], (bytes32));
             return _addr(node, target);
         }
         if (selector == IAddressResolver.addr.selector) {
-            (bytes32 node, uint256 cointype) = abi.decode(data[4:], (bytes32, uint256));
+            (bytes32 node, uint256 cointype) = abi.decode(
+                data[4:],
+                (bytes32, uint256)
+            );
             return _addr(node, cointype, target);
         }
         if (selector == ITextResolver.text.selector) {
-            (bytes32 node, string memory key) = abi.decode(data[4:], (bytes32, string));
+            (bytes32 node, string memory key) = abi.decode(
+                data[4:],
+                (bytes32, string)
+            );
             return bytes(_text(node, key, target));
         }
         if (selector == IContentHashResolver.contenthash.selector) {
-            (bytes32 node) = abi.decode(data[4:], (bytes32));
+            bytes32 node = abi.decode(data[4:], (bytes32));
             return _contenthash(node, target);
         }
     }
 
-    function _addr(bytes32 node, address target) private view returns (bytes memory) {
-        EVMFetcher.newFetchRequest(verifier, target)
+    function _addr(
+        bytes32 node,
+        address target
+    ) private view returns (bytes memory) {
+        EVMFetcher
+            .newFetchRequest(verifier, target)
             .getStatic(RECORD_VERSIONS_SLOT)
-              .element(node)
+            .element(node)
             .getDynamic(VERSIONABLE_ADDRESSES_SLOT)
-              .ref(0)
-              .element(node)
-              .element(COIN_TYPE_ETH)
+            .ref(0)
+            .element(node)
+            .element(COIN_TYPE_ETH)
             .fetch(this.addrCallback.selector, ''); // recordVersions
     }
 
@@ -155,13 +168,14 @@ contract L1Resolver is EVMFetchTarget {
         uint256 coinType,
         address target
     ) private view returns (bytes memory) {
-        EVMFetcher.newFetchRequest(verifier, target)
+        EVMFetcher
+            .newFetchRequest(verifier, target)
             .getStatic(RECORD_VERSIONS_SLOT)
-              .element(node)
+            .element(node)
             .getDynamic(VERSIONABLE_ADDRESSES_SLOT)
-              .ref(0)
-              .element(node)
-              .element(coinType)
+            .ref(0)
+            .element(node)
+            .element(coinType)
             .fetch(this.addrCoinTypeCallback.selector, '');
     }
 
@@ -177,13 +191,14 @@ contract L1Resolver is EVMFetchTarget {
         string memory key,
         address target
     ) private view returns (bytes memory) {
-        EVMFetcher.newFetchRequest(verifier, target)
+        EVMFetcher
+            .newFetchRequest(verifier, target)
             .getStatic(RECORD_VERSIONS_SLOT)
-              .element(node)
+            .element(node)
             .getDynamic(VERSIONABLE_TEXTS_SLOT)
-              .ref(0)
-              .element(node)
-              .element(key)
+            .ref(0)
+            .element(node)
+            .element(key)
             .fetch(this.textCallback.selector, '');
     }
 
@@ -194,13 +209,17 @@ contract L1Resolver is EVMFetchTarget {
         return abi.encode(string(values[1]));
     }
 
-    function _contenthash(bytes32 node, address target) private view returns (bytes memory) {
-        EVMFetcher.newFetchRequest(verifier, target)
+    function _contenthash(
+        bytes32 node,
+        address target
+    ) private view returns (bytes memory) {
+        EVMFetcher
+            .newFetchRequest(verifier, target)
             .getStatic(RECORD_VERSIONS_SLOT)
-              .element(node)
+            .element(node)
             .getDynamic(VERSIONABLE_HASHES_SLOT)
-              .ref(0)
-              .element(node)
+            .ref(0)
+            .element(node)
             .fetch(this.contenthashCallback.selector, '');
     }
 
@@ -211,4 +230,55 @@ contract L1Resolver is EVMFetchTarget {
         return abi.encode(values[1]);
     }
 
+    /**
+     * Returns the address associated with an ENS node.
+     * @param node The ENS node to query.
+     * @return The associated address.
+     */
+    function addr(
+        bytes32 node
+    ) public view virtual override returns (address payable) {
+        _addr(node, targets[node]);
+    }
+
+    function addr(
+        bytes32 node,
+        uint256 coinType
+    ) public view virtual override returns (bytes memory) {
+        _addr(node, coinType, targets[node]);
+    }
+
+    /**
+     * Returns the text data associated with an ENS node and key.
+     * @param node The ENS node to query.
+     * @param key The text data key to query.
+     * @return The associated text data.
+     */
+    function text(
+        bytes32 node,
+        string calldata key
+    ) external view virtual override returns (string memory) {
+        _text(node, key, targets[node]);
+    }
+
+    /**
+     * Returns the contenthash associated with an ENS node.
+     * @param node The ENS node to query.
+     * @return The associated contenthash.
+     */
+    function contenthash(
+        bytes32 node
+    ) external view virtual override returns (bytes memory) {
+        _contenthash(node, targets[node]);
+    }
+
+    function supportsInterface(
+        bytes4 interfaceID
+    ) public view virtual override returns (bool) {
+        return
+            interfaceID == type(IAddrResolver).interfaceId ||
+            interfaceID == type(IAddressResolver).interfaceId ||
+            interfaceID == type(ITextResolver).interfaceId ||
+            interfaceID == type(IContentHashResolver).interfaceId;
+    }
 }
