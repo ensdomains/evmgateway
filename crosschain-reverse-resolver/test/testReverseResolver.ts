@@ -45,7 +45,9 @@ describe('Crosschain Reverse Resolver', () => {
   let verifier: Contract;
   let target: Contract;
   let l2contract: Contract;
+  let l2contractAddress: string;
   let defaultReverseResolver: Contract;
+  let defaultReverseAddress: string;
 
   before(async () => {
     // Hack to get a 'real' ethers provider from hardhat. The default `HardhatProvider`
@@ -88,19 +90,20 @@ describe('Crosschain Reverse Resolver', () => {
     defaultReverseResolver = await DefaultReverseResolverFactory.deploy()
     await provider.send('evm_mine', []);
     const testL2Factory = await ethers.getContractFactory(
-      'L2ReverseRegistrar',
+      'L2ReverseResolver',
       signer
     );
     l2contract = await testL2Factory.deploy(ethers.namehash(`${NAMESPACE}.reverse`), NAMESPACE);
-
+    l2contractAddress = await l2contract.getAddress();
+    defaultReverseAddress = await defaultReverseResolver.getAddress();
     const testL1Factory = await ethers.getContractFactory(
       'L1ReverseResolver',
       signer
     );
     target = await testL1Factory.deploy(
       await verifier.getAddress(),
-      await l2contract.getAddress(),
-      await defaultReverseResolver.getAddress()
+      l2contractAddress,
+      defaultReverseAddress
     );
     // Mine an empty block so we have something to prove against
     await provider.send('evm_mine', []);
@@ -149,8 +152,8 @@ describe('Crosschain Reverse Resolver', () => {
     const block = await provider.getBlock('latest')
     const inceptionDate = block?.timestamp
     const message =  ethers.solidityPackedKeccak256(
-      ['bytes32', 'address', 'uint256', 'uint256'],
-      [ethers.solidityPackedKeccak256(['bytes4', 'string'], [funcId, name]), testAddress, inceptionDate, 0],
+      ['address', 'bytes32', 'address', 'uint256', 'uint256'],
+      [defaultReverseAddress, ethers.solidityPackedKeccak256(['bytes4', 'string'], [funcId, name]), testAddress, inceptionDate, 0],
     )
     const signature = await testSigner.signMessage(ethers.toBeArray(message))    
     await defaultReverseResolver['setNameForAddrWithSignature'](
@@ -219,10 +222,10 @@ describe('Crosschain Reverse Resolver', () => {
     const block = await provider.getBlock('latest')
     const inceptionDate = block?.timestamp
     const message =  ethers.solidityPackedKeccak256(
-      ['bytes32', 'address', 'uint256', 'uint256'],
-      [ethers.solidityPackedKeccak256(['bytes4', 'string', 'string'], [funcId, key, value]), testAddress, inceptionDate, 0],
+      ['address', 'bytes32', 'address', 'uint256', 'uint256'],
+      [defaultReverseAddress, ethers.solidityPackedKeccak256(['bytes4', 'string', 'string'], [funcId, key, value]), testAddress, inceptionDate, 0],
     )
-    const signature = await testSigner.signMessage(ethers.toBeArray(message))    
+    const signature = await testSigner.signMessage(ethers.toBeArray(message))
     await defaultReverseResolver['setTextForAddrWithSignature'](
       testAddress,
       key,
