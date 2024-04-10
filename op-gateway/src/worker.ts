@@ -9,11 +9,12 @@ interface Env {
   DELAY: number;
   TYPE: number;
 }
-let app: Router;
+// let server: Server;
 async function fetch(request: Request, env: Env) {
   // Loading libraries dynamically as a temp work around.
   // Otherwise, deployment thorws "Error: Script startup exceeded CPU time limit." error
-  if (!app) {
+  let server: Server;
+  // if (!server) {
     const ethers = await import('ethers');
     const EVMGateway = (await import('@ensdomains/evm-gateway')).EVMGateway;
     const OPProofService = (await import('./OPProofService.js')).OPProofService;
@@ -47,10 +48,10 @@ async function fetch(request: Request, env: Env) {
 
     const gateway = new EVMGateway(proofService);
 
-    const server = new Server();
+    server = new Server();
     gateway.add(server);
-    app = server.makeApp('/');
-  }
+  // }
+  const app: Router = server.makeApp('/');
   return app.handle(request);
 }
 
