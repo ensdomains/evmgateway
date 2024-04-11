@@ -46,12 +46,14 @@ describe('ArbVerifier', () => {
     const rollupAddress = process.env.ROLLUP_ADDRESS;
     // When testing against Goerli, replace with this address
     // const rollupAddress = '0x45e5cAea8768F42B385A366D3551Ad1e0cbFAb17';
-
+    const chainId = hre.network.config.chainId
+    console.log(hre.network.config)
+    console.log({chainId})
     const gateway = await makeArbGateway(
-      (hre.network.config as any).url,
+      (hre.network.config as any).url, 
       (hre.config.networks[hre.network.companionNetworks.l2] as any).url,
       rollupAddress,
-      5,
+      chainId,
     );
     const server = new Server()
     gateway.add(server)

@@ -15,8 +15,9 @@ import "@ensdomains/ens-contracts/contracts/resolvers/profiles/IExtendedResolver
 import {ITargetResolver} from './ITargetResolver.sol';
 import {IMetadataResolver} from './IMetadataResolver.sol';
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import { IAddrSetter } from './IAddrSetter.sol';
 
-contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExtendedResolver, ERC165 {
+contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExtendedResolver, IAddrSetter, ERC165 {
     using EVMFetcher for EVMFetcher.EVMFetchRequest;
     using BytesUtils for bytes;
     IEVMVerifier public immutable verifier;
@@ -29,7 +30,7 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
     uint256 constant VERSIONABLE_HASHES_SLOT = 3;
     uint256 constant VERSIONABLE_TEXTS_SLOT = 10;
     string  public   graphqlUrl;
-    uint256 public   l2ResolverCoinType;
+    uint256 public   l2ChainId;
 
     event TargetSet(bytes name, address target);
     function isAuthorised(bytes32 node) internal view returns (bool) {
@@ -46,18 +47,28 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
     }
 
     /**
+     * @dev EIP-5559 - Error to raise when mutations are being deferred to an L2.
+     * @param chainId Chain ID to perform the deferred mutation to.
+     * @param contractAddress Contract Address at which the deferred mutation should transact with.
+     */
+    error StorageHandledByL2(
+        uint256 chainId,
+        address contractAddress
+    );
+
+    /**
      * @param _verifier     The chain verifier address
      * @param _ens          The ENS registry address
      * @param _nameWrapper  The ENS name wrapper address
      * @param _graphqlUrl   The offchain/l2 graphql endpoint url
-     * @param _l2ResolverCoinType The chainId at which the resolver resolves data from. 0 if storageLocation is offChain
+     * @param _l2ChainId    The chainId at which the resolver resolves data from
      */
     constructor(
       IEVMVerifier _verifier,
       ENS _ens,
       INameWrapper _nameWrapper,
       string memory _graphqlUrl,
-      uint256 _l2ResolverCoinType
+      uint256 _l2ChainId
     ){
       require(address(_nameWrapper) != address(0), "Name Wrapper address must be set");
       require(address(_verifier) != address(0), "Verifier address must be set");
@@ -66,7 +77,7 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
       ens = _ens;
       nameWrapper = _nameWrapper;
       graphqlUrl = _graphqlUrl;
-      l2ResolverCoinType = _l2ResolverCoinType;
+      l2ChainId = _l2ChainId;
     }
 
     /**
@@ -79,19 +90,9 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
       require(isAuthorised(node));
       targets[node] = target;
       emit TargetSet(name, target);
-      (
-        ,,
-        uint8 storageType,
-        bytes memory storageLocation,
-        bytes memory context
-      ) = metadata(name);
       emit MetadataChanged(
         name,
-        l2ResolverCoinType,
-        graphqlUrl,
-        storageType,
-        storageLocation,
-        context
+        graphqlUrl
       );
     }
 
@@ -161,6 +162,17 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
             (bytes32 node) = abi.decode(data[4:], (bytes32));
             return _contenthash(node, target);
         }
+    }
+
+    /** 
+     * @dev Resolve and throws an EIP 3559 compliant error
+     * @param name DNS encoded ENS name to query
+     * @param _addr The actual calldata
+     * @return result result of the call
+     */
+    function setAddr(bytes calldata name, address _addr) external view returns (bytes memory result) {
+        (, address target) = _getTarget(name, 0);
+        _writeDeferral(target);
     }
 
     function _addr(bytes32 node, address target) private view returns (bytes memory) {
@@ -246,23 +258,13 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
      * @notice Get metadata about the L1 Resolver
      * @dev This function provides metadata about the L1 Resolver, including its name, coin type, GraphQL URL, storage type, and encoded information.
      * @param name The domain name in format (dnsEncoded)
-     * @return coinType The cointype of the chain the target contract locates such as Optimism, Base, Arb, etc
      * @return graphqlUrl The GraphQL URL used by the resolver
-     * @return storageType Storage Type (0 for EVM)
-     * @return storageLocation The storage identifier. For EVM chains, this is the address of the resolver contract.
-     * @return context. An identifier used by l2 graph indexer for Domain schema id (`context-namehash`) allowing multiple resolver contracts to have own namespace.
      */
     function metadata(
         bytes calldata name
-    ) public view returns (uint256, string memory, uint8, bytes memory, bytes memory) {
-        (, address target) = getTarget(name);
-
+    ) public view returns (string memory) {
         return (
-            l2ResolverCoinType,
-            graphqlUrl,
-            uint8(0), // storage Type 0 => EVM
-            abi.encodePacked(address(target)), // storage location => l2 resolver address
-            abi.encodePacked(address(target))  // context => l2 resolver address
+            graphqlUrl
         );
     }
 
@@ -273,6 +275,14 @@ contract L1Resolver is EVMFetchTarget, ITargetResolver, IMetadataResolver, IExte
             interfaceId == type(IExtendedResolver).interfaceId ||
             interfaceId == type(ITargetResolver).interfaceId ||
             interfaceId == type(IMetadataResolver).interfaceId ||
+            interfaceId == type(IAddrSetter).interfaceId ||
             super.supportsInterface(interfaceId);
+    }
+
+    function _writeDeferral(address target) internal view {
+        revert StorageHandledByL2(
+            l2ChainId,
+            target
+        );
     }
 }

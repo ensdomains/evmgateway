@@ -5,39 +5,42 @@ import 'hardhat-deploy';
 import 'hardhat-deploy-ethers';
 const DEPLOYER_PRIVATE_KEY = process.env.DEPLOYER_PRIVATE_KEY ?? "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
 const L1_PROVIDER_URL = process.env.L1_PROVIDER_URL || '';
+const L2_PROVIDER_URL = process.env.L2_PROVIDER_URL || '';
 const L1_ETHERSCAN_API_KEY = process.env.L1_ETHERSCAN_API_KEY || '';
 const L2_ETHERSCAN_API_KEY = process.env.L2_ETHERSCAN_API_KEY || '';
-console.log({L1_PROVIDER_URL,L1_ETHERSCAN_API_KEY,L2_ETHERSCAN_API_KEY})
+console.log({L1_PROVIDER_URL,L2_PROVIDER_URL,L1_ETHERSCAN_API_KEY,L2_ETHERSCAN_API_KEY})
 const config: HardhatUserConfig = {
   solidity: '0.8.19',
   networks: {
     ganache: {
       url: `http://localhost:${parseInt(process.env['RPC_PORT'] || '8545')}`,
     },
-    goerli: {
+    sepolia: {
       url: L1_PROVIDER_URL,
+      chainId: 11155111,
       accounts: [DEPLOYER_PRIVATE_KEY],
       deploy: [ "deploy_l1/" ],
     },
-    optimismGoerli: {
-      url: "https://goerli.optimism.io",
-      accounts: [DEPLOYER_PRIVATE_KEY],
-      deploy: [ "deploy_l2/" ],
+    optimismSepolia: {
+      url: 'https://sepolia.optimism.io',
+      chainId: 11155420,
+      accounts: [DEPLOYER_PRIVATE_KEY]
     },
-    baseGoerli: {
-      url: "https://goerli.base.org",
-      accounts: [DEPLOYER_PRIVATE_KEY],
-      deploy: [ "deploy_l2/" ],
+    baseSepolia: {
+      url: 'https://sepolia.base.org',
+      chainId: 84532,
+      accounts: [DEPLOYER_PRIVATE_KEY]
     },
-    arbitrumGoerli: {
-      url: "https://goerli-rollup.arbitrum.io/rpc",
-      accounts: [DEPLOYER_PRIVATE_KEY],
-      deploy: [ "deploy_l2/" ],
-    }
+    arbitrumSepolia: {
+      url: 'https://sepolia-rollup.arbitrum.io/rpc',
+      chainId: 421614,
+      accounts: [DEPLOYER_PRIVATE_KEY]
+    },
   },
   etherscan: {
     apiKey: {
         goerli: L1_ETHERSCAN_API_KEY,
+        sepolia: L1_ETHERSCAN_API_KEY,
         optimismGoerli: L2_ETHERSCAN_API_KEY,
         baseGoerli: L2_ETHERSCAN_API_KEY,
         arbitrumGoerli: L2_ETHERSCAN_API_KEY,

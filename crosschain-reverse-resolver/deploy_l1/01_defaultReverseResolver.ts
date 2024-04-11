@@ -6,13 +6,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const {deploy} = deployments;
 
   const {deployer} = await getNamedAccounts();
-  const impl = await deploy('DelegatableResolver', {
+
+  await deploy(`DefaultReverseResolver`, {
     from: deployer,
-    args: [],
     log: true,
   });
-  const implAddress  = impl.address  
-  console.log(`DelegatableResolver is deployed at ${implAddress}`)
 };
 export default func;
-func.tags = ['DelegatableResolver'];
+func.tags = ['DefaultReverseResolver'];

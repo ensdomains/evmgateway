@@ -3,8 +3,14 @@ const ethers = hre.ethers;
 
 export const main = async () => {
   const [signer] = await hre.ethers.getSigners();
-  if (!process.env.REVERSE_NAMESPACE || !process.env.L2_PROVIDER_URL || !process.env.L2_REVERSE_REGISTRAR_ADDRESS  || !process.env.ENS_NAME)
-    throw 'Set REVERSE_NAMESPACE, L2_PROVIDER_URL, L2_REVERSE_REGISTRAR_ADDRESS, and ENS_NAME';
+  if (!process.env.REVERSE_NAMESPACE)
+    throw 'Set REVERSE_NAMESPACE';
+  if (!process.env.L2_PROVIDER_URL)
+    throw 'Set L2_PROVIDER_URL';
+  if (!process.env.L2_REVERSE_REGISTRAR_ADDRESS)
+    throw 'Set L2_REVERSE_REGISTRAR_ADDRESS';
+  if (!process.env.ENS_NAME)
+    throw 'Set ENS_NAME';
 
   const L2_PROVIDER_URL = process.env.L2_PROVIDER_URL;
   const L2_REVERSE_REGISTRAR_ADDRESS = process.env.L2_REVERSE_REGISTRAR_ADDRESS;
@@ -14,19 +20,16 @@ export const main = async () => {
   const name            = ETH_ADDRESS.substring(2).toLowerCase() + "." + namespace
   const reversenode     = ethers.namehash(name)
 
-  const L2ReverseRegistrarFactory = (await hre.ethers.getContractFactory("L2ReverseRegistrar")) as L2ReverseRegistrarFactory__factory;
-  const l2ReverseRegistrar = L2ReverseRegistrarFactory
+  const L2ReverseResolverFactory = (await hre.ethers.getContractFactory("L2ReverseResolver")) as L2ReverseResolverFactory__factory;
+  const L2ReverseResolver = L2ReverseResolverFactory
                                 .connect(signer)
                                 .attach(L2_REVERSE_REGISTRAR_ADDRESS);
 
   console.log({ L2_REVERSE_REGISTRAR_ADDRESS, L2_PROVIDER_URL,ENS_NAME, ETH_ADDRESS, namespace, name, reversenode})
-  const tx = await l2ReverseRegistrar.setName(ENS_NAME, {
-    gasPrice: "900000",
-    gasLimit: 500000,
-  });
+  const tx = await L2ReverseResolver.setName(ENS_NAME);
   const rec = await tx.wait();
   console.log({txhash:rec.hash});
-  console.log(await l2ReverseRegistrar.name(reversenode, {enableCcipRead:true}))
+  console.log(await L2ReverseResolver.name(reversenode))
 };
 
 main();

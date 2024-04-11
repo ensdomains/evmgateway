@@ -7,9 +7,9 @@
     "test": "node scripts/test.js",
     "storage": "hardhat check",
     "clean": "rm -fr artifacts cache node_modules typechain-types",
-    "setupl1": "hardhat run scripts/setupl1.ts --network goerli",
+    "setupl1": "hardhat run scripts/setupl1.ts --network sepolia",
     "setupl2": "hardhat run scripts/setupl2.ts",
-    "getaddr": "hardhat run scripts/getaddr.ts --network goerli",
+    "getaddr": "hardhat run scripts/getaddr.ts --network sepolia",
     "approve": "hardhat run scripts/approve.ts",
     "lint": "exit 0"
   },
