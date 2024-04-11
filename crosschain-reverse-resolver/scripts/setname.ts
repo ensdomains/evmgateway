@@ -20,16 +20,16 @@ export const main = async () => {
   const name            = ETH_ADDRESS.substring(2).toLowerCase() + "." + namespace
   const reversenode     = ethers.namehash(name)
 
-  const L2ReverseRegistrarFactory = (await hre.ethers.getContractFactory("L2ReverseRegistrar")) as L2ReverseRegistrarFactory__factory;
-  const l2ReverseRegistrar = L2ReverseRegistrarFactory
+  const L2ReverseResolverFactory = (await hre.ethers.getContractFactory("L2ReverseResolver")) as L2ReverseResolverFactory__factory;
+  const L2ReverseResolver = L2ReverseResolverFactory
                                 .connect(signer)
                                 .attach(L2_REVERSE_REGISTRAR_ADDRESS);
 
   console.log({ L2_REVERSE_REGISTRAR_ADDRESS, L2_PROVIDER_URL,ENS_NAME, ETH_ADDRESS, namespace, name, reversenode})
-  const tx = await l2ReverseRegistrar.setName(ENS_NAME);
+  const tx = await L2ReverseResolver.setName(ENS_NAME);
   const rec = await tx.wait();
   console.log({txhash:rec.hash});
-  console.log(await l2ReverseRegistrar.name(reversenode))
+  console.log(await L2ReverseResolver.name(reversenode))
 };
 
 main();

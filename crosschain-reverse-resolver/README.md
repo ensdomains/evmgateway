@@ -36,29 +36,76 @@ After deployment is complete, set the rersolver of $REVERSE_NAMESPACE to L1Rever
 
 ## Deployments
 
+### L1
+
+- DefaultReverseResolver = [0xfD2c2598382D8876BcC70f550B22d7F70Dda30b0](https://sepolia.etherscan.io/address/0xfD2c2598382D8876BcC70f550B22d7F70Dda30b0#code
+)
+
 ### OP
 #### L2
-- L2ReverseRegistrar = [0xfdF30e5E06d728704A42bac6E0326538E659a67B](https://sepolia-optimism.etherscan.io/address/0xfdF30e5E06d728704A42bac6E0326538E659a67B#code
+- L2ReverseRegistrar = [0x83C058D2139a6eFA32E42BeB415409000C075563](https://sepolia-optimism.etherscan.io/address/0x83C058D2139a6eFA32E42BeB415409000C075563#code
 ) = REVERSE_NAMESPACE is set to `2158639068.reverse`
 #### L1
-- L1ReverseResolver = [0xCCe95773C00b924c9EB60822c970eBA2884Ef6A3](https://sepolia.etherscan.io/address/0xCCe95773C00b924c9EB60822c970eBA2884Ef6A3#code)
+- L1ReverseResolver = [0xF7e3a2861FfA833C39544B7bbE9D94f3219E5b70](https://sepolia.etherscan.io/address/0xF7e3a2861FfA833C39544B7bbE9D94f3219E5b70#code)
 
 ### Base
 
 #### L2
-- L2ReverseRegistrar = [0xF2c102E96A183fC598d83fDccF4e30cfE83aedCd](https://sepolia.basescan.org/address/0xF2c102E96A183fC598d83fDccF4e30cfE83aedCd#code) = REVERSE_NAMESPACE is set to `2147568180.reverse`
+- L2ReverseRegistrar = [0x913CC39C2A6aa4A1531429C079bA5f8DcF6a2FC2](https://sepolia.basescan.org/address/0x913CC39C2A6aa4A1531429C079bA5f8DcF6a2FC2#code) = REVERSE_NAMESPACE is set to `2147568180.reverse`
 #### L1
-- L1ReverseResolver = [0x2B07Cf3ef421A5ff1cb6f437036bdEF132eEA37B](https://sepolia.etherscan.io/address/0x2B07Cf3ef421A5ff1cb6f437036bdEF132eEA37B#code)
+- L1ReverseResolver = [0x302096e94FC120A21053f7563e2Ed554d523ba41](https://sepolia.etherscan.io/address/0x302096e94FC120A21053f7563e2Ed554d523ba41#code
+)
 
 ### Arbitrum
 
 #### L2
-- L2ReverseRegistrar = [0xeC6D530EDc9c783F58Da1aD41C3c5B63C3095720](https://sepolia.arbiscan.io/address/0xeC6D530EDc9c783F58Da1aD41C3c5B63C3095720#code
+- L2ReverseRegistrar = [0x60a384Cfbb088Aa8c1750A04548b1b983CDc0418](https://sepolia.arbiscan.io/address/0x60a384Cfbb088Aa8c1750A04548b1b983CDc0418#code
 ) = REVERSE_NAMESPACE is set to `2147905262.reverse`
 #### L1
-- L1ReverseResolver = [0x065cB486e830bc5517D2a4287e0857cd564a476D](https://sepolia.etherscan.io/address/0x065cB486e830bc5517D2a4287e0857cd564a476D#code)
+- L1ReverseResolver = [0x935510B4270F69c6fa4Fadab75B4EA0A1Fb68349]https://sepolia.etherscan.io/address/0x935510B4270F69c6fa4Fadab75B4EA0A1Fb68349#code)
+
 
 ## Usage
+
+### Set Default Primary name on L1
+
+```
+const testSigner = new ethers.Wallet(PRIVATE_KEY); 
+const testAddress = testSigner.address
+const name = 'myname.eth'
+const reverseLabel = testAddress.substring(2).toLowerCase()
+const l2ReverseName = `${reverseLabel}.${NAMESPACE}.reverse`
+const l2ReverseNode = ethers.namehash(l2ReverseName)
+const encodedL2ReverseName = encodeName(l2ReverseName)
+
+const defaultReverseName = `${reverseLabel}.default.reverse`
+const defaultReverseNode = ethers.namehash(defaultReverseName)
+const encodedDefaultReverseName = encodeName(defaultReverseName)
+
+const funcId = ethers
+    .id('setNameForAddrWithSignature(address,string,uint256,bytes)')
+    .substring(0, 10)
+
+const block = await provider.getBlock('latest')
+const inceptionDate = block?.timestamp
+const message =  ethers.solidityPackedKeccak256(
+    ['bytes32', 'address', 'uint256', 'uint256'],
+    [ethers.solidityPackedKeccak256(['bytes4', 'string'], [funcId, name]), testAddress, inceptionDate, 0],
+)
+const signature = await testSigner.signMessage(ethers.toBeArray(message))    
+await defaultReverseResolver.setNameForAddrWithSignature(
+    testAddress,
+    name,
+    inceptionDate,
+    signature,
+)
+```
+
+or run the script
+```
+DEPLOYER_PRIVATE_KEY=$DEPLOYER_PRIVATE_KEY REVERSE_NAMESPACE=$REVERSE_NAMESPACE L1_PROVIDER_URL=$L1_PROVIDER_URL DEFAULT_REVERSE_RESOLVER_ADDRESS=$DEFAULT_REVERSE_RESOLVER_ADDRESS DEFAULT_ENS_NAME=$DEFAULT_ENS_NAME yarn setdefaultname
+```
+
 
 ### Set Primary name on L2
 

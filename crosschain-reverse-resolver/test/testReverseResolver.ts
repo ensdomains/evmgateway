@@ -14,7 +14,10 @@ import { FetchRequest } from 'ethers';
 import { ethers } from 'hardhat';
 import { EthereumProvider } from 'hardhat/types';
 import request from 'supertest';
+import packet from 'dns-packet';
 const NAMESPACE = 2147483658 // OP
+const encodeName = (name) => '0x' + packet.name.encode(name).toString('hex')
+
 type ethersObj = typeof ethersT &
   Omit<HardhatEthersHelpers, 'provider'> & {
     provider: Omit<HardhatEthersProvider, '_hardhatProvider'> & {
@@ -29,12 +32,22 @@ declare module 'hardhat/types/runtime' {
   }
 }
 
+// looks like there are time dependencies for verification to success, hence adding a dalay
+const wait = async x => {
+  return new Promise(resolve => {
+    setTimeout(resolve, 3000, 2 * x);
+  });
+};
+
 describe('Crosschain Reverse Resolver', () => {
   let provider: BrowserProvider;
   let signer: Signer;
   let verifier: Contract;
   let target: Contract;
   let l2contract: Contract;
+  let l2contractAddress: string;
+  let defaultReverseResolver: Contract;
+  let defaultReverseAddress: string;
 
   before(async () => {
     // Hack to get a 'real' ethers provider from hardhat. The default `HardhatProvider`
@@ -71,52 +84,173 @@ describe('Crosschain Reverse Resolver', () => {
       signer
     );
     verifier = await l1VerifierFactory.deploy(['test:']);
-
+    const DefaultReverseResolverFactory = await ethers.getContractFactory(
+      'DefaultReverseResolver',
+    )
+    defaultReverseResolver = await DefaultReverseResolverFactory.deploy()
+    await provider.send('evm_mine', []);
     const testL2Factory = await ethers.getContractFactory(
-      'L2ReverseRegistrar',
+      'L2ReverseResolver',
       signer
     );
     l2contract = await testL2Factory.deploy(ethers.namehash(`${NAMESPACE}.reverse`), NAMESPACE);
-
+    l2contractAddress = await l2contract.getAddress();
+    defaultReverseAddress = await defaultReverseResolver.getAddress();
     const testL1Factory = await ethers.getContractFactory(
       'L1ReverseResolver',
       signer
     );
-    target = await testL1Factory.deploy(await verifier.getAddress(), await l2contract.getAddress());
+    target = await testL1Factory.deploy(
+      await verifier.getAddress(),
+      l2contractAddress,
+      defaultReverseAddress
+    );
     // Mine an empty block so we have something to prove against
     await provider.send('evm_mine', []);
   });
 
   it("should test name", async() => {
     const name = 'vitalik.eth'
+    const testAddress = await signer.getAddress()
     const node = await l2contract.node(
-      await signer.getAddress(),
+      testAddress,
     )
-    await l2contract.clearRecords(await  signer.getAddress())
+    const reverseLabel = testAddress.substring(2).toLowerCase()
+    const l2ReverseName = `${reverseLabel}.${NAMESPACE}.reverse`
+    const encodedL2ReverseName = encodeName(l2ReverseName)
+
+    await l2contract.clearRecords(await signer.getAddress())
     await l2contract.setName(name)
     await provider.send("evm_mine", []);
-    const result2 = await target.name(node, { enableCcipRead: true })
-    expect(result2).to.equal(name);
+    await wait(1);
+
+    const i = new ethers.Interface(["function name(bytes32) returns(string)"])
+    const calldata = i.encodeFunctionData("name", [node])
+    const result2 = await target.resolve(encodedL2ReverseName, calldata, { enableCcipRead: true })
+    // throws Error: invalid length for result data
+    // const decoded = i.decodeFunctionResult("name", result2)
+    expect(ethers.toUtf8String(result2)).to.equal(name);
+  })
+
+  it("should test fallback name", async() => {
+    const testSigner = new ethers.Wallet('0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'); 
+    const testAddress = testSigner.address
+    const name = 'myname.eth'
+    const reverseLabel = testAddress.substring(2).toLowerCase()
+    const l2ReverseName = `${reverseLabel}.${NAMESPACE}.reverse`
+    const l2ReverseNode = ethers.namehash(l2ReverseName)
+    const encodedL2ReverseName = encodeName(l2ReverseName)
+
+    const defaultReverseName = `${reverseLabel}.default.reverse`
+    const defaultReverseNode = ethers.namehash(defaultReverseName)
+    const encodedDefaultReverseName = encodeName(defaultReverseName)
+
+    const funcId = ethers
+      .id('setNameForAddrWithSignature(address,string,uint256,bytes)')
+      .substring(0, 10)
+  
+    const block = await provider.getBlock('latest')
+    const inceptionDate = block?.timestamp
+    const message =  ethers.solidityPackedKeccak256(
+      ['address', 'bytes32', 'address', 'uint256', 'uint256'],
+      [defaultReverseAddress, ethers.solidityPackedKeccak256(['bytes4', 'string'], [funcId, name]), testAddress, inceptionDate, 0],
+    )
+    const signature = await testSigner.signMessage(ethers.toBeArray(message))    
+    await defaultReverseResolver['setNameForAddrWithSignature'](
+      testAddress,
+      name,
+      inceptionDate,
+      signature,
+    )
+    await provider.send("evm_mine", []);
+    await wait(1);
+
+    const i = new ethers.Interface(["function name(bytes32) returns(string)"])
+    expect(await defaultReverseResolver['name(address)'](testAddress)).to.equal(name)
+
+    const defaultcalldata = i.encodeFunctionData("name", [defaultReverseNode])
+    const defaultResult = await defaultReverseResolver.resolve(encodedDefaultReverseName, defaultcalldata)
+    expect(ethers.toUtf8String(defaultResult)).to.equal(name);
+
+    const l2calldata = i.encodeFunctionData("name", [l2ReverseNode])
+    const result2 = await target.resolve(encodedL2ReverseName, l2calldata, { enableCcipRead: true })
+    expect(ethers.toUtf8String(result2)).to.equal(name);
   })
 
   it("should test text record", async() => {
     const key = 'name'
     const value = 'nick.eth'
+    const testAddress = await signer.getAddress()
     const node = await l2contract.node(
-      await signer.getAddress(),
+      testAddress
     )
+    const reverseLabel = testAddress.substring(2).toLowerCase()
+    const l2ReverseName = `${reverseLabel}.${NAMESPACE}.reverse`
+    const encodedL2ReverseName = encodeName(l2ReverseName)
+
     await l2contract.clearRecords(await  signer.getAddress())
     await l2contract.setText(key, value)
     await provider.send("evm_mine", []);
+    await wait(1);
+
     const result = await l2contract.text(node, key)
     expect(result).to.equal(value);
-    const result2 = await target.text(node, key, { enableCcipRead: true })
-    expect(result2).to.equal(value);
+    const i = new ethers.Interface(["function text(bytes32, string) returns(string)"])
+    const calldata = i.encodeFunctionData("text", [node, key])
+    const result2 = await target.resolve(encodedL2ReverseName, calldata, { enableCcipRead: true })
+    expect(ethers.toUtf8String(result2)).to.equal(value);
+  })
+
+  it("should test fallback text", async() => {
+    const testSigner = new ethers.Wallet('0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'); 
+    const testAddress = testSigner.address
+    const key = 'name'
+    const value = 'myname.eth'
+    const reverseLabel = testAddress.substring(2).toLowerCase()
+    const l2ReverseName = `${reverseLabel}.${NAMESPACE}.reverse`
+    const l2ReverseNode = ethers.namehash(l2ReverseName)
+    const encodedL2ReverseName = encodeName(l2ReverseName)
+
+    const defaultReverseName = `${reverseLabel}.default.reverse`
+    const defaultReverseNode = ethers.namehash(defaultReverseName)
+    const encodedDefaultReverseName = encodeName(defaultReverseName)
+
+    const funcId = ethers
+      .id('setTextForAddrWithSignature(address,string,string,uint256,bytes)')
+      .substring(0, 10)
+
+    const block = await provider.getBlock('latest')
+    const inceptionDate = block?.timestamp
+    const message =  ethers.solidityPackedKeccak256(
+      ['address', 'bytes32', 'address', 'uint256', 'uint256'],
+      [defaultReverseAddress, ethers.solidityPackedKeccak256(['bytes4', 'string', 'string'], [funcId, key, value]), testAddress, inceptionDate, 0],
+    )
+    const signature = await testSigner.signMessage(ethers.toBeArray(message))
+    await defaultReverseResolver['setTextForAddrWithSignature'](
+      testAddress,
+      key,
+      value,
+      inceptionDate,
+      signature,
+    )
+    await provider.send("evm_mine", []);
+    await wait(1);
+
+    expect(await defaultReverseResolver["text(address,string)"](testAddress, key)).to.equal(value)
+    const i = new ethers.Interface(["function text(bytes32,string) returns(string)"])
+
+    const defaultcalldata = i.encodeFunctionData("text", [defaultReverseNode, key])
+    const defaultResult = await defaultReverseResolver.resolve(encodedDefaultReverseName, defaultcalldata)
+    expect(ethers.toUtf8String(defaultResult)).to.equal(value);
+
+    const calldata = i.encodeFunctionData("text", [l2ReverseNode, key])
+    const result2 = await target.resolve(encodedL2ReverseName, calldata, { enableCcipRead: true })
+    expect(ethers.toUtf8String(result2)).to.equal(value);
   })
 
   it("should support interface", async() => {
-    expect(await target.supportsInterface('0x59d1d43c')).to.equal(true) // ITextResolver
-    expect(await target.supportsInterface('0x691f3431')).to.equal(true) // INameResolver
+    expect(await defaultReverseResolver.supportsInterface('0x9061b923')).to.equal(true) // IExtendedResolver
+    expect(await target.supportsInterface('0x9061b923')).to.equal(true) // IExtendedResolver
     expect(await target.supportsInterface('0x01ffc9a7')).to.equal(true) // ERC-165 support
   })
 });

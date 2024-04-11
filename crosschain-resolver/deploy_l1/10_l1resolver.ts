@@ -22,12 +22,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const CHAIN_NAME = process.env.CHAIN_NAME
 
   if(!['Op', 'Base', 'Arb'].includes(CHAIN_NAME)) throw ('Set $CHAIN_NAME to Op, Base, or Arb')
-  const L2_COINTYPE = convertEVMChainIdToCoinType(parseInt(L2_CHAIN_ID))
-  console.log({VERIFIER_ADDRESS,ENS_ADDRESS, WRAPPER_ADDRESS,L2_GRAPHQL_URL,L2_COINTYPE})
+  console.log({VERIFIER_ADDRESS,ENS_ADDRESS, WRAPPER_ADDRESS,L2_GRAPHQL_URL,L2_CHAIN_ID})
   await deploy(`${CHAIN_NAME}L1Resolver`, {
     from: deployer,
     contract: 'L1Resolver',
-    args: [VERIFIER_ADDRESS,ENS_ADDRESS,WRAPPER_ADDRESS,L2_GRAPHQL_URL,L2_COINTYPE],
+    args: [VERIFIER_ADDRESS,ENS_ADDRESS,WRAPPER_ADDRESS,L2_GRAPHQL_URL,parseInt(L2_CHAIN_ID)],
     log: true,
   });
 };
