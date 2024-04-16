@@ -15,8 +15,13 @@ import { ethers } from 'hardhat';
 import { EthereumProvider } from 'hardhat/types';
 import request from 'supertest';
 import packet from 'dns-packet';
+import { L2ChainID } from '@eth-optimism/sdk';
 const labelhash = (label) => ethers.keccak256(ethers.toUtf8Bytes(label))
 const encodeName = (name) => '0x' + packet.name.encode(name).toString('hex')
+
+const l2graphqlUrl = 'http://graphql'
+const chainId = L2ChainID.OPTIMISM_SEPOLIA
+
 const name = 'foo.eth'
 const node = ethers.namehash(name)
 const encodedname = encodeName(name)
@@ -25,6 +30,12 @@ const EMPTY_ADDRESS = '0x0000000000000000000000000000000000000000'
 const EMPTY_BYTES32 =
   '0x0000000000000000000000000000000000000000000000000000000000000000'
 
+// looks like there are time dependencies for verification to success, hence adding a dalay
+const wait = async x => {
+  return new Promise(resolve => {
+    setTimeout(resolve, 3000, 2 * x);
+  });
+};
 
 type ethersObj = typeof ethersT &
   Omit<HardhatEthersHelpers, 'provider'> & {
@@ -143,38 +154,46 @@ describe('Crosschain Resolver', () => {
       signer
     );
     const verifierAddress = await verifier.getAddress()
-    target = await testL1Factory.deploy(verifierAddress, ensAddress, wrapperAddress);
+    target = await testL1Factory.deploy(verifierAddress, ensAddress, wrapperAddress, l2graphqlUrl, chainId);
+
     // Mine an empty block so we have something to prove against
     await provider.send('evm_mine', []);
     l2contract = impl.attach(resolverAddress)
   });
 
   it("should not allow non owner to set target", async() => {
-    const incorrectnode = ethers.namehash('notowned.eth')
     const incorrectname = encodeName('notowned.eth')
     // For some reason expect().to.be.reverted isn't working
     // Throwing Error: missing revert data (action="estimateGas"...
     try{
-      await target.setTarget(incorrectnode, resolverAddress)
+      await target.setTarget(incorrectname, resolverAddress)
     }catch(e){
     }
 
-    const result = await target.getTarget(incorrectname, 0)
+    const result = await target.getTarget(incorrectname)
     expect(result[1]).to.equal(EMPTY_ADDRESS);
   })
 
   it("should allow owner to set target", async() => {
-    await target.setTarget(node, signerAddress)
-    const result = await target.getTarget(encodeName(name), 0)
+    await target.setTarget(encodedname, signerAddress)
+    const result = await target.getTarget(encodeName(name))
     expect(result[1]).to.equal(signerAddress);
+  })
+
+  it("should emit a TargetSet event", async() => {
+    await target.setTarget(encodedname, signerAddress)
+    const logs = await target.queryFilter("TargetSet")
+    const [eventname, eventtarget] = logs[0].args
+    expect(eventname).to.equal(encodedname);
+    expect(eventtarget).to.equal(signerAddress);
   })
 
   it("subname should get target of its parent", async() => {
     const subname = 'd.foo.eth'
     const encodedsubname = encodeName(subname)
     const subnode = ethers.namehash(subname)
-    await target.setTarget(node, signerAddress)
-    const result = await target.getTarget(encodedsubname, 0)
+    await target.setTarget(encodedname, signerAddress)
+    const result = await target.getTarget(encodedsubname)
     expect(result[0]).to.equal(subnode);
     expect(result[1]).to.equal(signerAddress);
   })
@@ -190,21 +209,21 @@ describe('Crosschain Resolver', () => {
       0, // CAN_DO_EVERYTHING
       EMPTY_ADDRESS,
     )
-    const wrappedtnode = ethers.namehash(`${label}.eth`)
-    await target.setTarget(wrappedtnode, resolverAddress)
+    const wrappedtname = encodeName(`${label}.eth`)
+    await target.setTarget(wrappedtname, resolverAddress)
     const encodedname = encodeName(`${label}.eth`)
-    const result = await target.getTarget(encodedname, 0)
+    const result = await target.getTarget(encodedname)
     expect(result[1]).to.equal(resolverAddress);
   })
 
   it("should resolve empty ETH Address", async() => {
-    await target.setTarget(node, resolverAddress)
+    await target.setTarget(encodedname, resolverAddress)
     const addr = '0x0000000000000000000000000000000000000000'
     await l2contract.clearRecords(node)
     const result = await l2contract['addr(bytes32)'](node)
     expect(ethers.getAddress(result)).to.equal(addr);
     await provider.send("evm_mine", []);
-
+    await wait(1);
     const i = new ethers.Interface(["function addr(bytes32) returns(address)"])
     const calldata = i.encodeFunctionData("addr", [node])
     const result2 = await target.resolve(encodedname, calldata, { enableCcipRead: true })
@@ -213,23 +232,23 @@ describe('Crosschain Resolver', () => {
   })
 
   it("should resolve ETH Address", async() => {
-    await target.setTarget(node, resolverAddress)
+    await target.setTarget(encodedname, resolverAddress)
     const addr = '0x5A384227B65FA093DEC03Ec34e111Db80A040615'
     await l2contract.clearRecords(node)
     await l2contract['setAddr(bytes32,address)'](node, addr)
     const result = await l2contract['addr(bytes32)'](node)
     expect(ethers.getAddress(result)).to.equal(addr);
     await provider.send("evm_mine", []);
-    
     const i = new ethers.Interface(["function addr(bytes32) returns(address)"])
     const calldata = i.encodeFunctionData("addr", [node])
+    await wait(1);
     const result2 = await target.resolve(encodedname, calldata, { enableCcipRead: true })
     const decoded = i.decodeFunctionResult("addr", result2)
     expect(decoded[0]).to.equal(addr);
   })
 
   it("should resolve ETH Address for subname", async() => {
-    await target.setTarget(node, resolverAddress)
+    await target.setTarget(encodedname, resolverAddress)
     const addr = '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045'
     await l2contract.clearRecords(node)
     const subname = 'd.foo.eth'
@@ -239,6 +258,7 @@ describe('Crosschain Resolver', () => {
     const result = await l2contract['addr(bytes32)'](subnode)
     expect(ethers.getAddress(result)).to.equal(addr);
     await provider.send("evm_mine", []);
+    await wait(1);
     const i = new ethers.Interface(["function addr(bytes32) returns(address)"])
     const calldata = i.encodeFunctionData("addr", [subnode])
     
@@ -248,13 +268,14 @@ describe('Crosschain Resolver', () => {
   })
 
   it("should resolve non ETH Address", async() => {
-    await target.setTarget(node, resolverAddress)
+
+    await target.setTarget(encodedname, resolverAddress)
     const addr = '0x76a91462e907b15cbf27d5425399ebf6f0fb50ebb88f1888ac'
     const coinType = 0 // BTC
     await l2contract.clearRecords(node)
     await l2contract['setAddr(bytes32,uint256,bytes)'](node, coinType, addr)
     await provider.send("evm_mine", []);
-
+    await wait(1);
     const i = new ethers.Interface(["function addr(bytes32,uint256) returns(bytes)"])
     const calldata = i.encodeFunctionData("addr", [node, coinType])
     const result2 = await target.resolve(encodedname, calldata, { enableCcipRead: true })
@@ -263,13 +284,13 @@ describe('Crosschain Resolver', () => {
   })
 
   it("should resolve text record", async() => {
-    await target.setTarget(node, resolverAddress)
+    await target.setTarget(encodedname, resolverAddress)
     const key = 'name'
     const value = 'nick.eth'
     await l2contract.clearRecords(node)
     await l2contract.setText(node, key, value)
     await provider.send("evm_mine", []);
-
+    await wait(1);
     const i = new ethers.Interface(["function text(bytes32,string) returns(string)"])
     const calldata = i.encodeFunctionData("text", [node, key])
     const result2 = await target.resolve(encodedname, calldata, { enableCcipRead: true })
@@ -278,16 +299,48 @@ describe('Crosschain Resolver', () => {
   })
 
   it("should test contenthash", async() => {
-    await target.setTarget(node, resolverAddress)
+    await target.setTarget(encodedname, resolverAddress)
     const contenthash = '0xe3010170122029f2d17be6139079dc48696d1f582a8530eb9805b561eda517e22a892c7e3f1f'
     await l2contract.clearRecords(node)
     await l2contract.setContenthash(node, contenthash)
     await provider.send("evm_mine", []);
-
+    await wait(1);
     const i = new ethers.Interface(["function contenthash(bytes32) returns(bytes)"])
     const calldata = i.encodeFunctionData("contenthash", [node])
     const result2 = await target.resolve(encodedname, calldata, { enableCcipRead: true })
     const decoded = i.decodeFunctionResult("contenthash", result2)
     expect(decoded[0]).to.equal(contenthash);
   })
+
+  it("should support interface", async() => {
+    expect(await target.supportsInterface('0x15f64386')).to.equal(true) // ITargetResolver
+    expect(await target.supportsInterface('0x9061b923')).to.equal(true) // IExtendedResolver
+    expect(await target.supportsInterface('0x8a596ebe')).to.equal(true) // IMetadataResolver
+    expect(await target.supportsInterface('0x01ffc9a7')).to.equal(true) // ERC-165 support
+    expect(await target.supportsInterface('0xf00eebf4')).to.equal(true) // IAddrSetter support
+  })
+
+  describe('EIP 5559', () => {
+    it('throws StorageHandledByL2 error', async () => {
+      await target.setTarget(encodedname, resolverAddress)
+      await expect(target.setAddr(encodedname, EMPTY_ADDRESS)).to.be
+        .revertedWithCustomError(target, 'StorageHandledByL2')
+        .withArgs(chainId, resolverAddress)
+    });
+  });
+
+  describe('Metadata', () => {
+    it('returns metadata', async () => {
+      expect(await target.metadata(encodedname)).to.equal(l2graphqlUrl);
+    });
+
+    it('emits a MetadataChanged event', async () => {
+      const tx = await target.setTarget(encodedname, signerAddress)
+      await tx.wait()
+      const logs = await target.queryFilter("MetadataChanged")
+      const [name, graphqlUrl] = logs[0].args
+      expect(name).to.equal(encodedname);
+      expect(graphqlUrl).to.equal(l2graphqlUrl);
+    });
+  });
 });

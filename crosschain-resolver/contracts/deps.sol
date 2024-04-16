@@ -5,8 +5,9 @@ import "@ensdomains/ens-contracts/contracts/wrapper/StaticMetadataService.sol";
 import "@ensdomains/l1-verifier/contracts/L1Verifier.sol";
 import {ReverseRegistrar} from "@ensdomains/ens-contracts/contracts/reverseRegistrar/ReverseRegistrar.sol";
 import {PublicResolver} from "@ensdomains/ens-contracts/contracts/resolvers/PublicResolver.sol";
-import {DelegatableResolver} from "@ensdomains/ens-contracts/contracts/resolvers/DelegatableResolver.sol";
 import {DelegatableResolverFactory} from "@ensdomains/ens-contracts/contracts/resolvers/DelegatableResolverFactory.sol";
+import {DelegatableResolver} from "@ensdomains/ens-contracts/contracts/resolvers/DelegatableResolver.sol";
+import {L2ReverseResolver} from '@ensdomains/ens-contracts/contracts/reverseRegistrar/L2ReverseResolver.sol';
 // Storage slot
 // ┌────────────────────────────┬──────────────────────────────┬──────────────┬
 // │      contract              │        state_variable        │ storage_slot │ 

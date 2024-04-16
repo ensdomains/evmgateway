@@ -1,0 +1,50 @@
+{
+  "name": "@ensdomains/crosschain-reverse-resolver",
+  "license": "MIT",
+  "version": "0.1.0",
+  "scripts": {
+    "build": "echo 'building crosschain-reverse-resolver' && hardhat compile",
+    "test": "node scripts/test.js",
+    "storage": "hardhat check",
+    "setname": "hardhat run scripts/setname.ts",
+    "setdefaultname": "hardhat run scripts/setdefaultname.ts --network sepolia",
+    "getname": "hardhat run scripts/getname.ts --network sepolia",
+    "clean": "rm -fr artifacts cache node_modules typechain-types",
+    "lint": "exit 0"
+  },
+  "devDependencies": {
+    "@ensdomains/l1-gateway": "workspace:*",
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.0",
+    "@nomicfoundation/hardhat-ethers": "^3.0.0",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.0",
+    "@nomicfoundation/hardhat-toolbox": "^3.0.0",
+    "@nomicfoundation/hardhat-verify": "^1.0.0",
+    "@nomiclabs/hardhat-ganache": "^2.0.1",
+    "@typechain/ethers-v6": "^0.4.0",
+    "@typechain/hardhat": "^8.0.0",
+    "@types/chai": "^4.2.0",
+    "@types/express": "^4.17.18",
+    "@types/mocha": ">=9.1.0",
+    "@types/supertest": "^2.0.14",
+    "chai": "^4.2.0",
+    "ethers": "^6.8.0",
+    "express": "^4.18.2",
+    "ganache": "^7.9.1",
+    "hardhat": "^2.17.4",
+    "hardhat-deploy": "^0.11.43",
+    "hardhat-deploy-ethers": "^0.4.1",
+    "hardhat-gas-reporter": "^1.0.8",
+    "hardhat-storage-layout": "^0.1.7",
+    "solidity-bytes-utils": "^0.8.0",
+    "solidity-coverage": "^0.8.1",
+    "supertest": "^6.3.3",
+    "ts-node": "^10.9.1",
+    "typechain": "^8.2.0",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "@ensdomains/ens-contracts": "ensdomains/ens-contracts#feature/crosschain-resolver-with-reverse-registrar",
+    "@ensdomains/evm-verifier": "^0.1.0",
+    "@eth-optimism/contracts": "^0.6.0"
+  }
+}

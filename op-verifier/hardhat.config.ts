@@ -32,6 +32,11 @@ const config: HardhatUserConfig = {
         l2: "optimismGoerli",
       },
     },
+    optimismGoerli: {
+      url: "https://goerli.optimism.io",
+      accounts: [DEPLOYER_PRIVATE_KEY],
+      deploy: [ "deploy_l2/" ],
+    },
     sepolia: {
       url: L1_PROVIDER_URL,
       accounts: [DEPLOYER_PRIVATE_KEY],
@@ -40,13 +45,21 @@ const config: HardhatUserConfig = {
         l2: "optimismSepolia",
       },
     },
-    optimismGoerli: {
-      url: "https://goerli.optimism.io",
+    sepoliaforbase: {
+      url: L1_PROVIDER_URL,
       accounts: [DEPLOYER_PRIVATE_KEY],
-      deploy: [ "deploy_l2/" ],
+      deploy: [ "deploy_l1/" ],
+      companionNetworks: {
+        l2: "baseSepolia",
+      },
     },
     optimismSepolia: {
       url: "https://sepolia.optimism.io",
+      accounts: [DEPLOYER_PRIVATE_KEY],
+      deploy: [ "deploy_l2/" ],
+    },
+    baseSepolia: {
+      url: "https://sepolia.base.org",
       accounts: [DEPLOYER_PRIVATE_KEY],
       deploy: [ "deploy_l2/" ],
     },
@@ -54,9 +67,11 @@ const config: HardhatUserConfig = {
   etherscan: {
     apiKey: {
         goerli: L1_ETHERSCAN_API_KEY,
-        optimismGoerli: L2_ETHERSCAN_API_KEY,
         sepolia: L1_ETHERSCAN_API_KEY,
+        optimismGoerli: L2_ETHERSCAN_API_KEY,
+        baseGoerli: L2_ETHERSCAN_API_KEY,
         optimismSepolia: L2_ETHERSCAN_API_KEY,
+        baseSepolia: L2_ETHERSCAN_API_KEY,
     },
     customChains: [
       {
@@ -68,19 +83,19 @@ const config: HardhatUserConfig = {
         }
       },
       {
-        network: "sepolia",
-        chainId: 11155111,
-        urls: {
-            apiURL: "https://api-sepolia.etherscan.io/api",
-            browserURL: "https://sepolia.etherscan.io"
-        }
-      },
-      {
         network: "optimismSepolia",
         chainId: 11155420,
         urls: {
             apiURL: "https://api-sepolia-optimism.etherscan.io/api",
             browserURL: "https://sepolia-optimism.etherscan.io"
+        }
+      },
+      {
+        network: "baseSepolia",
+        chainId: 84532,
+        urls: {
+          apiURL: "https://api-sepolia.basescan.org/api",
+          browserURL: "https://sepolia.basescan.org"
         }
       },
     ]
