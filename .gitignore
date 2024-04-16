@@ -13,3 +13,4 @@ cache
 .env
 typechain-types
 .wrangler
+.yalc
