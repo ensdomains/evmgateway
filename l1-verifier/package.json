@@ -1,7 +1,7 @@
 {
   "name": "@ensdomains/l1-verifier",
   "license": "MIT",
-  "version": "0.1.0",
+  "version": "0.1.0-beta.1",
   "scripts": {
     "build": "echo 'building l1-verifier...' && bun hardhat compile",
     "test": "node ./scripts/test.js",
@@ -37,8 +37,8 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
+    "@ensdomains/evm-verifier": "^0.1.0",
     "@eth-optimism/contracts": "^0.6.0",
-    "@eth-optimism/contracts-bedrock": "^0.16.2",
-    "@ensdomains/evm-verifier": "^0.1.0"
+    "@eth-optimism/contracts-bedrock": "^0.16.2"
   }
 }
