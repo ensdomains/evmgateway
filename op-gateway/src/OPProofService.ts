@@ -17,7 +17,7 @@ const L2_TO_L1_MESSAGE_PASSER_ADDRESS =
 
 /**
  * The proofService class can be used to calculate proofs for a given target and slot on the Optimism Bedrock network.
- * It's also capable of proofing long types such as mappings or string by using all included slots in the proof.
+ * It's also capable of proving long types such as mappings or string by using all included slots in the proof.
  *
  */
 export class OPProofService implements IProofService<OPProvableBlock> {

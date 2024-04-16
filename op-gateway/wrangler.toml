@@ -1,5 +1,4 @@
 name = "op-gateway-worker"
-account_id = "15dcc9085cb794bb4f29d3e8177ac880"
 main = "./src/worker.ts"
 node_compat = true
 compatibility_date = "2023-10-13"
@@ -10,4 +9,11 @@ port = 8080
 [build]
 command = "bun run build"
 
-[vars]
+[env.base-sepolia]
+name = "base-sepolia-gateway-worker"
+[env.base-sepolia.vars]
+GATEWAY_DOMAIN="base-sepolia-gateway-worker.ens-cf.workers.dev"
+[env.op-sepolia]
+name = "op-sepolia-gateway-worker"
+[env.op-sepolia.vars]
+GATEWAY_DOMAIN="op-sepolia-gateway-worker.ens-cf.workers.dev"

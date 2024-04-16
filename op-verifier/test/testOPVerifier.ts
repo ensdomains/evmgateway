@@ -31,6 +31,16 @@ declare module 'hardhat/types/runtime' {
   }
 }
 
+const OP_ADDRESSES: {[name: string]: string} = {
+  'goerli': '0xE6Dfba0953616Bacab0c9A8ecb3a9BBa77FC15c0',
+  'sepolia': '0x05F9613aDB30026FFd634f38e5C4dFd30a197Fa1',
+}
+
+const OUTPUT_ORACLE_TYPE: {[name: string]: number} = {
+  'goerli': 0, // L2OutputOracle
+  'sepolia': 1, // DisputeGameFactory
+}
+
 describe('OPVerifier', () => {
   let provider: Provider;
   let signer: Signer;
@@ -43,18 +53,18 @@ describe('OPVerifier', () => {
     provider = new ethers.BrowserProvider(hre.network.provider);
     signer = await provider.getSigner(0);
 
-    const opAddresses = await (await fetch("http://localhost:8080/addresses.json")).json();
+    const opAddress = OP_ADDRESSES[hre.network.name] || (await (await fetch("http://localhost:8080/addresses.json")).json()).L2OutputOracleProxy;
 
     const gateway = await makeOPGateway(
       (hre.network.config as any).url,
       (hre.config.networks[hre.network.companionNetworks.l2] as any).url,
-      opAddresses.L2OutputOracleProxy,
+      opAddress,
       5,
+      OUTPUT_ORACLE_TYPE[hre.network.name] ?? 1,
     );
     const server = new Server()
     gateway.add(server)
     const app = server.makeApp('/')
-
 
     // Replace ethers' fetch function with one that calls the gateway directly.
     const getUrl = FetchRequest.createGetUrlFunc();

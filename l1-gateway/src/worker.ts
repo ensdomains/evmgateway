@@ -1,10 +1,11 @@
+import { Request as CFWRequest } from '@cloudflare/workers-types';
 import { Server } from '@ensdomains/ccip-read-cf-worker';
 import type { Router } from '@ensdomains/evm-gateway';
 interface Env {
   WORKER_PROVIDER_URL: string;
 }
 let app: Router;
-async function fetch(request: Request, env: Env) {
+async function fetch(request: CFWRequest, env: Env) {
   // Loading libraries dynamically as a temp work around.
   // Otherwise, deployment thorws "Error: Script startup exceeded CPU time limit." error
   if (!app) {
