@@ -1,7 +1,16 @@
 {
   "name": "@ensdomains/evm-verifier",
   "license": "MIT",
-  "version": "0.1.0-beta.2",
+  "version": "0.1.0-beta.3",
+  "author": "ENS labs",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ensdomains/evmgateway.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ensdomains/evmgateway/issues"
+  },
+  "homepage": "https://github.com/ensdomains/evmgateway/tree/main/evm-verifier",
   "scripts": {
     "build": "echo 'building evm-verifier...' && bun hardhat compile",
     "prepublishOnly": "bun run build",

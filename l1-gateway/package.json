@@ -1,8 +1,16 @@
 {
   "name": "@ensdomains/l1-gateway",
-  "version": "0.1.0-beta.2",
+  "version": "0.1.0-beta.3",
   "author": "Nick Johnson",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ensdomains/evmgateway.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ensdomains/evmgateway/issues"
+  },
+  "homepage": "https://github.com/ensdomains/evmgateway/tree/main/l1-gateway",
   "main": "./_cjs/index.js",
   "module": "./_esm/index.js",
   "types": "./_types/index.d.ts",
@@ -57,7 +65,7 @@
   "dependencies": {
     "@chainlink/ccip-read-server": "^0.2.1",
     "@commander-js/extra-typings": "^11.0.0",
-    "@ensdomains/evm-gateway": "0.1.0-beta.2",
+    "@ensdomains/evm-gateway": "0.1.0-beta.3",
     "@ethereumjs/block": "^5.0.0",
     "@nomicfoundation/ethereumjs-block": "^5.0.2",
     "commander": "^11.0.0",

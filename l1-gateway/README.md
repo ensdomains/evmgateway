@@ -9,6 +9,12 @@ target for testing the entire framework end-to-end.
 It may also prove useful for contracts that wish to trustlessly establish the content of storage variables of other contracts,
 or historic values for storage variables of any contract.
 
+## Installation
+
+```
+bun add @ensdomains/l1-gateway
+```
+
 ## How to use l1-gateway locally via cloudflare dev env (aka wrangler)
 
 ```
