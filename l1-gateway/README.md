@@ -39,7 +39,7 @@ yarn deploy
 ## How to test
 
 ```
-cd ../l1-verifier l1-gateway
+cd ../l1-verifier
 PROVIDER_URL=$PROVIDER_URL TARGET_ADDRESS=$TARGET_ADDRESS yarn remote_test
 ```
 
