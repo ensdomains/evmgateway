@@ -97,6 +97,11 @@ An instantiation of `evm-gateway` that targets Optimism. Combined with `op-verif
 ### [op-verifier](/op-verifier/)
 A complete Solidity library that facilitates sending CCIP-Read requests for Optimism state, and verifying the responses.
 
+### [arb-gateway](/arb-gateway/)
+An instantiation of `evm-gateway` that targets Optimism. Combined with `arb-verifier`, makes it possible for L1 contracts to fetch contract state data from Arbitrum.
+
+### [arb-verifier](/arb-verifier/)
+A complete Solidity library that facilitates sending CCIP-Read requests for Arbitrum state, and verifying the responses.
 
 ## How to setup locally
 
