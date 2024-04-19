@@ -101,7 +101,7 @@ async function fetch(request: CFWRequest, env: Env) {
   await tracker.trackEvent(
     request,
     'request',
-    { props: { ...props, ...{} } },
+    { props },
     true
   );
   return app.handle(request).then(logResult.bind(null, request));
