@@ -7,12 +7,12 @@ For a detailed readme and usage instructions, see the [monorepo readme](https://
 ## How to use op-gateway locally via cloudflare dev env (aka wrangler)
 
 ```
-npm install -g bun
 cd op-gateway
+npm install -g bun wrangler
 bun install
 touch .dev.vars
 ## set L1_PROVIDER_URL, L2_PROVIDER_URL, L2_OUTPUT_ORACLE, DELAY=5
-yarn dev
+bun run dev
 ```
 
 ## How to deploy op-gateway to cloudflare

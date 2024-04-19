@@ -9,7 +9,7 @@ compatibility_date = "2024-01-25"
 port = 8080
 
 [build]
-command = "yarn build"
+command = "bun run build"
 
 [env.sepolia]
 name = "arb-sepolia-gateway-worker"
