@@ -9,12 +9,12 @@ To get started, you need to have an RPC URL for both Ethereum Mainnet and Arbitr
 ## How to use arb-gateway locally via cloudflare dev env (aka wrangler)
 
 ```
-npm install -g bun
 cd arb-gateway
+npm install -g bun wrangler
 bun install
 touch .dev.vars
 ## set L1_PROVIDER_URL, L2_PROVIDER_URL, L2_ROLLUP
-yarn dev
+bun run dev
 ```
 
 ## How to deploy arb-gateway to cloudflare
@@ -24,10 +24,11 @@ cd arb-gateway
 npm install -g wrangler
 wrngler login
 
-wrangler secret put L1_PROVIDER_URL
-wrangler secret put L2_PROVIDER_URL
-wrangler secret put L2_ROLLUP
-yarn deploy
+wrangler secret put L1_PROVIDER_URL --env sepolia
+wrangler secret put L2_PROVIDER_URL --env sepolia
+wrangler secret put L2_ROLLUP --env sepolia
+wrangler secret put ENDPOINT_URL --env sepolia
+yarn deploy --env sepolia
 ```
 
 ## How to test
@@ -39,6 +40,5 @@ yarn deploy
 5. Navigate to the Gateway directory using `cd ./arb-gateway`.
 6. Start the Gateway by running `bun run start -u http://127.0.0.1:8545/ -v http://127.0.0.1:8547/ -p 8089`.
 7. Open another Terminal Tab and navigate to the verifier directory using `cd ./arb-verifier/`.
-8. Deploy contracts to the node using the command ` npx hardhat --network arbDevnetL2 deploy && npx hardhat --network arbDevnetL1 deploy `.
+8. Deploy contracts to the node using the command `npx hardhat --network arbDevnetL2 deploy && npx hardhat --network arbDevnetL1 deploy`.
 9. Run the test using the command `bun run test`.
-
