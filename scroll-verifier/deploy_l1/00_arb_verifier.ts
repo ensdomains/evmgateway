@@ -5,12 +5,13 @@ import 'dotenv/config';
 const GATEWAY_URLS = {
   scrollDevnetL1: 'http://localhost:8089/{sender}/{data}.json',
   goerli: 'https://scroll-gateway-worker.ens-cf.workers.dev/{sender}/{data}.json',
+  // Point to localhost if you want to test locally
+  // sepolia: 'http://localhost:8080/{sender}/{data}.json'
   sepolia: 'https://scroll-sepolia-gateway-worker.ens-cf.workers.dev/{sender}/{data}.json',
 };
 
 const ROLLUP_ADDRESSES = {
-  goerli: '0x45e5cAea8768F42B385A366D3551Ad1e0cbFAb17',
-  sepolia: '0xd80810638dbDF9081b72C1B33c65375e807281C8',
+  sepolia: '0x64cb3A0Dcf43Ae0EE35C1C15edDF5F46D48Fa570',
 };
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {

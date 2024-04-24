@@ -8,7 +8,7 @@ interface IScrollChainCommitmentVerifier {
         address account,
         bytes32 storageKey,
         bytes calldata proof
-    ) public view returns (bytes32 stateRoot, bytes32 storageValue);
+    ) external view returns (bytes32 stateRoot, bytes32 storageValue);
 
     function verifyStateCommitment(
         uint256 batchIndex,
@@ -53,16 +53,11 @@ contract ScrollVerifier is IEVMVerifier {
         address target,
         bytes32[] memory commands,
         bytes[] memory constants,
-        bytes memory compressedProof
+        bytes memory proof
     ) external view returns (bytes[] memory values) {
         (ScrollWitnessData memory scrollData, StateProof memory stateProof) = abi.decode(proof, (ScrollWitnessData, StateProof));
-        require(
-            verifier.verifyStateCommitment(
-                scrollData.batchIndex, target, scrollData.storageKey, scrollData.compressedProof
-            ),
-            "compressed proof mismatch"
-        )
-        (bytes32 storageValue) = verifier.verifyZkTrieProof(account, scrollData.storageKey, scrollData.compressedProof);
-        values = [storageValue];
+        (bytes32 stateRoot, bytes32 storageValue) = verifier.verifyZkTrieProof(target, scrollData.storageKey, scrollData.compressedProof);
+        values = new bytes[](1);
+        values[0] = abi.encodePacked(storageValue);
     }
 }

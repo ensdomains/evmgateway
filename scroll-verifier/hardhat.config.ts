@@ -9,7 +9,12 @@ const DEPLOYER_PRIVATE_KEY =
 const L1_PROVIDER_URL = process.env.L1_PROVIDER_URL || '';
 const L1_ETHERSCAN_API_KEY = process.env.L1_ETHERSCAN_API_KEY;
 const L2_ETHERSCAN_API_KEY = process.env.L2_ETHERSCAN_API_KEY;
-
+console.log({
+  DEPLOYER_PRIVATE_KEY,
+  L1_PROVIDER_URL,
+  L1_ETHERSCAN_API_KEY,
+  L2_ETHERSCAN_API_KEY
+})
 const config: HardhatUserConfig = {
   solidity: '0.8.19',
   networks: {
@@ -30,14 +35,6 @@ const config: HardhatUserConfig = {
       ],
       deploy: ['deploy_l2/'],
     },
-    goerli: {
-      url: L1_PROVIDER_URL,
-      accounts: [DEPLOYER_PRIVATE_KEY],
-      deploy: ['deploy_l1/'],
-      companionNetworks: {
-        l2: 'scrollGoerli',
-      },
-    },
     sepolia: {
       url: L1_PROVIDER_URL,
       accounts: [DEPLOYER_PRIVATE_KEY],
@@ -45,16 +42,13 @@ const config: HardhatUserConfig = {
       companionNetworks: {
         l2: 'scrollSepolia',
       },
-    },
-    scrollGoerli: {
-      url: 'https://rpc.goerli.scroll.gateway.fm',
-      accounts: [DEPLOYER_PRIVATE_KEY],
-      deploy: ['deploy_l2/'],
+      chainId: 11155111
     },
     scrollSepolia: {
-      url: 'https://sepolia-rollup.scroll.io/rpc',
+      url: 'https://sepolia-rpc.scroll.io',
       accounts: [DEPLOYER_PRIVATE_KEY],
       deploy: [ "deploy_l2/" ],
+      chainId: 534351
     },
   },
   etherscan: {
@@ -66,19 +60,11 @@ const config: HardhatUserConfig = {
     },
     customChains: [
       {
-        network: 'scrollGoerli',
-        chainId: 421613,
-        urls: {
-          apiURL: 'https://api-goerli.scrollscan.dev/api',
-          browserURL: 'https://api-goerli.scrollscan.dev',
-        },
-      },
-      {
         network: "scrollSepolia",
-        chainId: 421614,
+        chainId: 534351,
         urls: {
-          apiURL: "https://api-sepolia.scrollscan.dev/api",
-          browserURL: "https://api-sepolia.scrollscan.dev"
+          apiURL: "https://api-sepolia.scrollscan.com/api",
+          browserURL: "https://sepolia.scrollscan.com"
         }
       }
     ],
