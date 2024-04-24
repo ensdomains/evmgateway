@@ -3,13 +3,13 @@ import { JsonRpcProvider } from 'ethers';
 import { ScrollProofService, type ScrollProvableBlock } from './ScrollProofService.js';
 import { InMemoryBlockCache } from './blockCache/InMemoryBlockCache.js';
 
-export type ArbGateway = EVMGateway<ScrollProvableBlock>;
+export type ScrollGateway = EVMGateway<ScrollProvableBlock>;
 
-export async function makeArbGateway(
+export async function makeScrollGateway(
   l1providerUrl: string,
   l2providerUrl: string,
   l2RollupAddress: string
-): Promise<ArbGateway> {
+): Promise<ScrollGateway> {
   const l1Provider = new JsonRpcProvider(l1providerUrl);
   const l2Provider = new JsonRpcProvider(l2providerUrl);
   return new EVMGateway(
