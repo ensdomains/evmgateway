@@ -70,14 +70,9 @@ async function fetch(request: CFWRequest, env: Env) {
     gateway.add(server);
     app = server.makeApp('/');
   }
-  const props = propsDecoder(request);
-  await tracker.trackEvent(
-    request,
-    'request',
-    { props: { ...props, ...{} } },
-    true
-  );
 
+  const props = propsDecoder(request);
+  await tracker.trackEvent(request, 'request', { props }, true);
   return app
     .handle(request)
     .then(tracker.logResult.bind(null, propsDecoder, request));

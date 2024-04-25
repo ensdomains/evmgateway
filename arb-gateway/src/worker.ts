@@ -71,12 +71,7 @@ async function fetch(request: CFWRequest, env: Env) {
   }
 
   const props = propsDecoder(request);
-  await tracker.trackEvent(
-    request,
-    'request',
-    { props: { ...props, ...{} } },
-    true
-  );
+  await tracker.trackEvent(request, 'request', { props }, true);
   return app
     .handle(request)
     .then(tracker.logResult.bind(null, propsDecoder, request));
