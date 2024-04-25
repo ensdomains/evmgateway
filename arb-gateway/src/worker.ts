@@ -14,8 +14,8 @@ interface Env {
 let app: Router;
 
 const propsDecoder: PropsDecoder<CFWRequest> = (request?: CFWRequest) => {
-  if(!request || !request.url) {
-    return {}
+  if (!request || !request.url) {
+    return {};
   }
   const trackingData = request.url.match(
     /\/0x[a-fA-F0-9]{40}\/0x[a-fA-F0-9]{1,}\.json/
