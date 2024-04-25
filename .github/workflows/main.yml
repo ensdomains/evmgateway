@@ -44,7 +44,7 @@ jobs:
           bun-version: 1.0.7
 
       - name: Install Dependencies
-        run: bun install --ignore-scripts
+        run: bun install --frozen-lockfile --ignore-scripts
 
       - name: Build
         run: bun run build
