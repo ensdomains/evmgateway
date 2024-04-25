@@ -1,7 +1,7 @@
 import { Request as CFWRequest } from '@cloudflare/workers-types';
 import { Server } from '@ensdomains/ccip-read-cf-worker';
 import type { Router } from '@ensdomains/evm-gateway';
-import { Tracker } from '@ensdomains/server-analytics';
+import { Tracker, type PropsDecoder } from '@ensdomains/server-analytics';
 
 interface Env {
   L1_PROVIDER_URL: string;
@@ -14,7 +14,10 @@ interface Env {
 
 let app: Router;
 
-const propsDecoder = (request: CFWRequest) => {
+const propsDecoder: PropsDecoder<CFWRequest> = (request?: CFWRequest) => {
+  if(!request || !request.url) {
+    return {}
+  }
   const trackingData = request.url.match(
     /\/0x[a-fA-F0-9]{40}\/0x[a-fA-F0-9]{1,}\.json/
   );
@@ -77,7 +80,7 @@ async function fetch(request: CFWRequest, env: Env) {
 
   return app
     .handle(request)
-    .then(tracker.logResult.bind(null, request, propsDecoder));
+    .then(tracker.logResult.bind(null, propsDecoder, request));
 }
 
 export default {
