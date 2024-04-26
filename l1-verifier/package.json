@@ -1,7 +1,7 @@
 {
   "name": "@ensdomains/l1-verifier",
   "license": "MIT",
-  "version": "0.1.0-beta.3",
+  "version": "0.1.0-beta.4",
   "repository": {
     "type": "git",
     "url": "https://github.com/ensdomains/evmgateway.git"
@@ -18,7 +18,7 @@
     "lint": "exit 0"
   },
   "devDependencies": {
-    "@ensdomains/l1-gateway": "0.1.0-beta.3",
+    "@ensdomains/l1-gateway": "0.1.0-beta.4",
     "@nomicfoundation/hardhat-chai-matchers": "^2.0.0",
     "@nomicfoundation/hardhat-ethers": "^3.0.0",
     "@nomicfoundation/hardhat-network-helpers": "^1.0.0",
@@ -45,7 +45,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@ensdomains/evm-verifier": "0.1.0-beta.3",
+    "@ensdomains/evm-verifier": "0.1.0-beta.4",
     "@eth-optimism/contracts": "^0.6.0",
     "@eth-optimism/contracts-bedrock": "^0.16.2"
   }
