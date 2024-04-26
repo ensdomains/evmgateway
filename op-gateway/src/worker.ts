@@ -1,7 +1,7 @@
 import { Request as CFWRequest } from '@cloudflare/workers-types';
 import { Server } from '@ensdomains/ccip-read-cf-worker';
-import type { Router } from '@ensdomains/evm-gateway';
-import { Tracker, type PropsDecoder } from '@ensdomains/server-analytics';
+import { propsDecoder, type Router } from '@ensdomains/evm-gateway';
+import { Tracker } from '@ensdomains/server-analytics';
 
 interface Env {
   L1_PROVIDER_URL: string;
@@ -13,23 +13,6 @@ interface Env {
 }
 
 let app: Router;
-
-const propsDecoder: PropsDecoder<CFWRequest> = (request?: CFWRequest) => {
-  if (!request || !request.url) {
-    return {};
-  }
-  const trackingData = request.url.match(
-    /\/0x[a-fA-F0-9]{40}\/0x[a-fA-F0-9]{1,}\.json/
-  );
-  if (trackingData) {
-    return {
-      sender: trackingData[0].slice(1, 42),
-      calldata: trackingData[0].slice(44).replace('.json', ''),
-    };
-  } else {
-    return {};
-  }
-};
 
 async function fetch(request: CFWRequest, env: Env) {
   // Set PROVIDER_URL under .dev.vars locally. Set the key as secret remotely with `wrangler secret put WORKER_PROVIDER_URL`
