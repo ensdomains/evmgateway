@@ -1,9 +1,19 @@
 {
   "name": "@ensdomains/evm-verifier",
   "license": "MIT",
-  "version": "0.1.0",
+  "version": " 0.1.0-beta.4",
+  "author": "ENS labs",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ensdomains/evmgateway.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ensdomains/evmgateway/issues"
+  },
+  "homepage": "https://github.com/ensdomains/evmgateway/tree/main/evm-verifier",
   "scripts": {
     "build": "echo 'building evm-verifier...' && bun hardhat compile",
+    "prepublishOnly": "bun run build",
     "test": "bun hardhat test",
     "clean": "rm -fr artifacts cache node_modules typechain-types",
     "lint": "exit 0"

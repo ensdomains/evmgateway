@@ -96,3 +96,31 @@ An instantiation of `evm-gateway` that targets Optimism. Combined with `op-verif
 
 ### [op-verifier](/op-verifier/)
 A complete Solidity library that facilitates sending CCIP-Read requests for Optimism state, and verifying the responses.
+
+### [arb-gateway](/arb-gateway/)
+An instantiation of `evm-gateway` that targets Optimism. Combined with `arb-verifier`, makes it possible for L1 contracts to fetch contract state data from Arbitrum.
+
+### [arb-verifier](/arb-verifier/)
+A complete Solidity library that facilitates sending CCIP-Read requests for Arbitrum state, and verifying the responses.
+
+## How to setup locally
+
+```
+gh repo clone ensdomains/evmgateway
+bun install # `@ensdomains/@ensdomains` not found error will be thrown
+bun run workspace evm-gateway build
+bun install
+bun run test
+```
+
+## Troubleshooting
+
+### Error HH12: Trying to use a non-local installation of Hardhat, which is not supported.
+
+`yarn test` spawns `hardhat test` in the forked process. When `hardhat` command is installed under the node_modules of under each workspace, it complains that it's using locally installed hardhat. Remove hardhat from local node_modules and make sure it's only installed under the root `node_modules`
+
+```
+rm -rf *-*/node_modules/hardhat
+rm bun.lockb
+bun install
+```

@@ -1,14 +1,32 @@
+import { Request as CFWRequest } from '@cloudflare/workers-types';
 import { Server } from '@ensdomains/ccip-read-cf-worker';
-import type { Router } from '@ensdomains/evm-gateway';
+import { propsDecoder, type Router } from '@ensdomains/evm-gateway';
 import { InMemoryBlockCache } from './blockCache/InMemoryBlockCache.js';
+import { Tracker } from '@ensdomains/server-analytics';
 interface Env {
   L1_PROVIDER_URL: string;
   L2_PROVIDER_URL: string;
   L2_ROLLUP: string;
+  GATEWAY_DOMAIN: string;
+  ENDPOINT_URL: string;
 }
 
 let app: Router;
-async function fetch(request: Request, env: Env) {
+
+async function fetch(request: CFWRequest, env: Env) {
+  // Set PROVIDER_URL under .dev.vars locally. Set the key as secret remotely with `wrangler secret put WORKER_PROVIDER_URL`
+  const {
+    L1_PROVIDER_URL,
+    L2_PROVIDER_URL,
+    L2_ROLLUP,
+    GATEWAY_DOMAIN,
+    ENDPOINT_URL,
+  } = env;
+  const tracker = new Tracker(GATEWAY_DOMAIN, {
+    apiEndpoint: ENDPOINT_URL,
+    enableLogging: true,
+  });
+
   // Loading libraries dynamically as a temp work around.
   // Otherwise, deployment thorws "Error: Script startup exceeded CPU time limit." error
   if (!app) {
@@ -17,13 +35,10 @@ async function fetch(request: Request, env: Env) {
     const EVMGateway = (await import('@ensdomains/evm-gateway')).EVMGateway;
     const ArbProofService = (await import('./ArbProofService.js'))
       .ArbProofService;
-    // Set PROVIDER_URL under .dev.vars locally. Set the key as secret remotely with `wrangler secret put WORKER_PROVIDER_URL`
-    const { L1_PROVIDER_URL, L2_PROVIDER_URL, L2_ROLLUP } = env;
 
     const l1Provider = new ethers.JsonRpcProvider(L1_PROVIDER_URL);
     const l2Provider = new ethers.JsonRpcProvider(L2_PROVIDER_URL);
 
-    console.log({ L1_PROVIDER_URL, L2_PROVIDER_URL });
     const gateway = new EVMGateway(
       new ArbProofService(
         l1Provider,
@@ -37,7 +52,12 @@ async function fetch(request: Request, env: Env) {
     gateway.add(server);
     app = server.makeApp('/');
   }
-  return app.handle(request);
+
+  const props = propsDecoder(request);
+  await tracker.trackEvent(request, 'request', { props }, true);
+  return app
+    .handle(request)
+    .then(tracker.logResult.bind(null, propsDecoder, request));
 }
 
 export default {

@@ -9,6 +9,12 @@ target for testing the entire framework end-to-end.
 It may also prove useful for contracts that wish to trustlessly establish the content of storage variables of other contracts,
 or historic values for storage variables of any contract.
 
+## Installation
+
+```
+bun add @ensdomains/l1-gateway
+```
+
 ## How to use l1-gateway locally via cloudflare dev env (aka wrangler)
 
 ```
@@ -33,8 +39,8 @@ bun run deploy
 ## How to test
 
 ```
-cd ../l1-verifier l1-gateway
-PROVIDER_URL=$PROVIDER_URL TARGET_ADDRESS=$TARGET_ADDRESS bun run remote_test
+cd ../l1-verifier
+PROVIDER_URL=$PROVIDER_URL TARGET_ADDRESS=$TARGET_ADDRESS yarn remote_test
 ```
 
 ## Current deployments

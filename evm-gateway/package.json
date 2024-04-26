@@ -1,11 +1,12 @@
 {
   "name": "@ensdomains/evm-gateway",
-  "version": "0.1.0",
+  "version": "0.1.0-beta.4",
   "author": "Nick Johnson",
   "main": "./_cjs/index.js",
   "module": "./_esm/index.js",
   "dependencies": {
     "@chainlink/ccip-read-server": "^0.2.1",
+    "@cloudflare/workers-types": "^4.20240423.0",
     "@ensdomains/ccip-read-cf-worker": "^0.0.1",
     "ethers": "^6.7.1"
   },
@@ -18,6 +19,14 @@
     "./package.json": "./package.json"
   },
   "description": "A generic CCIP-Read gateway for fetching state proofs of data on other EVM chains",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ensdomains/evmgateway.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ensdomains/evmgateway/issues"
+  },
+  "homepage": "https://github.com/ensdomains/evmgateway/tree/main/evm-gateway",
   "engines": {
     "node": ">=10",
     "bun": ">=1.0.4"
@@ -45,7 +54,7 @@
     "build:esm": "tsc --project tsconfig.build.json --module es2022 --outDir ./_esm && echo > ./_esm/package.json '{\"type\":\"module\",\"sideEffects\":false}'",
     "build:types": "tsc --project ./tsconfig.build.json --module esnext --declarationDir ./_types --emitDeclarationOnly --declaration --declarationMap",
     "build": "echo 'building evm-gateway...' && bun run clean && bun run build:cjs && bun run build:esm && bun run build:types",
-    "prepublishOnly": "bun ../scripts/prepublishOnly.ts",
+    "prepublishOnly": "bun run build",
     "lint": "eslint . --ext .ts",
     "prepare": "bun run build",
     "clean": "rm -fr _cjs _esm _types"
