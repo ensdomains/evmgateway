@@ -1,4 +1,4 @@
-import { Request as CFWRequest } from '@cloudflare/workers-types';
+import { type Request as CFWRequest } from '@cloudflare/workers-types';
 import { type PropsDecoder } from '@ensdomains/server-analytics';
 export interface Router {
   handle: (request: CFWRequest) => Promise<Response>;
