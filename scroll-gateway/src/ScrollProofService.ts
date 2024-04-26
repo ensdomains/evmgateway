@@ -73,13 +73,13 @@ export class ScrollProofService implements IProofService<ScrollProvableBlock> {
         ]);
         const res:any =  AbiCoder.defaultAbiCoder().encode(
             [
-                'tuple(uint256 batchIndex, uint256 storageKey, bytes compressedProof)',
+                'tuple(uint256 batchIndex, uint256[] storageKeys, bytes compressedProof)',
                 'tuple(bytes[] stateTrieWitness, bytes[][] storageProofs)',
             ],
             [
                 {
                     batchIndex,
-                    storageKey:slots[0], // Check how to handle multiple storage
+                    storageKeys:slots, // Check how to handle multiple storage
                     compressedProof
                 },
                 proof,

@@ -20,7 +20,7 @@ interface IScrollChainCommitmentVerifier {
 
 struct ScrollWitnessData {
     uint256 batchIndex;
-    bytes32 storageKey;
+    bytes32[] storageKeys;
     bytes compressedProof;
 }
 
@@ -55,9 +55,21 @@ contract ScrollVerifier is IEVMVerifier {
         bytes[] memory constants,
         bytes memory proof
     ) external view returns (bytes[] memory values) {
-        (ScrollWitnessData memory scrollData, StateProof memory stateProof) = abi.decode(proof, (ScrollWitnessData, StateProof));
-        (bytes32 stateRoot, bytes32 storageValue) = verifier.verifyZkTrieProof(target, scrollData.storageKey, scrollData.compressedProof);
-        values = new bytes[](1);
-        values[0] = abi.encodePacked(storageValue);
+        values = new bytes[](commands.length);
+        for(uint256 i = 0; i < commands.length; i++) {
+            bytes32 command = commands[i];
+            // (bool isDynamic, uint256 slot) = computeFirstSlot(command, constants, values);
+            // if(!isDynamic) {
+            //     values[i] = abi.encode(getFixedValue(storageRoot, slot, proof.storageProofs[proofIdx++]));
+            //     if(values[i].length > 32) {
+            //         revert InvalidSlotSize(values[i].length);
+            //     }
+            // } else {
+            //     (values[i], proofIdx) = getDynamicValue(storageRoot, slot, proof, proofIdx);
+            // }
+            (ScrollWitnessData memory scrollData, StateProof memory stateProof) = abi.decode(proof, (ScrollWitnessData, StateProof));
+            (bytes32 stateRoot, bytes32 storageValue) = verifier.verifyZkTrieProof(target, scrollData.storageKeys[i], scrollData.compressedProof);
+            values[i] = abi.encodePacked(storageValue);
+        }
     }
 }
