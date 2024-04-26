@@ -1,6 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 import {StateProof, EVMProofHelper} from '@ensdomains/evm-verifier/contracts/EVMProofHelper.sol';
+import {EVMProofHelper2} from './EVMProofHelper2.sol';
 import {IEVMVerifier} from '@ensdomains/evm-verifier/contracts/IEVMVerifier.sol';
 
 interface IScrollChainCommitmentVerifier {
@@ -25,6 +26,7 @@ struct ScrollWitnessData {
 }
 
 contract ScrollVerifier is IEVMVerifier {
+    error InvalidSlotSize(uint256 size);
     IScrollChainCommitmentVerifier public immutable verifier;
     string[] _gatewayURLs;
 
@@ -58,18 +60,20 @@ contract ScrollVerifier is IEVMVerifier {
         values = new bytes[](commands.length);
         for(uint256 i = 0; i < commands.length; i++) {
             bytes32 command = commands[i];
-            // (bool isDynamic, uint256 slot) = computeFirstSlot(command, constants, values);
-            // if(!isDynamic) {
-            //     values[i] = abi.encode(getFixedValue(storageRoot, slot, proof.storageProofs[proofIdx++]));
-            //     if(values[i].length > 32) {
-            //         revert InvalidSlotSize(values[i].length);
-            //     }
-            // } else {
-            //     (values[i], proofIdx) = getDynamicValue(storageRoot, slot, proof, proofIdx);
-            // }
+
+            (bool isDynamic, uint256 slot) = EVMProofHelper2.computeFirstSlot(command, constants, values);
             (ScrollWitnessData memory scrollData, StateProof memory stateProof) = abi.decode(proof, (ScrollWitnessData, StateProof));
             (bytes32 stateRoot, bytes32 storageValue) = verifier.verifyZkTrieProof(target, scrollData.storageKeys[i], scrollData.compressedProof);
-            values[i] = abi.encodePacked(storageValue);
+            if(!isDynamic) {
+                values[i] = abi.encodePacked(storageValue);
+                if(values[i].length > 32) {
+                    revert InvalidSlotSize(values[i].length);
+                }
+            } else {
+                // TODO
+                values[i] = abi.encodePacked(storageValue);
+                //     (values[i], proofIdx) = getDynamicValue(storageRoot, slot, proof, proofIdx);
+            }
         }
     }
 }
