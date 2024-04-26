@@ -45,7 +45,7 @@ const config: HardhatUserConfig = {
         l2: "optimismSepolia",
       },
     },
-    sepoliaforbase: {
+    sepoliaForBase: {
       url: L1_PROVIDER_URL,
       accounts: [DEPLOYER_PRIVATE_KEY],
       deploy: [ "deploy_l1/" ],
