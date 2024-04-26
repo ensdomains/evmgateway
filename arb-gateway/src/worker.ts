@@ -13,7 +13,6 @@ interface Env {
 
 let app: Router;
 
-
 async function fetch(request: CFWRequest, env: Env) {
   // Set PROVIDER_URL under .dev.vars locally. Set the key as secret remotely with `wrangler secret put WORKER_PROVIDER_URL`
   const {

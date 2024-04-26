@@ -4,7 +4,9 @@ export interface Router {
   handle: (request: CFWRequest) => Promise<Response>;
 }
 
-export const propsDecoder: PropsDecoder<CFWRequest> = (request?: CFWRequest) => {
+export const propsDecoder: PropsDecoder<CFWRequest> = (
+  request?: CFWRequest
+) => {
   if (!request || !request.url) {
     return {};
   }
