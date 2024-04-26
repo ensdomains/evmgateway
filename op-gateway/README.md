@@ -20,7 +20,7 @@ bun run dev
 ```
 cd op-gateway
 npm install -g wrangler
-wrngler login
+wrangler login
 wrangler secret put L1_PROVIDER_URL --env op-sepolia|base-sepolia
 wrangler secret put L2_PROVIDER_URL --env op-sepolia|base-sepolia
 wrangler secret put L2_OUTPUT_ORACLE --env op-sepolia|base-sepolia
