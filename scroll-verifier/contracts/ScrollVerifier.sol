@@ -22,7 +22,6 @@ interface IScrollChainCommitmentVerifier {
 struct ScrollWitnessData {
     uint256 batchIndex;
     bytes32[] storageKeys;
-    bytes compressedProof;
 }
 
 contract ScrollVerifier is IEVMVerifier {
@@ -41,6 +40,22 @@ contract ScrollVerifier is IEVMVerifier {
      *     */
     function gatewayURLs() external view returns (string[] memory) {
         return _gatewayURLs;
+    }
+
+    function compressProof(
+        bytes[] memory stateTrieWitness,
+        bytes[][] memory storageProofs,
+        uint256 storageIndex
+    ) public pure returns (bytes memory output) {
+        output = abi.encodePacked(uint8(stateTrieWitness.length));
+        for (uint256 i = 0; i < stateTrieWitness.length; i++) {
+            output = abi.encodePacked(output, stateTrieWitness[i]);
+        }
+        output = abi.encodePacked(output, uint8(storageProofs[storageIndex].length));
+        for (uint256 i = 0; i < storageProofs[storageIndex].length; i++) {
+            output = abi.encodePacked(output, storageProofs[storageIndex][i]);
+        }
+        return output;
     }
 
     /*
@@ -63,16 +78,17 @@ contract ScrollVerifier is IEVMVerifier {
 
             (bool isDynamic, uint256 slot) = EVMProofHelper2.computeFirstSlot(command, constants, values);
             (ScrollWitnessData memory scrollData, StateProof memory stateProof) = abi.decode(proof, (ScrollWitnessData, StateProof));
-            (bytes32 stateRoot, bytes32 storageValue) = verifier.verifyZkTrieProof(target, scrollData.storageKeys[i], scrollData.compressedProof);
+            bytes memory compressedProof = compressProof(stateProof.stateTrieWitness, stateProof.storageProofs, i);
+            (bytes32 stateRoot, bytes32 storageValue) = verifier.verifyZkTrieProof(target, scrollData.storageKeys[i], compressedProof);
             if(!isDynamic) {
                 values[i] = abi.encodePacked(storageValue);
                 if(values[i].length > 32) {
                     revert InvalidSlotSize(values[i].length);
                 }
             } else {
-                // TODO
                 values[i] = abi.encodePacked(storageValue);
-                //     (values[i], proofIdx) = getDynamicValue(storageRoot, slot, proof, proofIdx);
+                // TODO
+                // (values[i], proofIdx) = getDynamicValue(storageRoot, slot, proof, proofIdx);
             }
         }
     }

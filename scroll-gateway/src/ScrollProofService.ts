@@ -1,7 +1,6 @@
 /* eslint-disable prettier/prettier */
 import { EVMProofHelper, type IProofService } from '@ensdomains/evm-gateway';
 import { AbiCoder, Contract, ethers, type AddressLike, } from 'ethers';
-import { concat } from "ethers";
 
 import rollupAbi from "./abi/rollupABI.js";
 import type { IBlockCache } from './blockCache/IBlockCache.js';
@@ -62,32 +61,28 @@ export class ScrollProofService implements IProofService<ScrollProvableBlock> {
         const obj:any = await resp.json()
         const batchIndex = obj.batch_index
         const proof = await this.helper.getProofs(Number(block.number), address, slots)
-        const accountProof: Array<string> = proof.stateTrieWitness;
-        const storageProof: Array<string> = proof.storageProofs[0];
-
-        const compressedProof = concat([
-            `0x${accountProof.length.toString(16).padStart(2, "0")}`,
-            ...accountProof,
-            `0x${storageProof.length.toString(16).padStart(2, "0")}`,
-            ...storageProof,
-        ]);
+        console.log(JSON.stringify(proof, null, 2))
+        console.log('account', proof.stateTrieWitness.length)
+        for (let index = 0; index < proof.storageProofs.length; index++) {
+            const element = proof.storageProofs[index];
+            console.log('storage', index, element.length)
+        }
         const res:any =  AbiCoder.defaultAbiCoder().encode(
             [
-                'tuple(uint256 batchIndex, uint256[] storageKeys, bytes compressedProof)',
+                'tuple(uint256 batchIndex, uint256[] storageKeys)',
                 'tuple(bytes[] stateTrieWitness, bytes[][] storageProofs)',
             ],
             [
                 {
                     batchIndex,
                     storageKeys:slots, // Check how to handle multiple storage
-                    compressedProof
                 },
                 proof,
             ]
         );
         console.log({
             blockNumber:Number(block.number), address,
-            batchIndex, slots, compressedProof, proof,
+            batchIndex, slots, proof,
             res
         })
         return res;
@@ -97,7 +92,6 @@ export class ScrollProofService implements IProofService<ScrollProvableBlock> {
    */
   public async getProvableBlock(): Promise<ScrollProvableBlock> {
         const block = await this.l2Provider.send("eth_getBlockByNumber", ["finalized", false]);
-        console.log('***getProvableBlock', block)
         if (!block) throw new Error('No block found');
         return {
             number: block.number
