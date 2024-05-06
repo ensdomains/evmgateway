@@ -1,8 +1,15 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 import {StateProof, EVMProofHelper} from '@ensdomains/evm-verifier/contracts/EVMProofHelper.sol';
-import {EVMProofHelper2} from './EVMProofHelper2.sol';
 import {IEVMVerifier} from '@ensdomains/evm-verifier/contracts/IEVMVerifier.sol';
+import {RLPReader} from "@eth-optimism/contracts-bedrock/src/libraries/rlp/RLPReader.sol";
+
+
+interface IScrollChain {
+    /// @param batchIndex The index of the batch.
+    /// @return The state root of a committed batch.
+    function finalizedStateRoots(uint256 batchIndex) external view returns (bytes32);
+}
 
 interface IScrollChainCommitmentVerifier {
     function verifyZkTrieProof(
@@ -10,6 +17,8 @@ interface IScrollChainCommitmentVerifier {
         bytes32 storageKey,
         bytes calldata proof
     ) external view returns (bytes32 stateRoot, bytes32 storageValue);
+
+    function rollup() external view returns (address);
 
     function verifyStateCommitment(
         uint256 batchIndex,
@@ -58,6 +67,12 @@ contract ScrollVerifier is IEVMVerifier {
         return output;
     }
 
+    function getTrieProof(address target, uint256 slot, bytes[] memory compressedProof, bytes32 root) internal view returns(bytes memory){
+        (bytes32 stateRoot, bytes32 storageValue) = verifier.verifyZkTrieProof(target, bytes32(slot), compressedProof[0]);
+        require(stateRoot == root, "stateRoot not matched");
+        return abi.encodePacked(storageValue);
+    }
+
     /*
      * Retrieves storage values from the specified target address
      *
@@ -72,24 +87,17 @@ contract ScrollVerifier is IEVMVerifier {
         bytes[] memory constants,
         bytes memory proof
     ) external view returns (bytes[] memory values) {
-        values = new bytes[](commands.length);
-        for(uint256 i = 0; i < commands.length; i++) {
-            bytes32 command = commands[i];
-
-            (bool isDynamic, uint256 slot) = EVMProofHelper2.computeFirstSlot(command, constants, values);
-            (ScrollWitnessData memory scrollData, StateProof memory stateProof) = abi.decode(proof, (ScrollWitnessData, StateProof));
-            bytes memory compressedProof = compressProof(stateProof.stateTrieWitness, stateProof.storageProofs, i);
-            (bytes32 stateRoot, bytes32 storageValue) = verifier.verifyZkTrieProof(target, scrollData.storageKeys[i], compressedProof);
-            if(!isDynamic) {
-                values[i] = abi.encodePacked(storageValue);
-                if(values[i].length > 32) {
-                    revert InvalidSlotSize(values[i].length);
-                }
-            } else {
-                values[i] = abi.encodePacked(storageValue);
-                // TODO
-                // (values[i], proofIdx) = getDynamicValue(storageRoot, slot, proof, proofIdx);
-            }
+        (ScrollWitnessData memory scrollData, StateProof memory stateProof) = abi.decode(proof, (ScrollWitnessData, StateProof));
+        bytes[][] memory compressedProofs = new bytes[][](stateProof.storageProofs.length);
+        for(uint256 i = 0; i < stateProof.storageProofs.length; i++) {
+            compressedProofs[i] = new bytes[](1);
+            compressedProofs[i][0] = compressProof(stateProof.stateTrieWitness, stateProof.storageProofs, i);
         }
+
+        (bytes32 computedStateRoot, bytes32 storageValue) = verifier.verifyZkTrieProof(target, scrollData.storageKeys[0], compressedProofs[0][0]);
+        bytes32 expectedStateRoot = IScrollChain(verifier.rollup()).finalizedStateRoots(scrollData.batchIndex);
+        require(computedStateRoot == expectedStateRoot, "Invalid inclusion proof");
+
+        return EVMProofHelper.getStorageValues(target, getTrieProof, commands, constants, expectedStateRoot, compressedProofs);
     }
 }

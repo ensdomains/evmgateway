@@ -7,6 +7,7 @@ pragma solidity ^0.8.0;
 
 /* Library Imports */
 import { MerkleTrie } from "./MerkleTrie.sol";
+import {RLPReader} from '@eth-optimism/contracts-bedrock/src/libraries/rlp/RLPReader.sol';
 
 /**
  * @title SecureMerkleTrie
@@ -14,6 +15,49 @@ import { MerkleTrie } from "./MerkleTrie.sol";
  *         keys. Ethereum's state trie hashes input keys before storing them.
  */
 library SecureMerkleTrie {
+    error AccountNotFound(address);
+
+    /*
+     * @notice Get the storage value for the provided merkle proof
+     * @param target The address we are fetching a storage root for
+     * @param witness A witness proving the value of the storage root for `target`.
+     * @param root The state root the witness was generated against
+     * @return The storage value 
+     */
+
+    function getTrieProof(address, uint256 slot, bytes[] memory witness, bytes32 root) internal pure returns(bytes memory){
+        (bool exists, bytes memory retrievedValue) = get(
+            abi.encodePacked(slot),
+            witness,
+            root
+        );
+        if(!exists) {
+            // Nonexistent values are treated as zero.
+            return "";
+        }
+        return RLPReader.readBytes(retrievedValue);
+    }
+
+    /**
+     * @notice Get the storage root for the provided merkle proof
+     * @param stateRoot The state root the witness was generated against
+     * @param target The address we are fetching a storage root for
+     * @param witness A witness proving the value of the storage root for `target`.
+     * @return The storage root retrieved from the provided state root
+     */
+    function getStorageRoot(bytes32 stateRoot, address target, bytes[] memory witness) internal view returns (bytes32) {
+        (bool exists, bytes memory encodedResolverAccount) = get(
+            abi.encodePacked(target),
+            witness,
+            stateRoot
+        );
+        if(!exists) {
+            revert AccountNotFound(target);
+        }
+        RLPReader.RLPItem[] memory accountState = RLPReader.readList(encodedResolverAccount);
+        return bytes32(RLPReader.readBytes(accountState[2]));
+    }
+
     /**
      * @notice Verifies a proof that a given key/value pair is present in the Merkle trie.
      *
