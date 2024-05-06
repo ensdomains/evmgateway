@@ -4,6 +4,8 @@ import { HardhatEthersProvider } from '@nomicfoundation/hardhat-ethers/internal/
 import type { HardhatEthersHelpers } from '@nomicfoundation/hardhat-ethers/types';
 import { expect } from 'chai';
 import {
+  AbiCoder,
+  concat,
   Contract,
   FetchRequest,
   Provider,
@@ -14,6 +16,23 @@ import express from 'express';
 import hre, { ethers } from 'hardhat';
 import { EthereumProvider } from 'hardhat/types';
 import request from 'supertest';
+const estimateCCIPReadCallbackGas = async (provider, cb) => {
+  try{
+    await cb()
+  }catch(e){
+    const [sender, urls, data, callbackFunction, extraData ] = e.revert.args
+    const url = `http://localhost:8080/${sender}/${data}.json`
+    const responseData:any = await (await fetch(url)).json()
+    const encoder = new AbiCoder()
+    const encoded = encoder.encode([ "bytes", "bytes" ], [responseData.data, extraData]);
+    const newdata = concat([ callbackFunction, encoded ])
+    const result2 = await provider.estimateGas({
+      to: sender,
+      data:newdata
+    });
+    console.log(`Gas estimate ${result2}`)
+  }
+}
 
 type ethersObj = typeof ethersT &
   Omit<HardhatEthersHelpers, 'provider'> & {
@@ -94,16 +113,25 @@ describe('ScrollVerifier', () => {
   it('simple proofs for fixed values', async () => {
     const result = await target.getLatest({ enableCcipRead: true });
     expect(Number(result)).to.equal(42);
+    await estimateCCIPReadCallbackGas(provider, ()=>{
+      return target.getLatest({ enableCcipRead: false });
+    })
   });
 
   it('simple proofs for dynamic values', async () => {
     const result = await target.getName({ enableCcipRead: true });
     expect(result).to.equal('Satoshi');
+    await estimateCCIPReadCallbackGas(provider, ()=>{
+      return target.getName({ enableCcipRead: false });
+    })
   });
 
   it('nested proofs for dynamic values', async () => {
     const result = await target.getHighscorer(42, { enableCcipRead: true });
     expect(result).to.equal('Hal Finney');
+    await estimateCCIPReadCallbackGas(provider, ()=>{
+      return target.getHighscorer(42, { enableCcipRead: false });
+    })
   });
 
   it('nested proofs for long dynamic values', async () => {
@@ -111,16 +139,25 @@ describe('ScrollVerifier', () => {
     expect(result).to.equal(
       'Hubert Blaine Wolfeschlegelsteinhausenbergerdorff Sr.'
     );
+    await estimateCCIPReadCallbackGas(provider, ()=>{
+      return target.getHighscorer(1, { enableCcipRead: false });
+    })
   });
 
   it('nested proofs with lookbehind', async () => {
     const result = await target.getLatestHighscore({ enableCcipRead: true });
     expect(Number(result)).to.equal(12345);
+    await estimateCCIPReadCallbackGas(provider, ()=>{
+      return target.getLatestHighscore({ enableCcipRead: false });
+    })
   });
 
   it('nested proofs with lookbehind for dynamic values', async () => {
     const result = await target.getLatestHighscorer({ enableCcipRead: true });
     expect(result).to.equal('Hal Finney');
+    await estimateCCIPReadCallbackGas(provider, ()=>{
+      return target.getLatestHighscorer({ enableCcipRead: false });
+    })
   });
 
   it('mappings with variable-length keys', async () => {
@@ -128,20 +165,34 @@ describe('ScrollVerifier', () => {
       enableCcipRead: true,
     });
     expect(result).to.equal('Vitalik Buterin');
+    await estimateCCIPReadCallbackGas(provider, ()=>{
+      return target.getNickname('Money Skeleton', {
+        enableCcipRead: false,
+      });
+    })
   });
 
   it('nested proofs of mappings with variable-length keys', async () => {
     const result = await target.getPrimaryNickname({ enableCcipRead: true });
     expect(result).to.equal('Hal Finney');
+    await estimateCCIPReadCallbackGas(provider, ()=>{
+      return target.getPrimaryNickname({ enableCcipRead: false });
+    })
   });
 
   it('treats uninitialized storage elements as zeroes', async () => {
     const result = await target.getZero({ enableCcipRead: true });
     expect(Number(result)).to.equal(0);
+    await estimateCCIPReadCallbackGas(provider, ()=>{
+      return target.getZero({ enableCcipRead: false });
+    })
   });
 
   it('treats uninitialized dynamic values as empty strings', async () => {
     const result = await target.getNickname('Santa', { enableCcipRead: true });
     expect(result).to.equal("");
+    await estimateCCIPReadCallbackGas(provider, ()=>{
+      return target.getNickname('Santa', { enableCcipRead: false });
+    })
   })
 });
