@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 import { EVMProofHelper, type IProofService } from '@ensdomains/evm-gateway';
-import { AbiCoder, Contract, ethers, type AddressLike, } from 'ethers';
+import { AbiCoder, concat, Contract, ethers, type AddressLike, } from 'ethers';
 
 import rollupAbi from "./abi/rollupABI.js";
 import type { IBlockCache } from './blockCache/IBlockCache.js';
@@ -61,23 +61,34 @@ export class ScrollProofService implements IProofService<ScrollProvableBlock> {
         const obj:any = await resp.json()
         const batchIndex = obj.batch_index
         const proof = await this.helper.getProofs(Number(block.number), address, slots)
-        console.log(JSON.stringify(proof, null, 2))
-        console.log('account', proof.stateTrieWitness.length)
+        const compressedProofs:any = []
+        const accountProof: Array<string> = proof.stateTrieWitness;
         for (let index = 0; index < proof.storageProofs.length; index++) {
-            const element = proof.storageProofs[index];
-            console.log('storage', index, element.length)
+            const storageProof: Array<string> = proof.storageProofs[index];
+            compressedProofs[index] = []
+            compressedProofs[index][0] = concat([
+                `0x${accountProof.length.toString(16).padStart(2, "0")}`,
+                ...accountProof,
+                `0x${storageProof.length.toString(16).padStart(2, "0")}`,
+                ...storageProof,
+            ]);
         }
+        console.log({compressedProofs})
         const res:any =  AbiCoder.defaultAbiCoder().encode(
             [
-                'tuple(uint256 batchIndex, uint256[] storageKeys)',
+                'tuple(uint256 batchIndex)',
                 'tuple(bytes[] stateTrieWitness, bytes[][] storageProofs)',
+                // Refactoring TODO
+                // 'tuple(bytes stateTrieWitness, bytes[] storageProofs)',
             ],
             [
                 {
-                    batchIndex,
-                    storageKeys:slots, // Check how to handle multiple storage
+                    batchIndex
                 },
-                proof,
+                {
+                    stateTrieWitness:[],
+                    storageProofs:compressedProofs
+                },
             ]
         );
         console.log({

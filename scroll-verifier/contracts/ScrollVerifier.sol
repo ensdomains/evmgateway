@@ -30,7 +30,6 @@ interface IScrollChainCommitmentVerifier {
 
 struct ScrollWitnessData {
     uint256 batchIndex;
-    bytes32[] storageKeys;
 }
 
 contract ScrollVerifier is IEVMVerifier {
@@ -88,16 +87,7 @@ contract ScrollVerifier is IEVMVerifier {
         bytes memory proof
     ) external view returns (bytes[] memory values) {
         (ScrollWitnessData memory scrollData, StateProof memory stateProof) = abi.decode(proof, (ScrollWitnessData, StateProof));
-        bytes[][] memory compressedProofs = new bytes[][](stateProof.storageProofs.length);
-        for(uint256 i = 0; i < stateProof.storageProofs.length; i++) {
-            compressedProofs[i] = new bytes[](1);
-            compressedProofs[i][0] = compressProof(stateProof.stateTrieWitness, stateProof.storageProofs, i);
-        }
-
-        (bytes32 computedStateRoot, bytes32 storageValue) = verifier.verifyZkTrieProof(target, scrollData.storageKeys[0], compressedProofs[0][0]);
         bytes32 expectedStateRoot = IScrollChain(verifier.rollup()).finalizedStateRoots(scrollData.batchIndex);
-        require(computedStateRoot == expectedStateRoot, "Invalid inclusion proof");
-
-        return EVMProofHelper.getStorageValues(target, getTrieProof, commands, constants, expectedStateRoot, compressedProofs);
+        return EVMProofHelper.getStorageValues(target, getTrieProof, commands, constants, expectedStateRoot, stateProof.storageProofs);
     }
 }
