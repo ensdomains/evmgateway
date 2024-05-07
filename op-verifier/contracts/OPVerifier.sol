@@ -6,7 +6,7 @@ import { RLPReader } from "@eth-optimism/contracts-bedrock/src/libraries/rlp/RLP
 import { StateProof, EVMProofHelper } from "@ensdomains/evm-verifier/contracts/EVMProofHelper.sol";
 import { Types } from "@eth-optimism/contracts-bedrock/src/libraries/Types.sol";
 import { Hashing } from "@eth-optimism/contracts-bedrock/src/libraries/Hashing.sol";
-import {SecureMerkleTrie} from '@ensdomains/evm-verifier/contracts/SecureMerkleTrie.sol';
+import {MerkleTrieProofHelper} from '@ensdomains/evm-verifier/contracts/MerkleTrieProofHelper.sol';
 
 struct OPWitnessData {
     uint256 l2OutputIndex;
@@ -39,7 +39,7 @@ contract OPVerifier is IEVMVerifier {
         if(l2out.outputRoot != expectedRoot) {
             revert OutputRootMismatch(opData.l2OutputIndex, expectedRoot, l2out.outputRoot);
         }
-        bytes32 storageRoot = SecureMerkleTrie.getStorageRoot(opData.outputRootProof.stateRoot, target, stateProof.stateTrieWitness);
-        return EVMProofHelper.getStorageValues(target, SecureMerkleTrie.getTrieProof, commands, constants, storageRoot, stateProof.storageProofs);
+        bytes32 storageRoot = MerkleTrieProofHelper.getStorageRoot(opData.outputRootProof.stateRoot, target, stateProof.stateTrieWitness);
+        return EVMProofHelper.getStorageValues(target, MerkleTrieProofHelper.getTrieProof, commands, constants, storageRoot, stateProof.storageProofs);
     }
 }

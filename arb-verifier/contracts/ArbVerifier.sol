@@ -4,7 +4,7 @@ import {StateProof, EVMProofHelper} from '@ensdomains/evm-verifier/contracts/EVM
 import {IEVMVerifier} from '@ensdomains/evm-verifier/contracts/IEVMVerifier.sol';
 import {Node, IRollupCore} from '@arbitrum/nitro-contracts/src/rollup/IRollupCore.sol';
 import {RLPReader} from '@eth-optimism/contracts-bedrock/src/libraries/rlp/RLPReader.sol';
-import {SecureMerkleTrie} from '@ensdomains/evm-verifier/contracts/SecureMerkleTrie.sol';
+import {MerkleTrieProofHelper} from '@ensdomains/evm-verifier/contracts/MerkleTrieProofHelper.sol';
 
 struct ArbWitnessData {
     bytes32 version;
@@ -64,8 +64,8 @@ contract ArbVerifier is IEVMVerifier {
 
         //Now that we know that the block is valid, we can get the state root from the block.
         bytes32 stateRoot = getStateRootFromBlock(arbData.rlpEncodedBlock);
-        bytes32 storageRoot = SecureMerkleTrie.getStorageRoot(stateRoot, target, stateProof.stateTrieWitness);
-        return EVMProofHelper.getStorageValues(target, SecureMerkleTrie.getTrieProof, commands, constants, storageRoot, stateProof.storageProofs);
+        bytes32 storageRoot = MerkleTrieProofHelper.getStorageRoot(stateRoot, target, stateProof.stateTrieWitness);
+        return EVMProofHelper.getStorageValues(target, MerkleTrieProofHelper.getTrieProof, commands, constants, storageRoot, stateProof.storageProofs);
     }
 
     /*
