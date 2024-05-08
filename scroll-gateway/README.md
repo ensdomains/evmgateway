@@ -32,13 +32,13 @@ yarn deploy
 
 ## How to test
 
-1. Start the Nitro Test node. You can find instructions here: https://docs.Scroll.io/node-running/how-tos/local-dev-node
-2. Retrieve the Rollup address from the Node's Logs.
-3. Copy the example.env file in both scroll-gateway and scroll-verifier, and add the Rollup address.
-4. Build the Project.
-5. Navigate to the Gateway directory using `cd ./scroll-gateway`.
-6. Start the Gateway by running `bun run start -u http://127.0.0.1:8545/ -v http://127.0.0.1:8547/ -p 8089`.
-7. Open another Terminal Tab and navigate to the verifier directory using `cd ./scroll-verifier/`.
-8. Deploy contracts to the node using the command ` npx hardhat --network arbDevnetL2 deploy && npx hardhat --network arbDevnetL1 deploy `.
-9. Run the test using the command `bun run test`.
-
+There is currently no local test node. You need to deploy to public testnet and run the test.
+1. deploy l2 contract`L2_ETHERSCAN_API_KEY=$L2_ETHERSCAN_API_KEY DEPLOYER_PRIVATE_KEY=$DEPLOYER_PRIVATE_KEY L2_PROVIDER_URL=$L2_PROVIDER_URL npx hardhat deploy --network scrollSepolia`
+2. deploy l1 contract. Modify GATEWAY_URLS on 00_scroll_verifier.ts to point to localhost and run  `L1_ETHERSCAN_API_KEY=$L1_ETHERSCAN_API_KEY DEPLOYER_PRIVATE_KEY=$DEPLOYER_PRIVATE_KEY L1_PROVIDER_URL=$L1_PROVIDER_URL ROLLUP_ADDRESS=$ROLLUP_ADDRESS  npx hardhat deploy --network sepolia`
+3. startup gateway server
+```
+cd ../evm-gateway
+// Add .dev.vars and add L1_PROVIDER_URL, L2_PROVIDER_URL, and L2_ROLLUP
+yarn dev
+```
+4. run the test `DEPLOYER_PRIVATE_KEY=$DEPLOYER_PRIVATE_KEY L1_PROVIDER_URL=$L1_PROVIDER_URL ROLLUP_ADDRESS=$ROLLUP_ADDRESS yarn test --network sepolia`

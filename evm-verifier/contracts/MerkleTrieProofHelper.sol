@@ -6,16 +6,17 @@ import { SecureMerkleTrie } from "./SecureMerkleTrie.sol";
 import {RLPReader} from '@eth-optimism/contracts-bedrock/src/libraries/rlp/RLPReader.sol';
 
 /**
- * @title SecureMerkleTrie
- * @notice SecureMerkleTrie is a thin wrapper around the MerkleTrie library that hashes the input
- *         keys. Ethereum's state trie hashes input keys before storing them.
+ * @title MerkleTrieProofHelper
+ * @notice MerkleTrieProofHelper is a helper library that has functions to interact
+ *         with SecureMerkleTrie.
  */
 library MerkleTrieProofHelper {
     error AccountNotFound(address);
 
     /*
      * @notice Get the storage value for the provided merkle proof
-     * @param target The address we are fetching a storage root for
+     * @param address Not in use. Only exist to provide consistent function argument
+     * @param slot The storage key we are fetching the value of
      * @param witness A witness proving the value of the storage root for `target`.
      * @param root The state root the witness was generated against
      * @return The storage value 

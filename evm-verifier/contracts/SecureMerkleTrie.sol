@@ -7,7 +7,6 @@ pragma solidity ^0.8.0;
 
 /* Library Imports */
 import { MerkleTrie } from "./MerkleTrie.sol";
-import {RLPReader} from '@eth-optimism/contracts-bedrock/src/libraries/rlp/RLPReader.sol';
 
 /**
  * @title SecureMerkleTrie
@@ -15,7 +14,6 @@ import {RLPReader} from '@eth-optimism/contracts-bedrock/src/libraries/rlp/RLPRe
  *         keys. Ethereum's state trie hashes input keys before storing them.
  */
 library SecureMerkleTrie {
-    error AccountNotFound(address);
 
     /**
      * @notice Retrieves the value associated with a given key.

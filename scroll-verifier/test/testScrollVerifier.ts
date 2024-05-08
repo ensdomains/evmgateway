@@ -59,19 +59,7 @@ describe('ScrollVerifier', () => {
     // doesn't support CCIP-read.
     provider = new ethers.BrowserProvider(hre.network.provider);
     signer = await provider.getSigner(0);
-    // How to test against public testnet.
-    // 1. deploy l2 contract
-    // `L2_ETHERSCAN_API_KEY=$L2_ETHERSCAN_API_KEY DEPLOYER_PRIVATE_KEY=$DEPLOYER_PRIVATE_KEY L2_PROVIDER_URL=$L2_PROVIDER_URL npx hardhat deploy --network scrollSepolia`
-    // 2. deploy l1 contract
-    // 2.1 Modify GATEWAY_URLS on 00_scroll_verifier.ts to point to localhost
-    // 2.2 `L1_ETHERSCAN_API_KEY=$L1_ETHERSCAN_API_KEY DEPLOYER_PRIVATE_KEY=$DEPLOYER_PRIVATE_KEY L1_PROVIDER_URL=$L1_PROVIDER_URL ROLLUP_ADDRESS=$ROLLUP_ADDRESS  npx hardhat deploy --network sepolia`
-    // 3. startup gateway server
-    // 3.0 `cd ../evm-gateway`
-    // 3.1 Add .dev.vars and add L1_PROVIDER_URL, L2_PROVIDER_URL, and L2_ROLLUP
-    // 3.2 `yarn dev`
-    // 4. run the test 
-    // `DEPLOYER_PRIVATE_KEY=$DEPLOYER_PRIVATE_KEY L1_PROVIDER_URL=$L1_PROVIDER_URL ROLLUP_ADDRESS=$ROLLUP_ADDRESS yarn test --network sepolia`
-
+    
     const rollupAddress = process.env.ROLLUP_ADDRESS;
 
     const gateway = await makeScrollGateway(

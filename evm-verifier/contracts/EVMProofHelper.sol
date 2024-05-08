@@ -17,12 +17,12 @@ uint8 constant FLAG_DYNAMIC = 0x01;
 library EVMProofHelper {
     using Bytes for bytes;
 
-    error AccountNotFound(address);
     error UnknownOpcode(uint8);
     error InvalidSlotSize(uint256 size);
 
     /**
      * @notice Prove whether the provided storage slot is part of the storageRoot
+     * @param target address to verify against
      * @param getter function to verify the storage proof
      * @param storageRoot the storage root for the account that contains the storage slot
      * @param slot The storage key we are fetching the value of
