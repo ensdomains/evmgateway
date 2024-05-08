@@ -1,8 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { EVMProofHelper, type IProofService } from '@ensdomains/evm-gateway';
-import { AbiCoder, concat, Contract, ethers, type AddressLike, } from 'ethers';
+import { AbiCoder, concat, ethers, type AddressLike, } from 'ethers';
 
-import rollupAbi from "./abi/rollupABI.js";
 export interface ScrollProvableBlock {
     number: number
 }
@@ -14,26 +13,16 @@ export interface ScrollProvableBlock {
  */
 export class ScrollProofService implements IProofService<ScrollProvableBlock> {
     private readonly l2Provider: ethers.JsonRpcProvider;
-    private readonly rollup: Contract;
     private readonly helper: EVMProofHelper;
 
-
     constructor(
-        l1Provider: ethers.JsonRpcProvider,
         l2Provider: ethers.JsonRpcProvider,
-        l2RollupAddress: string
     ) {
         this.l2Provider = l2Provider;
-        this.rollup = new Contract(
-            l2RollupAddress,
-            rollupAbi,
-            l1Provider
-        );
         this.helper = new EVMProofHelper(l2Provider);
     }
 
     async getStorageAt(block: ScrollProvableBlock, address: AddressLike, slot: bigint): Promise<string> {
-        console.log(typeof(this.rollup))
         return this.helper.getStorageAt(block.number, address, slot);
     }
 
@@ -67,7 +56,6 @@ export class ScrollProofService implements IProofService<ScrollProvableBlock> {
                 ...storageProof,
             ]);
         }
-        console.log({compressedProofs})
         const res:any =  AbiCoder.defaultAbiCoder().encode(
             [
                 'tuple(uint256 batchIndex)',
@@ -82,11 +70,6 @@ export class ScrollProofService implements IProofService<ScrollProvableBlock> {
                 },
             ]
         );
-        console.log({
-            blockNumber:Number(block.number), address,
-            batchIndex, slots, proof,
-            res
-        })
         return res;
     }
   /**

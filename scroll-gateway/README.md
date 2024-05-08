@@ -13,7 +13,7 @@ npm install -g bun
 cd scroll-gateway
 bun install
 touch .dev.vars
-## set L1_PROVIDER_URL, L2_PROVIDER_URL, L2_ROLLUP
+## set L2_PROVIDER_URL
 yarn dev
 ```
 
@@ -24,9 +24,7 @@ cd scroll-gateway
 npm install -g wrangler
 wrngler login
 
-wrangler secret put L1_PROVIDER_URL
 wrangler secret put L2_PROVIDER_URL
-wrangler secret put L2_ROLLUP
 yarn deploy
 ```
 

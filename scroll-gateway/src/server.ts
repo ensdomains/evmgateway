@@ -7,19 +7,9 @@ import { ScrollProofService } from './ScrollProofService.js';
 const program = new Command()
   .option('-p, --port <port>', 'port to listen on', '8080')
   .option(
-    '-u, --l1-provider-url <url>',
-    'l1 provider url',
-    'http://localhost:8545/'
-  )
-  .option(
     '-v, --l2-provider-url <url>',
     'l2 provider url',
     'http://localhost:9545/'
-  )
-  .option(
-    '-o --l2-rollup-address <address>',
-    'address for L2 outbox on the L1',
-    process.env.ROLLUP_ADDRESS
   );
 
 program.parse();
@@ -27,14 +17,11 @@ program.parse();
 (async () => {
   const options = program.opts();
 
-  const l1Provider = new JsonRpcProvider(options.l1ProviderUrl);
   const l2Provider = new JsonRpcProvider(options.l2ProviderUrl);
 
   const gateway = new EVMGateway(
     new ScrollProofService(
-      l1Provider,
-      l2Provider,
-      options.l2RollupAddress
+      l2Provider
     )
   );
   const server = new Server();

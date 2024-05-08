@@ -15,9 +15,7 @@ let app: Router;
 
 async function fetch(request: CFWRequest, env: Env) {
   const {
-    L1_PROVIDER_URL,
     L2_PROVIDER_URL,
-    L2_ROLLUP,
     GATEWAY_DOMAIN,
     ENDPOINT_URL,
   } = env;
@@ -35,14 +33,11 @@ async function fetch(request: CFWRequest, env: Env) {
     const EVMGateway = (await import('@ensdomains/evm-gateway')).EVMGateway;
     const ScrollProofService = (await import('./ScrollProofService.js'))
       .ScrollProofService;
-    const l1Provider = new ethers.JsonRpcProvider(L1_PROVIDER_URL);
     const l2Provider = new ethers.JsonRpcProvider(L2_PROVIDER_URL);
 
     const gateway = new EVMGateway(
       new ScrollProofService(
-        l1Provider,
-        l2Provider,
-        L2_ROLLUP
+        l2Provider
       )
     );
 
