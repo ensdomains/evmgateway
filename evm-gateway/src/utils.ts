@@ -25,17 +25,21 @@ export const propsDecoder: PropsDecoder<CFWRequest> = (
   }
 };
 
-export const convertIntoMerkleTrieProof = (
-  proof: StateProof
-) => {
-  const storageProofs:any = []
-  const stateTrieWitness = AbiCoder.defaultAbiCoder().encode(["bytes[]"], [proof.stateTrieWitness])
+export const convertIntoMerkleTrieProof = (proof: StateProof) => {
+  const storageProofs: string[] = [];
+  const stateTrieWitness = AbiCoder.defaultAbiCoder().encode(
+    ['bytes[]'],
+    [proof.stateTrieWitness]
+  );
   for (let index = 0; index < proof.storageProofs.length; index++) {
-      const storageProof = AbiCoder.defaultAbiCoder().encode(["bytes[]"], [proof.storageProofs[index]])
-      storageProofs[index] = storageProof            
+    const storageProof = AbiCoder.defaultAbiCoder().encode(
+      ['bytes[]'],
+      [proof.storageProofs[index]]
+    );
+    storageProofs[index] = storageProof;
   }
-  return({
+  return {
     stateTrieWitness,
-    storageProofs
-  })
-}
+    storageProofs,
+  };
+};

@@ -1,4 +1,8 @@
-import { EVMProofHelper, convertIntoMerkleTrieProof, type IProofService } from '@ensdomains/evm-gateway';
+import {
+  EVMProofHelper,
+  convertIntoMerkleTrieProof,
+  type IProofService,
+} from '@ensdomains/evm-gateway';
 import { type JsonRpcBlock } from '@ethereumjs/block';
 import { AbiCoder, Contract, JsonRpcProvider, type AddressLike } from 'ethers';
 

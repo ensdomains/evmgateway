@@ -5,7 +5,11 @@ import {
   type JsonRpcProvider,
 } from 'ethers';
 
-import { EVMProofHelper, convertIntoMerkleTrieProof, type IProofService } from '@ensdomains/evm-gateway';
+import {
+  EVMProofHelper,
+  convertIntoMerkleTrieProof,
+  type IProofService,
+} from '@ensdomains/evm-gateway';
 import { Block, type JsonRpcBlock } from '@ethereumjs/block';
 
 type RlpObject = Uint8Array | Array<RlpObject>;

@@ -14,11 +14,7 @@ interface Env {
 let app: Router;
 
 async function fetch(request: CFWRequest, env: Env) {
-  const {
-    L2_PROVIDER_URL,
-    GATEWAY_DOMAIN,
-    ENDPOINT_URL,
-  } = env;
+  const { L2_PROVIDER_URL, GATEWAY_DOMAIN, ENDPOINT_URL } = env;
 
   // Loading libraries dynamically as a temp work around.
   // Otherwise, deployment thorws "Error: Script startup exceeded CPU time limit." error
@@ -35,11 +31,7 @@ async function fetch(request: CFWRequest, env: Env) {
       .ScrollProofService;
     const l2Provider = new ethers.JsonRpcProvider(L2_PROVIDER_URL);
 
-    const gateway = new EVMGateway(
-      new ScrollProofService(
-        l2Provider
-      )
-    );
+    const gateway = new EVMGateway(new ScrollProofService(l2Provider));
 
     const server = new Server();
     gateway.add(server);
@@ -50,7 +42,6 @@ async function fetch(request: CFWRequest, env: Env) {
   return app
     .handle(request)
     .then(tracker.logResult.bind(tracker, propsDecoder, request));
-
 }
 
 export default {

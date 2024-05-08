@@ -41,11 +41,11 @@ export class ScrollProofService implements IProofService<ScrollProvableBlock> {
         slots: bigint[]
     ): Promise<string> {
         const searchUrl = 'https://sepolia-api-re.scroll.io/api/search';
-        const resp:any = await fetch(`${searchUrl}?keyword=${Number(block.number)}`)
-        const obj:any = await resp.json()
-        const batchIndex = obj.batch_index
-        const proof = await this.helper.getProofs(Number(block.number), address, slots)
-        const compressedProofs:any = []
+        const { batch_index: batchIndex } = await (
+            await fetch(`${searchUrl}?keyword=${Number(block.number)}`)
+        ).json();
+        const proof = await this.helper.getProofs(Number(block.number), address, slots);
+        const compressedProofs: string[] = [];
         const accountProof: string = proof.stateTrieWitness;
         for (let index = 0; index < proof.storageProofs.length; index++) {
             const storageProof: string = proof.storageProofs[index];
@@ -56,7 +56,7 @@ export class ScrollProofService implements IProofService<ScrollProvableBlock> {
                 ...storageProof,
             ]);
         }
-        const res:any =  AbiCoder.defaultAbiCoder().encode(
+        return AbiCoder.defaultAbiCoder().encode(
             [
                 'tuple(uint256 batchIndex)',
                 'tuple(bytes[] storageProofs)',
@@ -70,7 +70,6 @@ export class ScrollProofService implements IProofService<ScrollProvableBlock> {
                 },
             ]
         );
-        return res;
     }
   /**
    * @dev Returns an object representing a block whose state can be proven on L1.

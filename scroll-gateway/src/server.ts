@@ -19,11 +19,7 @@ program.parse();
 
   const l2Provider = new JsonRpcProvider(options.l2ProviderUrl);
 
-  const gateway = new EVMGateway(
-    new ScrollProofService(
-      l2Provider
-    )
-  );
+  const gateway = new EVMGateway(new ScrollProofService(l2Provider));
   const server = new Server();
   gateway.add(server);
   const app = server.makeApp('/');
