@@ -1,7 +1,3 @@
-// Pulled from https://github.com/ethereum-optimism/optimism/blob/4d13f0afe8869faf7bba45d8339998525ebc5161/packages/contracts-bedrock/contracts/libraries/trie/MerkleTrie.sol
-//   as this is the last version of Optimism's Merkle Trie library that supports nonexistence proofs; support was removed
-//   in the next commit for some version.
-// Copyright 2020-2021 Optimism
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
