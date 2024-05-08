@@ -1,5 +1,7 @@
 import { type Request as CFWRequest } from '@cloudflare/workers-types';
 import { type PropsDecoder } from '@ensdomains/server-analytics';
+import { AbiCoder } from 'ethers';
+import { type StateProof } from './EVMProofHelper.js';
 export interface Router {
   handle: (request: CFWRequest) => Promise<Response>;
 }
@@ -22,3 +24,18 @@ export const propsDecoder: PropsDecoder<CFWRequest> = (
     return {};
   }
 };
+
+export const convertIntoMerkleTrieProof = (
+  proof: StateProof
+) => {
+  const storageProofs:any = []
+  const stateTrieWitness = AbiCoder.defaultAbiCoder().encode(["bytes[]"], [proof.stateTrieWitness])
+  for (let index = 0; index < proof.storageProofs.length; index++) {
+      const storageProof = AbiCoder.defaultAbiCoder().encode(["bytes[]"], [proof.storageProofs[index]])
+      storageProofs[index] = storageProof            
+  }
+  return({
+    stateTrieWitness,
+    storageProofs
+  })
+}

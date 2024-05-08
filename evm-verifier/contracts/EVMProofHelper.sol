@@ -6,8 +6,8 @@ import {Bytes} from "@eth-optimism/contracts-bedrock/src/libraries/Bytes.sol";
 import {SecureMerkleTrie} from "./SecureMerkleTrie.sol";
 
 struct StateProof {
-    bytes[] stateTrieWitness;         // Witness proving the `storageRoot` against a state root.
-    bytes[][] storageProofs;          // An array of proofs of individual storage elements 
+    bytes stateTrieWitness;         // Witness proving the `storageRoot` against a state root.
+    bytes[] storageProofs;          // An array of proofs of individual storage elements 
 }
 
 uint8 constant OP_CONSTANT = 0x00;
@@ -31,10 +31,10 @@ library EVMProofHelper {
      */
     function getSingleStorageProof(
         address target,
-        function(address,uint256,bytes[] memory, bytes32) internal view returns(bytes memory) getter,
+        function(address,uint256,bytes memory, bytes32) internal view returns(bytes memory) getter,
         bytes32 storageRoot,
         uint256 slot,
-        bytes[] memory witness
+        bytes memory witness
     ) private view returns (bytes memory) {
         return getter(
             target,
@@ -46,8 +46,8 @@ library EVMProofHelper {
 
     function getFixedValue(
         address target,
-        function(address,uint256,bytes[] memory, bytes32) internal view returns(bytes memory) getter,
-        bytes32 storageRoot, uint256 slot, bytes[] memory witness
+        function(address,uint256,bytes memory, bytes32) internal view returns(bytes memory) getter,
+        bytes32 storageRoot, uint256 slot, bytes memory witness
     ) private view returns(bytes32) {
         bytes memory value = getSingleStorageProof(target, getter, storageRoot, slot, witness);
         // RLP encoded storage slots are stored without leading 0 bytes.
@@ -85,8 +85,8 @@ library EVMProofHelper {
 
     function getDynamicValue(
         address target,
-        function(address,uint256,bytes[] memory, bytes32) internal view returns(bytes memory) getter,
-        bytes32 storageRoot, uint256 slot, bytes[][] memory proof, uint256 proofIdx) private view returns(bytes memory value, uint256 newProofIdx
+        function(address,uint256,bytes memory, bytes32) internal view returns(bytes memory) getter,
+        bytes32 storageRoot, uint256 slot, bytes[] memory proof, uint256 proofIdx) private view returns(bytes memory value, uint256 newProofIdx
     ) {
         uint256 firstValue = uint256(getFixedValue(target, getter,storageRoot, slot, proof[proofIdx++]));
         if(firstValue & 0x01 == 0x01) {
@@ -115,8 +115,8 @@ library EVMProofHelper {
 
     function getStorageValues(
         address target,
-        function(address,uint256,bytes[] memory, bytes32) internal view returns(bytes memory) getter,
-        bytes32[] memory commands, bytes[] memory constants, bytes32 storageRoot, bytes[][] memory proof) internal view returns(bytes[] memory values
+        function(address,uint256,bytes memory, bytes32) internal view returns(bytes memory) getter,
+        bytes32[] memory commands, bytes[] memory constants, bytes32 storageRoot, bytes[] memory proof) internal view returns(bytes[] memory values
     ) {
         uint256 proofIdx = 0;
         values = new bytes[](commands.length);

@@ -62,11 +62,10 @@ export class ScrollProofService implements IProofService<ScrollProvableBlock> {
         const batchIndex = obj.batch_index
         const proof = await this.helper.getProofs(Number(block.number), address, slots)
         const compressedProofs:any = []
-        const accountProof: Array<string> = proof.stateTrieWitness;
+        const accountProof: string = proof.stateTrieWitness;
         for (let index = 0; index < proof.storageProofs.length; index++) {
-            const storageProof: Array<string> = proof.storageProofs[index];
-            compressedProofs[index] = []
-            compressedProofs[index][0] = concat([
+            const storageProof: string = proof.storageProofs[index];
+            compressedProofs[index] = concat([
                 `0x${accountProof.length.toString(16).padStart(2, "0")}`,
                 ...accountProof,
                 `0x${storageProof.length.toString(16).padStart(2, "0")}`,
@@ -77,16 +76,13 @@ export class ScrollProofService implements IProofService<ScrollProvableBlock> {
         const res:any =  AbiCoder.defaultAbiCoder().encode(
             [
                 'tuple(uint256 batchIndex)',
-                'tuple(bytes[] stateTrieWitness, bytes[][] storageProofs)',
-                // Refactoring TODO
-                // 'tuple(bytes stateTrieWitness, bytes[] storageProofs)',
+                'tuple(bytes[] storageProofs)',
             ],
             [
                 {
                     batchIndex
                 },
                 {
-                    stateTrieWitness:[],
                     storageProofs:compressedProofs
                 },
             ]

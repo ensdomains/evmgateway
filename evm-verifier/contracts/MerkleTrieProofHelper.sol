@@ -25,12 +25,12 @@ library MerkleTrieProofHelper {
      * @return The storage value 
      */
 
-    // function getTrieProof(address, uint256 slot, bytes[] memory witness, bytes32 root) internal pure returns(bytes memory){
-    function getTrieProof(address, uint256 slot, bytes[] memory witness, bytes32 root) internal pure returns(bytes memory){
-        
+    function getTrieProof(address, uint256 slot, bytes memory witness, bytes32 root) internal pure returns(bytes memory){
+        (bytes[] memory _witness) = abi.decode(witness, (bytes[]));
+
         (bool exists, bytes memory retrievedValue) = SecureMerkleTrie.get(
             abi.encodePacked(slot),
-            witness,
+            _witness,
             root
         );
         if(!exists) {
@@ -47,10 +47,11 @@ library MerkleTrieProofHelper {
      * @param witness A witness proving the value of the storage root for `target`.
      * @return The storage root retrieved from the provided state root
      */
-    function getStorageRoot(bytes32 stateRoot, address target, bytes[] memory witness) internal view returns (bytes32) {
+    function getStorageRoot(bytes32 stateRoot, address target, bytes memory witness) internal view returns (bytes32) {
+        (bytes[] memory _witness) = abi.decode(witness, (bytes[]));
         (bool exists, bytes memory encodedResolverAccount) = SecureMerkleTrie.get(
             abi.encodePacked(target),
-            witness,
+            _witness,
             stateRoot
         );
         if(!exists) {

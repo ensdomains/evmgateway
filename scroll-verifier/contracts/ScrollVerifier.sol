@@ -1,6 +1,6 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
-import {StateProof, EVMProofHelper} from '@ensdomains/evm-verifier/contracts/EVMProofHelper.sol';
+import {EVMProofHelper} from '@ensdomains/evm-verifier/contracts/EVMProofHelper.sol';
 import {IEVMVerifier} from '@ensdomains/evm-verifier/contracts/IEVMVerifier.sol';
 import {RLPReader} from "@eth-optimism/contracts-bedrock/src/libraries/rlp/RLPReader.sol";
 
@@ -32,6 +32,10 @@ struct ScrollWitnessData {
     uint256 batchIndex;
 }
 
+struct StateProof {
+    bytes[] storageProofs;          // An array of proofs of individual storage elements 
+}
+
 contract ScrollVerifier is IEVMVerifier {
     error InvalidSlotSize(uint256 size);
     IScrollChainCommitmentVerifier public immutable verifier;
@@ -50,24 +54,9 @@ contract ScrollVerifier is IEVMVerifier {
         return _gatewayURLs;
     }
 
-    function compressProof(
-        bytes[] memory stateTrieWitness,
-        bytes[][] memory storageProofs,
-        uint256 storageIndex
-    ) public pure returns (bytes memory output) {
-        output = abi.encodePacked(uint8(stateTrieWitness.length));
-        for (uint256 i = 0; i < stateTrieWitness.length; i++) {
-            output = abi.encodePacked(output, stateTrieWitness[i]);
-        }
-        output = abi.encodePacked(output, uint8(storageProofs[storageIndex].length));
-        for (uint256 i = 0; i < storageProofs[storageIndex].length; i++) {
-            output = abi.encodePacked(output, storageProofs[storageIndex][i]);
-        }
-        return output;
-    }
 
-    function getTrieProof(address target, uint256 slot, bytes[] memory compressedProof, bytes32 root) internal view returns(bytes memory){
-        (bytes32 stateRoot, bytes32 storageValue) = verifier.verifyZkTrieProof(target, bytes32(slot), compressedProof[0]);
+    function getTrieProof(address target, uint256 slot, bytes memory compressedProof, bytes32 root) internal view returns(bytes memory){
+        (bytes32 stateRoot, bytes32 storageValue) = verifier.verifyZkTrieProof(target, bytes32(slot), compressedProof);
         require(stateRoot == root, "stateRoot not matched");
         return abi.encodePacked(storageValue);
     }
