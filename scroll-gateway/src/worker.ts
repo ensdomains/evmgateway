@@ -1,6 +1,6 @@
 import { Request as CFWRequest } from '@cloudflare/workers-types';
 import { Server } from '@ensdomains/ccip-read-cf-worker';
-import type { Router } from '@ensdomains/evm-gateway';
+import { propsDecoder, type Router } from '@ensdomains/evm-gateway';
 import { InMemoryBlockCache } from './blockCache/InMemoryBlockCache.js';
 import { Tracker } from '@ensdomains/server-analytics';
 
@@ -11,26 +11,8 @@ interface Env {
   GATEWAY_DOMAIN: string;
   ENDPOINT_URL: string;
 }
-interface LogResult {
-  (request: CFWRequest, result: Response): Promise<Response>;
-}
 
-const decodeUrl = (url: string) => {
-  const trackingData = url.match(
-    /\/0x[a-fA-F0-9]{40}\/0x[a-fA-F0-9]{1,}\.json/
-  );
-  if (trackingData) {
-    return {
-      sender: trackingData[0].slice(1, 42),
-      calldata: trackingData[0].slice(44).replace('.json', ''),
-    };
-  } else {
-    return {};
-  }
-};
-
-
-let app: Router, logResult: LogResult;
+let app: Router;
 
 async function fetch(request: CFWRequest, env: Env) {
   const {
@@ -64,34 +46,6 @@ async function fetch(request: CFWRequest, env: Env) {
     const l1Provider = new ethers.JsonRpcProvider(L1_PROVIDER_URL);
     const l2Provider = new ethers.JsonRpcProvider(L2_PROVIDER_URL);
 
-    logResult = async (
-      request: CFWRequest,
-      result: Response
-    ): Promise<Response> => {
-      if (request.url.match(/favicon/)) {
-        return result;
-      }
-      if (!result.body) {
-        return result;
-      }
-      const [streamForLog, streamForResult] = result.body.tee();
-      const logResultData = (
-        await new Response(streamForLog).json()
-      ).data.substring(0, 200);
-      const props = decodeUrl(request.url);
-      await tracker.trackEvent(
-        request,
-        'result',
-        { props: { ...props, result: logResultData } },
-        true
-      );
-      const myHeaders = new Headers();
-      myHeaders.set('Access-Control-Allow-Origin', '*');
-      myHeaders.set('Access-Control-Allow-Methods', 'GET,HEAD,POST,OPTIONS');
-      myHeaders.set('Access-Control-Max-Age', '86400');
-      return new Response(streamForResult, { ...result, headers: myHeaders });
-    };
-
     const gateway = new EVMGateway(
       new ScrollProofService(
         l1Provider,
@@ -105,14 +59,11 @@ async function fetch(request: CFWRequest, env: Env) {
     gateway.add(server);
     app = server.makeApp('/');
   }
-  const props = decodeUrl(request.url);
-  await tracker.trackEvent(
-    request,
-    'request',
-    { props },
-    true
-  );
-  return app.handle(request).then(logResult.bind(null, request));
+  const props = propsDecoder(request);
+  await tracker.trackEvent(request, 'request', { props }, true);
+  return app
+    .handle(request)
+    .then(tracker.logResult.bind(tracker, propsDecoder, request));
 
 }
 
