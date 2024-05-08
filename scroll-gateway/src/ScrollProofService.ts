@@ -3,7 +3,6 @@ import { EVMProofHelper, type IProofService } from '@ensdomains/evm-gateway';
 import { AbiCoder, concat, Contract, ethers, type AddressLike, } from 'ethers';
 
 import rollupAbi from "./abi/rollupABI.js";
-import type { IBlockCache } from './blockCache/IBlockCache.js';
 export interface ScrollProvableBlock {
     number: number
 }
@@ -17,14 +16,12 @@ export class ScrollProofService implements IProofService<ScrollProvableBlock> {
     private readonly l2Provider: ethers.JsonRpcProvider;
     private readonly rollup: Contract;
     private readonly helper: EVMProofHelper;
-    private readonly cache: IBlockCache;
 
 
     constructor(
         l1Provider: ethers.JsonRpcProvider,
         l2Provider: ethers.JsonRpcProvider,
-        l2RollupAddress: string,
-        cache: IBlockCache
+        l2RollupAddress: string
     ) {
         this.l2Provider = l2Provider;
         this.rollup = new Contract(
@@ -33,11 +30,9 @@ export class ScrollProofService implements IProofService<ScrollProvableBlock> {
             l1Provider
         );
         this.helper = new EVMProofHelper(l2Provider);
-        this.cache = cache
     }
 
     async getStorageAt(block: ScrollProvableBlock, address: AddressLike, slot: bigint): Promise<string> {
-        console.log(typeof(this.cache))
         console.log(typeof(this.rollup))
         return this.helper.getStorageAt(block.number, address, slot);
     }

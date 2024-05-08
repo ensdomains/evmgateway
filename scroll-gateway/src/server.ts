@@ -3,7 +3,6 @@ import { Command } from '@commander-js/extra-typings';
 import { EVMGateway } from '@ensdomains/evm-gateway';
 import { JsonRpcProvider } from 'ethers';
 import { ScrollProofService } from './ScrollProofService.js';
-import { InMemoryBlockCache } from './blockCache/InMemoryBlockCache.js';
 
 const program = new Command()
   .option('-p, --port <port>', 'port to listen on', '8080')
@@ -35,8 +34,7 @@ program.parse();
     new ScrollProofService(
       l1Provider,
       l2Provider,
-      options.l2RollupAddress,
-      new InMemoryBlockCache()
+      options.l2RollupAddress
     )
   );
   const server = new Server();

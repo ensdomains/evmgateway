@@ -1,7 +1,6 @@
 import { Request as CFWRequest } from '@cloudflare/workers-types';
 import { Server } from '@ensdomains/ccip-read-cf-worker';
 import { propsDecoder, type Router } from '@ensdomains/evm-gateway';
-import { InMemoryBlockCache } from './blockCache/InMemoryBlockCache.js';
 import { Tracker } from '@ensdomains/server-analytics';
 
 interface Env {
@@ -36,13 +35,6 @@ async function fetch(request: CFWRequest, env: Env) {
     const EVMGateway = (await import('@ensdomains/evm-gateway')).EVMGateway;
     const ScrollProofService = (await import('./ScrollProofService.js'))
       .ScrollProofService;
-    // Set PROVIDER_URL under .dev.vars locally. Set the key as secret remotely with `wrangler secret put WORKER_PROVIDER_URL`
-    console.log({env})
-    // const { L1_PROVIDER_URL, L2_PROVIDER_URL, L2_ROLLUP } = env;
-    // const L1_PROVIDER_URL="https://sepolia.infura.io/v3/6fd03d7c74f3412b810bfd2fddd85ba9"
-    // const L2_PROVIDER_URL="https://sepolia-rpc.scroll.io"
-    // Scroll verfifier address https://sepolia.etherscan.io/address/0x64cb3A0Dcf43Ae0EE35C1C15edDF5F46D48Fa570#code
-    // const L2_ROLLUP="0x64cb3A0Dcf43Ae0EE35C1C15edDF5F46D48Fa570"
     const l1Provider = new ethers.JsonRpcProvider(L1_PROVIDER_URL);
     const l2Provider = new ethers.JsonRpcProvider(L2_PROVIDER_URL);
 
@@ -50,8 +42,7 @@ async function fetch(request: CFWRequest, env: Env) {
       new ScrollProofService(
         l1Provider,
         l2Provider,
-        L2_ROLLUP,
-        new InMemoryBlockCache()
+        L2_ROLLUP
       )
     );
 

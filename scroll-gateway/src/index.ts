@@ -1,7 +1,6 @@
 import { EVMGateway } from '@ensdomains/evm-gateway';
 import { JsonRpcProvider } from 'ethers';
 import { ScrollProofService, type ScrollProvableBlock } from './ScrollProofService.js';
-import { InMemoryBlockCache } from './blockCache/InMemoryBlockCache.js';
 
 export type ScrollGateway = EVMGateway<ScrollProvableBlock>;
 
@@ -16,8 +15,7 @@ export async function makeScrollGateway(
     new ScrollProofService(
       l1Provider,
       l2Provider,
-      l2RollupAddress,
-      new InMemoryBlockCache()
+      l2RollupAddress
     )
   );
 }
