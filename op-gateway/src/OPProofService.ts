@@ -4,13 +4,13 @@ import { AbiCoder, Contract, JsonRpcProvider, type AddressLike } from 'ethers';
 
 export class InvalidOptimismPortalError extends Error {
   constructor() {
-    super("OptimismPortal is invalid")
+    super('OptimismPortal is invalid');
   }
 }
 
 export class DisputeGameChallengedError extends Error {
   constructor() {
-    super("Dispute game is challenged")
+    super('Dispute game is challenged');
   }
 }
 
@@ -42,6 +42,12 @@ const DISPUTE_GAME_FACTORY_ABI = [
   'function findLatestGames(uint32 _gameType, uint256 _start, uint256 _n) external view returns (tuple(uint256 index, bytes32 metadata, uint64 timestamp, bytes32 rootClaim, bytes extraData)[] memory games_)',
 ];
 
+const OPTIMISM_PORTAL_ABI = [
+  'function l2Oracle() external view returns (address)',
+  'function disputeGameFactory() external view returns (address)',
+  'function respectedGameType() external view returns (uint32)',
+];
+
 const FAULT_DISPUTE_GAME_ABI = [
   // The l2BlockNumber of the disputed output root in the `L2OutputOracle`.
   'function l2BlockNumber() external view returns (uint256 l2BlockNumber_)',
@@ -50,9 +56,6 @@ const FAULT_DISPUTE_GAME_ABI = [
   // Status of the game challenging
   'function status() external view returns (uint8)',
 ];
-
-// Period to automatically check for dispute game merge
-const DISPUTE_GAME_MERGE_CHECK_PERIOD = 3600
 
 /**
  * The proofService class can be used to calculate proofs for a given target and slot on the Optimism Bedrock network.
@@ -65,6 +68,7 @@ export class OPProofService implements IProofService<OPProvableBlock> {
   private readonly helper: EVMProofHelper;
   private readonly delay: number;
 
+  private readonly optimismPortal: Contract;
   private l2OutputOracle: Contract | undefined;
   private disputeGameFactory: Contract | undefined;
 
@@ -78,17 +82,41 @@ export class OPProofService implements IProofService<OPProvableBlock> {
     this.l2Provider = l2Provider;
     this.helper = new EVMProofHelper(l2Provider);
     this.delay = delay;
-    this.l2OutputOracle = new Contract(
-      l2OutputOracleAddress,
-      L2_OUTPUT_ORACLE_ABI,
+
+    this.optimismPortal = new Contract(
+      optimismPortalAddress,
+      OPTIMISM_PORTAL_ABI,
       l1Provider
     );
   }
 
-  /**
-   * @dev Returns an object representing a block whose state can be proven on L1.
-   */
-  async getProvableBlock(): Promise<OPProvableBlock> {
+  async initialize() {
+    try {
+      const l2OutputOracleAddress = await this.optimismPortal.l2Oracle();
+
+      this.l2OutputOracle = new Contract(
+        l2OutputOracleAddress,
+        L2_OUTPUT_ORACLE_ABI,
+        this.l1Provider
+      );
+    } catch (err) {
+      console.error(err);
+    }
+
+    try {
+      const disputeGameFactoryAddress = await this.optimismPortal.l2Oracle();
+
+      this.disputeGameFactory = new Contract(
+        disputeGameFactoryAddress,
+        DISPUTE_GAME_FACTORY_ABI,
+        this.l1Provider
+      );
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async findDisputeGame(): Promise<OPProvableBlock | null> {
     if (this.disputeGameFactory) {
       const respectedGameType = 0;
 
@@ -98,18 +126,19 @@ export class OPProofService implements IProofService<OPProvableBlock> {
        *
        */
       const gameCount = Number(await this.disputeGameFactory.gameCount());
-  
+
       const games: FindLatestGamesResult[] =
         await this.disputeGameFactory.findLatestGames(
           respectedGameType,
           gameCount - 1,
           50
         );
-  
-      const timestampNow = Math.floor(Date.now() / 1000);
+
+      const timestampNow = (await this.l2Provider.getBlock('latest'))!
+        .timestamp;
       let disputeGameIndex = -1;
       let disputeGameLocalIndex = -1;
-  
+
       for (let i = 0; i < games.length; i++) {
         if (timestampNow - Number(games[i].timestamp) >= this.delay) {
           disputeGameIndex = Number(games[i].index);
@@ -117,34 +146,34 @@ export class OPProofService implements IProofService<OPProvableBlock> {
           break;
         }
       }
-  
+
       // If game is not found then fallback to the L2OutputOracle
       // for just merged case
       if (disputeGameIndex != -1) {
         const [gameType, timestamp, proxy] =
           await this.disputeGameFactory.gameAtIndex(disputeGameIndex);
-  
+
         if (
           gameType != respectedGameType ||
           timestamp != games[disputeGameLocalIndex].timestamp
         ) {
           throw new Error('Mismatched Game Data');
         }
-    
+
         const disputeGame = new Contract(
           proxy,
           FAULT_DISPUTE_GAME_ABI,
           this.l1Provider
         );
-    
+
         const l2BlockNumber = await disputeGame.l2BlockNumber();
         const gameStatus = await disputeGame.status();
-    
+
         // gameStatus == CHALLENGER_WINS
         if (gameStatus == 1) {
           throw new DisputeGameChallengedError();
         }
-    
+
         return {
           number: l2BlockNumber,
           l2OutputIndex: disputeGameIndex,
@@ -152,6 +181,10 @@ export class OPProofService implements IProofService<OPProvableBlock> {
       }
     }
 
+    return null;
+  }
+
+  async findL2OutputIndex(): Promise<OPProvableBlock | null> {
     if (this.l2OutputOracle) {
       /**
        * Get the latest output from the L2Oracle. We're building the proof with this batch
@@ -168,13 +201,27 @@ export class OPProofService implements IProofService<OPProvableBlock> {
        *       uint128 l2BlockNumber;
        *      }
        */
-      const outputProposal = await this.l2OutputOracle.getL2Output(l2OutputIndex);
+      const outputProposal =
+        await this.l2OutputOracle.getL2Output(l2OutputIndex);
 
       return {
         number: outputProposal.l2BlockNumber,
         l2OutputIndex: l2OutputIndex,
       };
     }
+
+    return null;
+  }
+
+  /**
+   * @dev Returns an object representing a block whose state can be proven on L1.
+   */
+  async getProvableBlock(): Promise<OPProvableBlock> {
+    const disputeGame = await this.findDisputeGame();
+    if (disputeGame) return disputeGame;
+
+    const l2OutputIndex = await this.findL2OutputIndex();
+    if (l2OutputIndex) return l2OutputIndex;
 
     throw new InvalidOptimismPortalError();
   }
