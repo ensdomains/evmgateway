@@ -38,6 +38,7 @@ struct StateProof {
 
 contract ScrollVerifier is IEVMVerifier {
     error InvalidSlotSize(uint256 size);
+    error StateRootMismatch(bytes32 expected, bytes32 actual);
     IScrollChainCommitmentVerifier public immutable verifier;
     string[] _gatewayURLs;
 
@@ -57,7 +58,9 @@ contract ScrollVerifier is IEVMVerifier {
 
     function getTrieProof(address target, uint256 slot, bytes memory compressedProof, bytes32 root) internal view returns(bytes memory){
         (bytes32 stateRoot, bytes32 storageValue) = verifier.verifyZkTrieProof(target, bytes32(slot), compressedProof);
-        require(stateRoot == root, "stateRoot not matched");
+        if(stateRoot != root) {
+            revert StateRootMismatch(stateRoot, root);
+        }
         return abi.encodePacked(storageValue);
     }
 
