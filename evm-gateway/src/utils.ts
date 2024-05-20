@@ -25,10 +25,11 @@ export const propsDecoder: PropsDecoder<CFWRequest> = (
   }
 };
 
+const flatten = (data: string) => {
+  return AbiCoder.defaultAbiCoder().encode(['bytes[]'], [data]);
+};
+
 export const convertIntoMerkleTrieProof = (proof: StateProof) => {
-  def flatten(data: string[]) {
-    return AbiCoder.defaultAbiCoder().encode(['bytes[]'], [data]);
-  }
   return {
     stateTrieWitness: flatten(proof.stateTrieWitness),
     storageProofs: proof.storageProofs.map(flatten),
