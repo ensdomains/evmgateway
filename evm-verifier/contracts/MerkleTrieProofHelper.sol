@@ -15,7 +15,7 @@ library MerkleTrieProofHelper {
 
     /*
      * @notice Get the storage value for the provided merkle proof
-     * @param address Not in use. Only exist to provide consistent function argument
+     * @param address Unused. Required so the function signature matches the one required by `EVMProofHelper`
      * @param slot The storage key we are fetching the value of
      * @param witness A witness proving the value of the storage root for `target`.
      * @param root The state root the witness was generated against
