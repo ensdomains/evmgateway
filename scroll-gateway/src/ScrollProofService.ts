@@ -14,12 +14,15 @@ export interface ScrollProvableBlock {
 export class ScrollProofService implements IProofService<ScrollProvableBlock> {
     private readonly l2Provider: ethers.JsonRpcProvider;
     private readonly helper: EVMProofHelper;
+    private readonly searchUrl: string;
 
     constructor(
+        searchUrl: string,
         l2Provider: ethers.JsonRpcProvider,
     ) {
         this.l2Provider = l2Provider;
         this.helper = new EVMProofHelper(l2Provider);
+        this.searchUrl = searchUrl;
     }
 
     async getStorageAt(block: ScrollProvableBlock, address: AddressLike, slot: bigint): Promise<string> {
@@ -40,9 +43,8 @@ export class ScrollProofService implements IProofService<ScrollProvableBlock> {
         address: AddressLike,
         slots: bigint[]
     ): Promise<string> {
-        const searchUrl = 'https://sepolia-api-re.scroll.io/api/search';
         const { batch_index: batchIndex } = await (
-            await fetch(`${searchUrl}?keyword=${Number(block.number)}`)
+            await fetch(`${this.searchUrl}?keyword=${Number(block.number)}`)
         ).json();
         const proof = await this.helper.getProofs(Number(block.number), address, slots);
         const compressedProofs: string[] = [];

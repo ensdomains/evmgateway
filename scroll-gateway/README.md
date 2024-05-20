@@ -13,7 +13,7 @@ npm install -g bun
 cd scroll-gateway
 bun install
 touch .dev.vars
-## set L2_PROVIDER_URL
+## set L2_PROVIDER_URL and SEARCH_URL(the default for sepolia is https://sepolia-rpc.scroll.io)
 yarn dev
 ```
 

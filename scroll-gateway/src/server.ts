@@ -10,6 +10,11 @@ const program = new Command()
     '-v, --l2-provider-url <url>',
     'l2 provider url',
     'http://localhost:9545/'
+  )
+  .option(
+    '-s --search-url <search>',
+    'search url to fetch batch index',
+    process.env.SEARCH_URL
   );
 
 program.parse();
@@ -19,7 +24,9 @@ program.parse();
 
   const l2Provider = new JsonRpcProvider(options.l2ProviderUrl);
 
-  const gateway = new EVMGateway(new ScrollProofService(l2Provider));
+  const gateway = new EVMGateway(
+    new ScrollProofService(options.searchUrl, l2Provider)
+  );
   const server = new Server();
   gateway.add(server);
   const app = server.makeApp('/');
