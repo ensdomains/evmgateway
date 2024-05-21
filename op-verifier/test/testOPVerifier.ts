@@ -63,7 +63,6 @@ describe('OPVerifier', () => {
     // Replace ethers' fetch function with one that calls the gateway directly.
     const getUrl = FetchRequest.createGetUrlFunc();
     ethers.FetchRequest.registerGetUrl(async (req: FetchRequest) => {
-      console.log(req.url)
       if(req.url != "test:") return getUrl(req);
 
       const r = request(app).post('/');
