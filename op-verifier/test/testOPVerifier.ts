@@ -34,7 +34,6 @@ declare module 'hardhat/types/runtime' {
 describe('OPVerifier', () => {
   let provider: Provider;
   let signer: Signer;
-  let gateway: express.Application;
   let target: Contract;
 
   before(async () => {
@@ -43,12 +42,17 @@ describe('OPVerifier', () => {
     provider = new ethers.BrowserProvider(hre.network.provider);
     signer = await provider.getSigner(0);
 
-    const opAddresses = await (await fetch("http://localhost:8080/addresses.json")).json();
+    let optimismPortalAddress = process.env.OPTIMISM_PORTAL_ADDRESS!
+
+    if (hre.network.name == 'opDevnetL1') {
+      const opAddresses = await (await fetch("http://localhost:8080/addresses.json")).json();
+      optimismPortalAddress = opAddresses.OptimismPortalProxy
+    }
 
     const gateway = await makeOPGateway(
       (hre.network.config as any).url,
       (hre.config.networks[hre.network.companionNetworks.l2] as any).url,
-      opAddresses.L2OutputOracleProxy,
+      optimismPortalAddress,
       5,
     );
     const server = new Server()
@@ -59,6 +63,7 @@ describe('OPVerifier', () => {
     // Replace ethers' fetch function with one that calls the gateway directly.
     const getUrl = FetchRequest.createGetUrlFunc();
     ethers.FetchRequest.registerGetUrl(async (req: FetchRequest) => {
+      console.log(req.url)
       if(req.url != "test:") return getUrl(req);
 
       const r = request(app).post('/');

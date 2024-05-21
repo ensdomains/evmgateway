@@ -14,9 +14,15 @@ export class DisputeGameChallengedError extends Error {
   }
 }
 
+export enum OPWitnessProofType {
+  L2OutputOracle = 0,
+  DisputeGame = 1,
+}
+
 export interface OPProvableBlock {
   number: number;
-  l2OutputIndex: number;
+  proofType: OPWitnessProofType;
+  index: number;
 }
 
 // uint256 index, bytes32 metadata, uint64 timestamp, bytes32 rootClaim, bytes extraData
@@ -90,35 +96,24 @@ export class OPProofService implements IProofService<OPProvableBlock> {
     );
   }
 
-  async initialize() {
-    try {
-      const l2OutputOracleAddress = await this.optimismPortal.l2Oracle();
-
-      this.l2OutputOracle = new Contract(
-        l2OutputOracleAddress,
-        L2_OUTPUT_ORACLE_ABI,
-        this.l1Provider
-      );
-    } catch (err) {
-      console.error(err);
-    }
-
-    try {
-      const disputeGameFactoryAddress = await this.optimismPortal.l2Oracle();
-
-      this.disputeGameFactory = new Contract(
-        disputeGameFactoryAddress,
-        DISPUTE_GAME_FACTORY_ABI,
-        this.l1Provider
-      );
-    } catch (err) {
-      console.error(err);
-    }
-  }
-
   async findDisputeGame(): Promise<OPProvableBlock | null> {
+    if (!this.disputeGameFactory) {
+      try {
+        const disputeGameFactoryAddress = await this.optimismPortal.disputeGameFactory();
+  
+        this.disputeGameFactory = new Contract(
+          disputeGameFactoryAddress,
+          DISPUTE_GAME_FACTORY_ABI,
+          this.l1Provider
+        );
+      } catch (err) {
+        console.error(err)
+        return null;
+      }
+    }
+
     if (this.disputeGameFactory) {
-      const respectedGameType = 0;
+      const respectedGameType = await this.optimismPortal.respectedGameType();
 
       /**
        * Get the latest output from the L2Oracle. We're building the proof with this batch
@@ -176,7 +171,8 @@ export class OPProofService implements IProofService<OPProvableBlock> {
 
         return {
           number: l2BlockNumber,
-          l2OutputIndex: disputeGameIndex,
+          proofType: OPWitnessProofType.DisputeGame,
+          index: disputeGameIndex,
         };
       }
     }
@@ -185,6 +181,21 @@ export class OPProofService implements IProofService<OPProvableBlock> {
   }
 
   async findL2OutputIndex(): Promise<OPProvableBlock | null> {
+    if (!this.l2OutputOracle) {
+      try {
+        const l2OutputOracleAddress = await this.optimismPortal.l2Oracle();
+
+        this.l2OutputOracle = new Contract(
+          l2OutputOracleAddress,
+          L2_OUTPUT_ORACLE_ABI,
+          this.l1Provider
+        );
+      } catch (err) {
+        console.error(err)
+        return null;
+      }
+    }
+
     if (this.l2OutputOracle) {
       /**
        * Get the latest output from the L2Oracle. We're building the proof with this batch
@@ -206,7 +217,8 @@ export class OPProofService implements IProofService<OPProvableBlock> {
 
       return {
         number: outputProposal.l2BlockNumber,
-        l2OutputIndex: l2OutputIndex,
+        proofType: OPWitnessProofType.L2OutputOracle,
+        index: l2OutputIndex,
       };
     }
 
@@ -265,13 +277,14 @@ export class OPProofService implements IProofService<OPProvableBlock> {
 
     return AbiCoder.defaultAbiCoder().encode(
       [
-        'tuple(uint256 l2OutputIndex, tuple(bytes32 version, bytes32 stateRoot, bytes32 messagePasserStorageRoot, bytes32 latestBlockhash) outputRootProof)',
+        'tuple(uint8 proofType, uint256 index, tuple(bytes32 version, bytes32 stateRoot, bytes32 messagePasserStorageRoot, bytes32 latestBlockhash) outputRootProof)',
         'tuple(bytes[] stateTrieWitness, bytes[][] storageProofs)',
       ],
       [
         {
           blockNo: block.number,
-          l2OutputIndex: block.l2OutputIndex,
+          proofType: block.proofType,
+          index: block.index,
           outputRootProof: {
             version:
               '0x0000000000000000000000000000000000000000000000000000000000000000',
