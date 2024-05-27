@@ -1,4 +1,8 @@
-import { EVMProofHelper, type IProofService } from '@ensdomains/evm-gateway';
+import {
+  EVMProofHelper,
+  convertIntoMerkleTrieProof,
+  type IProofService,
+} from '@ensdomains/evm-gateway';
 import { type JsonRpcBlock } from '@ethereumjs/block';
 import { AbiCoder, Contract, JsonRpcProvider, type AddressLike } from 'ethers';
 
@@ -109,7 +113,7 @@ export class OPProofService implements IProofService<OPProvableBlock> {
     return AbiCoder.defaultAbiCoder().encode(
       [
         'tuple(uint256 l2OutputIndex, tuple(bytes32 version, bytes32 stateRoot, bytes32 messagePasserStorageRoot, bytes32 latestBlockhash) outputRootProof)',
-        'tuple(bytes[] stateTrieWitness, bytes[][] storageProofs)',
+        'tuple(bytes stateTrieWitness, bytes[] storageProofs)',
       ],
       [
         {
@@ -123,7 +127,7 @@ export class OPProofService implements IProofService<OPProvableBlock> {
             latestBlockhash: rpcBlock.hash,
           },
         },
-        proof,
+        convertIntoMerkleTrieProof(proof),
       ]
     );
   }

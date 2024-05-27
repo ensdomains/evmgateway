@@ -1,16 +1,9 @@
 {
-  "name": "@ensdomains/l1-gateway",
-  "version": "0.1.0-beta.4",
+  "name": "@ensdomains/scroll-gateway",
+  "version": "0.1.0",
   "author": "Nick Johnson",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ensdomains/evmgateway.git"
-  },
-  "bugs": {
-    "url": "https://github.com/ensdomains/evmgateway/issues"
-  },
-  "homepage": "https://github.com/ensdomains/evmgateway/tree/main/l1-gateway",
+  "type": "module",
   "main": "./_cjs/index.js",
   "module": "./_esm/index.js",
   "types": "./_types/index.d.ts",
@@ -51,8 +44,8 @@
     "build:cjs": "tsc --project tsconfig.build.json --module commonjs --outDir ./_cjs --removeComments --verbatimModuleSyntax false && echo > ./_cjs/package.json '{\"type\":\"commonjs\"}'",
     "build:esm": "tsc --project tsconfig.build.json --module es2022 --outDir ./_esm && echo > ./_esm/package.json '{\"type\":\"module\",\"sideEffects\":false}'",
     "build:types": "tsc --project ./tsconfig.build.json --module esnext --declarationDir ./_types --emitDeclarationOnly --declaration --declarationMap",
-    "build": "echo 'building l1-gateway...' && bun run clean && bun run build:cjs && bun run build:esm && bun run build:types",
-    "prepublishOnly": "bun run build",
+    "build": "echo 'building scroll-gateway...' && bun run clean && bun run build:cjs && bun run build:esm && bun run build:types",
+    "prepublishOnly": "bun ../scripts/prepublishOnly.ts",
     "lint": "eslint . --ext .ts",
     "prepare": "bun run build",
     "clean": "rm -fr _cjs _esm _types"
@@ -64,11 +57,14 @@
   },
   "dependencies": {
     "@chainlink/ccip-read-server": "^0.2.1",
-    "@commander-js/extra-typings": "^11.0.0",
-    "@ensdomains/evm-gateway": "0.1.0-beta.4",
+    "@ensdomains/evm-gateway": "0.1.0-beta.3",
     "@ethereumjs/block": "^5.0.0",
     "@nomicfoundation/ethereumjs-block": "^5.0.2",
     "commander": "^11.0.0",
     "ethers": "^6.7.1"
+  },
+  "devDependencies": {
+    "@commander-js/extra-typings": "^11.0.0"
+
   }
 }

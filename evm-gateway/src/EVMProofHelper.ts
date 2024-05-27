@@ -4,7 +4,7 @@ import { toBeHex, type AddressLike, type JsonRpcProvider } from 'ethers';
  * Response of the eth_getProof RPC method.
  */
 interface EthGetProofResponse {
-  accountProof: string[];
+  accountProof: string;
   balance: string;
   codeHash: string;
   nonce: string;
@@ -12,13 +12,13 @@ interface EthGetProofResponse {
   storageProof: {
     key: string;
     value: string;
-    proof: string[];
+    proof: string;
   }[];
 }
 
 export interface StateProof {
-  stateTrieWitness: string[];
-  storageProofs: string[][];
+  stateTrieWitness: string;
+  storageProofs: string[];
   stateRoot: string;
 }
 

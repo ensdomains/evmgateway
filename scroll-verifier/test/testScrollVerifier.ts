@@ -1,5 +1,5 @@
 import { Server } from '@chainlink/ccip-read-server';
-import { makeArbGateway } from '@ensdomains/arb-gateway';
+import { makeScrollGateway } from '@ensdomains/scroll-gateway';
 import { HardhatEthersProvider } from '@nomicfoundation/hardhat-ethers/internal/hardhat-ethers-provider';
 import type { HardhatEthersHelpers } from '@nomicfoundation/hardhat-ethers/types';
 import { expect } from 'chai';
@@ -16,20 +16,6 @@ import express from 'express';
 import hre, { ethers } from 'hardhat';
 import { EthereumProvider } from 'hardhat/types';
 import request from 'supertest';
-
-type ethersObj = typeof ethersT &
-  Omit<HardhatEthersHelpers, 'provider'> & {
-    provider: Omit<HardhatEthersProvider, '_hardhatProvider'> & {
-      _hardhatProvider: EthereumProvider;
-    };
-  };
-
-declare module 'hardhat/types/runtime' {
-  const ethers: ethersObj;
-  interface HardhatRuntimeEnvironment {
-    ethers: ethersObj;
-  }
-}
 const estimateCCIPReadCallbackGas = async (provider, cb) => {
   try{
     await cb()
@@ -48,7 +34,21 @@ const estimateCCIPReadCallbackGas = async (provider, cb) => {
   }
 }
 
-describe('ArbVerifier', () => {
+type ethersObj = typeof ethersT &
+  Omit<HardhatEthersHelpers, 'provider'> & {
+    provider: Omit<HardhatEthersProvider, '_hardhatProvider'> & {
+      _hardhatProvider: EthereumProvider;
+    };
+  };
+
+declare module 'hardhat/types/runtime' {
+  const ethers: ethersObj;
+  interface HardhatRuntimeEnvironment {
+    ethers: ethersObj;
+  }
+}
+
+describe('ScrollVerifier', () => {
   let provider: Provider;
   let signer: Signer;
   let gateway: express.Application;
@@ -59,18 +59,13 @@ describe('ArbVerifier', () => {
     // doesn't support CCIP-read.
     provider = new ethers.BrowserProvider(hre.network.provider);
     signer = await provider.getSigner(0);
-
-    //Rollup address according to sequencer config. Unfortunately, there is no endpoint to fetch it at runtime from the rollup.
-    //The address can be found at nitro-testnode-sequencer-1/config/deployment.json 
+    
     const rollupAddress = process.env.ROLLUP_ADDRESS;
-    // When testing against Goerli, replace with this address
-    // const rollupAddress = '0x45e5cAea8768F42B385A366D3551Ad1e0cbFAb17';
-    const chainId = hre.network.config.chainId
-    const gateway = await makeArbGateway(
-      (hre.network.config as any).url, 
+
+    const gateway = await makeScrollGateway(
+      (hre.network.config as any).url,
       (hre.config.networks[hre.network.companionNetworks.l2] as any).url,
-      rollupAddress,
-      chainId,
+      rollupAddress
     );
     const server = new Server()
     gateway.add(server)

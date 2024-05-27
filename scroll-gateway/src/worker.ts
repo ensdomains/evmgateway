@@ -6,54 +6,40 @@ import { Tracker } from '@ensdomains/server-analytics';
 interface Env {
   L1_PROVIDER_URL: string;
   L2_PROVIDER_URL: string;
-  L2_OUTPUT_ORACLE: string;
-  DELAY: number;
+  L2_ROLLUP: string;
   GATEWAY_DOMAIN: string;
   ENDPOINT_URL: string;
+  SEARCH_URL: string;
 }
 
 let app: Router;
 
 async function fetch(request: CFWRequest, env: Env) {
-  // Set PROVIDER_URL under .dev.vars locally. Set the key as secret remotely with `wrangler secret put WORKER_PROVIDER_URL`
-  const {
-    L1_PROVIDER_URL,
-    L2_PROVIDER_URL,
-    L2_OUTPUT_ORACLE,
-    DELAY,
-    GATEWAY_DOMAIN,
-    ENDPOINT_URL,
-  } = env;
+  const { L2_PROVIDER_URL, GATEWAY_DOMAIN, ENDPOINT_URL, SEARCH_URL } = env;
 
+  // Loading libraries dynamically as a temp work around.
+  // Otherwise, deployment thorws "Error: Script startup exceeded CPU time limit." error
   const tracker = new Tracker(GATEWAY_DOMAIN, {
     apiEndpoint: ENDPOINT_URL,
     enableLogging: true,
   });
 
-  // Loading libraries dynamically as a temp work around.
-  // Otherwise, deployment thorws "Error: Script startup exceeded CPU time limit." error
   if (!app) {
     const ethers = await import('ethers');
+
     const EVMGateway = (await import('@ensdomains/evm-gateway')).EVMGateway;
-    const OPProofService = (await import('./OPProofService.js')).OPProofService;
-    const l1Provider = new ethers.JsonRpcProvider(L1_PROVIDER_URL);
+    const ScrollProofService = (await import('./ScrollProofService.js'))
+      .ScrollProofService;
     const l2Provider = new ethers.JsonRpcProvider(L2_PROVIDER_URL);
 
-    console.log({ L1_PROVIDER_URL, L2_PROVIDER_URL, DELAY });
     const gateway = new EVMGateway(
-      new OPProofService(
-        l1Provider,
-        l2Provider,
-        L2_OUTPUT_ORACLE,
-        Number(DELAY)
-      )
+      new ScrollProofService(SEARCH_URL, l2Provider)
     );
 
     const server = new Server();
     gateway.add(server);
     app = server.makeApp('/');
   }
-
   const props = propsDecoder(request);
   await tracker.trackEvent(request, 'request', { props }, true);
   return app

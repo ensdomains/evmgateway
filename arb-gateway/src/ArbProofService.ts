@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { EVMProofHelper, type IProofService } from '@ensdomains/evm-gateway';
+import { EVMProofHelper, convertIntoMerkleTrieProof, type IProofService } from '@ensdomains/evm-gateway';
 import { AbiCoder, Contract, EventLog, ethers, toBeHex, type AddressLike, toNumber } from 'ethers';
 import rollupAbi from "./abi/rollupABI.js";
 import type { IBlockCache } from './blockCache/IBlockCache.js';
@@ -63,7 +63,7 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
         return AbiCoder.defaultAbiCoder().encode(
             [
                 'tuple(bytes32 version, bytes32 sendRoot, uint64 nodeIndex,bytes rlpEncodedBlock)',
-                'tuple(bytes[] stateTrieWitness, bytes[][] storageProofs)',
+                'tuple(bytes stateTrieWitness, bytes[] storageProofs)',
             ],
             [
                 {
@@ -73,7 +73,7 @@ export class ArbProofService implements IProofService<ArbProvableBlock> {
                     nodeIndex: block.nodeIndex,
                     rlpEncodedBlock: block.rlpEncodedBlock
                 },
-                proof,
+                convertIntoMerkleTrieProof(proof)
             ]
         );
     }
