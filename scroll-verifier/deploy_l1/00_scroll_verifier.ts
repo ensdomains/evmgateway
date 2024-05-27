@@ -11,7 +11,7 @@ const GATEWAY_URLS = {
 };
 
 const ROLLUP_ADDRESSES = {
-  sepolia: '0x64cb3A0Dcf43Ae0EE35C1C15edDF5F46D48Fa570',
+  sepolia: '0xE0BfA7f3B06A9589A914BE09Ba0E5671f481A722',
 };
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {

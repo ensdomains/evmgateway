@@ -2,5 +2,5 @@ module.exports = [
   [
     'https://scroll-sepolia-gateway-worker.ens-cf.workers.dev/{sender}/{data}.json'
   ],
-  '0xd80810638dbDF9081b72C1B33c65375e807281C8'
+  '0xE0BfA7f3B06A9589A914BE09Ba0E5671f481A722'
 ];
