@@ -103,6 +103,12 @@ An instantiation of `evm-gateway` that targets Arbitrum. Combined with `arb-veri
 ### [arb-verifier](/arb-verifier/)
 A complete Solidity library that facilitates sending CCIP-Read requests for Arbitrum state, and verifying the responses.
 
+### [scroll-gateway](/scroll-gateway/)
+An instantiation of `evm-gateway` that targets Scroll. Combined with `scroll-verifier`, makes it possible for L1 contracts to fetch contract state data from Scroll.
+
+### [scroll-verifier](/scroll-verifier/)
+A complete Solidity library that facilitates sending CCIP-Read requests for Scroll state, and verifying the responses.
+
 ## How to setup locally
 
 ```
