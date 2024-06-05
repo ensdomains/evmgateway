@@ -12,9 +12,9 @@ import {
 import type { IProofService, ProvableBlock } from './IProofService.js';
 
 const OP_FOLLOW_CONST = 0 << 5;
-const OP_FOLLOW_REF   = 1 << 5;
-const OP_ADD_CONST    = 2 << 5;
-const OP_END          = 0xFF;
+const OP_FOLLOW_REF = 1 << 5;
+const OP_ADD_CONST = 2 << 5;
+const OP_END = 0xff;
 
 export enum StorageLayout {
   /**
@@ -168,17 +168,17 @@ export class EVMGateway<T extends ProvableBlock> {
     const isDynamic = (flags & 0x01) != 0;
     let slot = 0n;
     for (let j = 1; j < 32; j++) {
-      let op = commandWord[j];
+      const op = commandWord[j];
       if (op === OP_END) break;
-      let opcode  = op & 0xE0; // upper 3
-      let operand = op & 0x1F; // lower 5
+      const opcode = op & 0xe0; // upper 3
+      const operand = op & 0x1f; // lower 5
       switch (opcode) {
         case OP_FOLLOW_CONST: {
           slot = followSolidityMapping(slot, constants[operand]);
           break;
         }
         case OP_FOLLOW_REF: {
-          let storage = await requests[operand];
+          const storage = await requests[operand];
           slot = followSolidityMapping(slot, await storage.value());
           break;
         }
@@ -186,7 +186,8 @@ export class EVMGateway<T extends ProvableBlock> {
           slot += uint256FromBytes(constants[operand]);
           break;
         }
-        default: throw new Error(`Unrecognized opcode: ${opcode}`);
+        default:
+          throw new Error(`Unrecognized opcode: ${opcode}`);
       }
     }
     return { slot, isDynamic };
