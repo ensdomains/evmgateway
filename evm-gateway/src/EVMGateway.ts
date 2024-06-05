@@ -53,13 +53,12 @@ function memoize<T>(fn: () => Promise<T>): () => Promise<T> {
 // traverse mapping at slot using key solidity-style
 // https://docs.soliditylang.org/en/latest/internals/layout_in_storage.html#mappings-and-dynamic-arrays
 function followSolidityMapping(slot: bigint, key: string) {
-  //console.log('follow', [slot, key]);
   return BigInt(solidityPackedKeccak256(['bytes', 'uint256'], [key, slot]));
 }
 
 // see: EVMProofHelper.uint256FromBytes()
 function uint256FromBytes(hex: string): bigint {
-  return BigInt('0x' + hex.slice(2, 66));
+  return BigInt(hex.slice(0, 66));
 }
 
 export class EVMGateway<T extends ProvableBlock> {
