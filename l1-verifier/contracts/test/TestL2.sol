@@ -8,6 +8,12 @@ contract TestL2 {
     mapping(uint256=>string) highscorers;   // Slot 3
     mapping(string=>string) realnames;      // Slot 4
     uint256 zero;                           // Slot 5
+    struct S {
+        uint256 dummy;
+        uint256 offsetValue;
+        mapping(string=>string) mappedValues;
+    }
+    mapping(uint256=>S) structs;            // Slot 6
 
     constructor() {
         latest = 42;
@@ -18,5 +24,7 @@ contract TestL2 {
         highscorers[1] = "Hubert Blaine Wolfeschlegelsteinhausenbergerdorff Sr.";
         realnames["Money Skeleton"] = "Vitalik Buterin";
         realnames["Satoshi"] = "Hal Finney";
+        structs[1].offsetValue = 1337;
+        structs[latest].mappedValues["Nick"] = "Johnson";
     }
 }
