@@ -58,7 +58,7 @@ function followSolidityMapping(slot: bigint, key: string) {
 
 // see: EVMProofHelper.uint256FromBytes()
 function uint256FromBytes(hex: string): bigint {
-  return BigInt(hex.slice(0, 66));
+  return hex === '0x' ? 0n : BigInt(hex.slice(0, 66));
 }
 
 export class EVMGateway<T extends ProvableBlock> {
