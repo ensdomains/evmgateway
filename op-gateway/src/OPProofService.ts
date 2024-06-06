@@ -1,6 +1,7 @@
 import { EVMProofHelper, type IProofService } from '@ensdomains/evm-gateway';
 import { type JsonRpcBlock } from '@ethereumjs/block';
 import { AbiCoder, Contract, JsonRpcProvider, type AddressLike } from 'ethers';
+import OPOutputLookupABI from './OPOutputLookup.js'
 
 export class InvalidOptimismPortalError extends Error {
   constructor() {
@@ -25,42 +26,17 @@ export interface OPProvableBlock {
   index: number;
 }
 
-// uint256 index, bytes32 metadata, uint64 timestamp, bytes32 rootClaim, bytes extraData
-interface FindLatestGamesResult {
-  index: bigint;
-  metadata: string;
-  timestamp: bigint;
-  rootClaim: string;
-  extraData: string;
-}
-
-const L2_OUTPUT_ORACLE_ABI = [
-  'function latestOutputIndex() external view returns (uint256)',
-  'function getL2Output(uint256 _l2OutputIndex) external view returns (tuple(bytes32 outputRoot, uint128 timestamp, uint128 l2BlockNumber))',
-];
+// OPOutputLookup contract is deployed with deterministic deployment
+// As a result, OPOutputLookup is always deployed to the same address
+const OP_OUTPUT_LOOKUP = "0x2bF2E6da73605759C7E02f34df6682769812d759"
 
 const L2_TO_L1_MESSAGE_PASSER_ADDRESS =
   '0x4200000000000000000000000000000000000016';
-
-const DISPUTE_GAME_FACTORY_ABI = [
-  'function gameAtIndex(uint256 _index) external view returns (uint32 gameType_, uint64 timestamp_, address proxy_)',
-  'function gameCount() external view returns (uint256 gameCount_)',
-  'function findLatestGames(uint32 _gameType, uint256 _start, uint256 _n) external view returns (tuple(uint256 index, bytes32 metadata, uint64 timestamp, bytes32 rootClaim, bytes extraData)[] memory games_)',
-];
 
 const OPTIMISM_PORTAL_ABI = [
   'function l2Oracle() external view returns (address)',
   'function disputeGameFactory() external view returns (address)',
   'function respectedGameType() external view returns (uint32)',
-];
-
-const FAULT_DISPUTE_GAME_ABI = [
-  // The l2BlockNumber of the disputed output root in the `L2OutputOracle`.
-  'function l2BlockNumber() external view returns (uint256 l2BlockNumber_)',
-  // The output root of the game
-  'function rootClaim() external view returns (bytes32 rootClaim_)',
-  // Status of the game challenging
-  'function status() external view returns (uint8)',
 ];
 
 /**
@@ -72,170 +48,52 @@ export class OPProofService implements IProofService<OPProvableBlock> {
   private readonly l1Provider: JsonRpcProvider;
   private readonly l2Provider: JsonRpcProvider;
   private readonly helper: EVMProofHelper;
-  private readonly delay: number;
+  private readonly minAge: number;
 
   private readonly optimismPortal: Contract;
-  private l2OutputOracle: Contract | undefined;
-  private disputeGameFactory: Contract | undefined;
+  private opOutputLookup: Contract;
 
   constructor(
     l1Provider: JsonRpcProvider,
     l2Provider: JsonRpcProvider,
     optimismPortalAddress: string,
-    delay: number
+    minAge: number
   ) {
     this.l1Provider = l1Provider;
     this.l2Provider = l2Provider;
     this.helper = new EVMProofHelper(l2Provider);
-    this.delay = delay;
+    this.minAge = minAge;
 
     this.optimismPortal = new Contract(
       optimismPortalAddress,
       OPTIMISM_PORTAL_ABI,
-      l1Provider
+      this.l1Provider
     );
-  }
 
-  async findDisputeGame(): Promise<OPProvableBlock | null> {
-    if (!this.disputeGameFactory) {
-      try {
-        const disputeGameFactoryAddress = await this.optimismPortal.disputeGameFactory();
-  
-        this.disputeGameFactory = new Contract(
-          disputeGameFactoryAddress,
-          DISPUTE_GAME_FACTORY_ABI,
-          this.l1Provider
-        );
-      } catch (err) {
-        console.error(err)
-        return null;
-      }
-    }
-
-    if (this.disputeGameFactory) {
-      const respectedGameType = await this.optimismPortal.respectedGameType();
-
-      /**
-       * Get the latest output from the L2Oracle. We're building the proof with this batch
-       * We go a few batches backwards to avoid errors like delays between nodes
-       *
-       */
-      const gameCount = Number(await this.disputeGameFactory.gameCount());
-
-      const games: FindLatestGamesResult[] =
-        await this.disputeGameFactory.findLatestGames(
-          respectedGameType,
-          gameCount - 1,
-          50
-        );
-
-      const timestampNow = (await this.l2Provider.getBlock('latest'))!
-        .timestamp;
-      let disputeGameIndex = -1;
-      let disputeGameLocalIndex = -1;
-
-      for (let i = 0; i < games.length; i++) {
-        if (timestampNow - Number(games[i].timestamp) >= this.delay) {
-          disputeGameIndex = Number(games[i].index);
-          disputeGameLocalIndex = i;
-          break;
-        }
-      }
-
-      // If game is not found then fallback to the L2OutputOracle
-      // for just merged case
-      if (disputeGameIndex != -1) {
-        const [gameType, timestamp, proxy] =
-          await this.disputeGameFactory.gameAtIndex(disputeGameIndex);
-
-        if (
-          gameType != respectedGameType ||
-          timestamp != games[disputeGameLocalIndex].timestamp
-        ) {
-          throw new Error('Mismatched Game Data');
-        }
-
-        const disputeGame = new Contract(
-          proxy,
-          FAULT_DISPUTE_GAME_ABI,
-          this.l1Provider
-        );
-
-        const l2BlockNumber = await disputeGame.l2BlockNumber();
-        const gameStatus = await disputeGame.status();
-
-        // gameStatus == CHALLENGER_WINS
-        if (gameStatus == 1) {
-          throw new DisputeGameChallengedError();
-        }
-
-        return {
-          number: l2BlockNumber,
-          proofType: OPWitnessProofType.DisputeGame,
-          index: disputeGameIndex,
-        };
-      }
-    }
-
-    return null;
-  }
-
-  async findL2OutputIndex(): Promise<OPProvableBlock | null> {
-    if (!this.l2OutputOracle) {
-      try {
-        const l2OutputOracleAddress = await this.optimismPortal.l2Oracle();
-
-        this.l2OutputOracle = new Contract(
-          l2OutputOracleAddress,
-          L2_OUTPUT_ORACLE_ABI,
-          this.l1Provider
-        );
-      } catch (err) {
-        console.error(err)
-        return null;
-      }
-    }
-
-    if (this.l2OutputOracle) {
-      /**
-       * Get the latest output from the L2Oracle. We're building the proof with this batch
-       * We go a few batches backwards to avoid errors like delays between nodes
-       *
-       */
-      const l2OutputIndex =
-        Number(await this.l2OutputOracle.latestOutputIndex()) - this.delay;
-
-      /**
-       *    struct OutputProposal {
-       *       bytes32 outputRoot;
-       *       uint128 timestamp;
-       *       uint128 l2BlockNumber;
-       *      }
-       */
-      const outputProposal =
-        await this.l2OutputOracle.getL2Output(l2OutputIndex);
-
-      return {
-        number: outputProposal.l2BlockNumber,
-        proofType: OPWitnessProofType.L2OutputOracle,
-        index: l2OutputIndex,
-      };
-    }
-
-    return null;
+    this.opOutputLookup = new Contract(
+      OP_OUTPUT_LOOKUP,
+      OPOutputLookupABI,
+      this.l1Provider,
+    )
   }
 
   /**
    * @dev Returns an object representing a block whose state can be proven on L1.
    */
   async getProvableBlock(): Promise<OPProvableBlock> {
-    const disputeGame = await this.findDisputeGame();
-    if (disputeGame) return disputeGame;
+    const block = await this.opOutputLookup.getOPProvableBlock(
+      await this.optimismPortal.getAddress(),
+      this.minAge,
+      1000000000
+    )
 
-    const l2OutputIndex = await this.findL2OutputIndex();
-    if (l2OutputIndex) return l2OutputIndex;
+    console.log(block)
 
-    throw new InvalidOptimismPortalError();
+    return {
+      number: block.blockNumber,
+      proofType: block.proofType,
+      index: block.index,
+    }
   }
 
   /**
