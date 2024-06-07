@@ -98,10 +98,16 @@ An instantiation of `evm-gateway` that targets Optimism. Combined with `op-verif
 A complete Solidity library that facilitates sending CCIP-Read requests for Optimism state, and verifying the responses.
 
 ### [arb-gateway](/arb-gateway/)
-An instantiation of `evm-gateway` that targets Optimism. Combined with `arb-verifier`, makes it possible for L1 contracts to fetch contract state data from Arbitrum.
+An instantiation of `evm-gateway` that targets Arbitrum. Combined with `arb-verifier`, makes it possible for L1 contracts to fetch contract state data from Arbitrum.
 
 ### [arb-verifier](/arb-verifier/)
 A complete Solidity library that facilitates sending CCIP-Read requests for Arbitrum state, and verifying the responses.
+
+### [scroll-gateway](/scroll-gateway/)
+An instantiation of `evm-gateway` that targets Scroll. Combined with `scroll-verifier`, makes it possible for L1 contracts to fetch contract state data from Scroll.
+
+### [scroll-verifier](/scroll-verifier/)
+A complete Solidity library that facilitates sending CCIP-Read requests for Scroll state, and verifying the responses.
 
 ## How to setup locally
 
@@ -124,3 +130,22 @@ rm -rf *-*/node_modules/hardhat
 rm bun.lockb
 bun install
 ```
+
+## A guide on adding new chains
+
+In a L2 rollup system, state hashes are stored on-chain, along with the transaction calls and arguments logged as calldata. a rollup has a mechanism to verify the state of their chain on L1, either instantly or optimistically.
+
+ENS integration utilizes this mechanism in the gateway. The gateway retrieves the data from L2 along side with the proof (often via `eth_getProof`) and returns back to the caller. The caller passes the data to L1 resolver contract to verify its state and data([more detail](https://medium.com/the-ethereum-name-service/mvp-of-ens-on-l2-with-optimism-demo-video-how-to-try-it-yourself-b44c390cbd67)). As long as L1 contract can verify the state and storage of the L2 data, users no longer need to trust the gateway itself. If a gateway service is compromised, the worst can happen is that the gateway stops responding data ( when that happens, the owner of the resolver can simply startup new gateway and update the L1 contract to return the new gateway address). The parent owner does not even have to host the gateway services by themselves but can use third party gateway services.
+
+To assess whether a L2 rollup system can integrate with ENS, please see the following steps.
+
+1. Does the new chain use [same address format as the ones used in Ethereum](https://info.etherscan.com/what-is-an-ethereum-address/)? = Some ZKRollup chains use different address format. If that's the case, you need to add the wallet address format into ENS multicoin type. Please refer to [Starknet support PR as a reference](https://github.com/ensdomains/address-encoder/pull/365).
+2. Does RPC of the chain return [`eth_getProof`](https://docs.alchemy.com/reference/eth-getproof)? If not, it requies a way to retrieve a storage proof to verify on Ethereum L1
+3. Does the rollup contract have a function to return information of the latest L2 block committed to Ethereum L1? For Optimistic Rollup, it needs both the committed and finalised (after challenge period) block information. The `blockhash` is required to call `eth_getProof` equivalent function on L2
+4. Is there a way to verify on L1 contract that the state root returned from L2 is valid?
+5. Is there a way to verify that the `storageProof` is included in the state root? For Optimistic rollups, we can use [`Lib_SecureMerkleTrie`](https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts/contracts/libraries/trie/Lib\_SecureMerkleTrie.sol) library developed by the optimism team. If the chain doesn't support Patricia Merkle Trie, it needs own library
+
+Here are some of the PoC examples provided by other chains and the actual integration pull requests describing the basic flow.
+
+- Arbitrum = [PoC](https://gist.github.com/gzeoneth/0a8bac381752e4b4f30650a0d3c76096), [PR](https://github.com/ensdomains/evmgateway/pull/19)
+- Scroll = [Poc](https://github.com/makoto/scrolltest/blob/master/src/index.ts), [PR](https://github.com/ensdomains/evmgateway/pull/42)

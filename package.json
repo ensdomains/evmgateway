@@ -7,10 +7,12 @@
     "l1-gateway",
     "op-gateway",
     "arb-gateway",
+    "scroll-gateway",
     "evm-verifier",
     "l1-verifier",
     "op-verifier",
-    "arb-verifier"
+    "arb-verifier",
+    "scroll-verifier"
   ],
   "scripts": {
     "env": "env",

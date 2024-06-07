@@ -4,6 +4,7 @@ pragma solidity ^0.8.17;
 import { IEVMVerifier } from "@ensdomains/evm-verifier/contracts/IEVMVerifier.sol";
 import { RLPReader } from "@eth-optimism/contracts-bedrock/src/libraries/rlp/RLPReader.sol";
 import { StateProof, EVMProofHelper } from "@ensdomains/evm-verifier/contracts/EVMProofHelper.sol";
+import {MerkleTrieProofHelper} from '@ensdomains/evm-verifier/contracts/MerkleTrieProofHelper.sol';
 
 struct L1WitnessData {
     uint256 blockNo;
@@ -30,6 +31,7 @@ contract L1Verifier is IEVMVerifier {
         }
         RLPReader.RLPItem[] memory headerFields = RLPReader.readList(l1Data.blockHeader);
         bytes32 stateRoot = bytes32(RLPReader.readBytes(headerFields[3]));
-        return EVMProofHelper.getStorageValues(target, commands, constants, stateRoot, stateProof);
+        bytes32 storageRoot = MerkleTrieProofHelper.getStorageRoot(stateRoot, target, stateProof.stateTrieWitness);
+        return EVMProofHelper.getStorageValues(target, MerkleTrieProofHelper.getTrieProof, commands, constants, storageRoot, stateProof.storageProofs);
     }
 }

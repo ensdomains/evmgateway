@@ -7,6 +7,7 @@ import {StateProof, EVMProofHelper} from '@ensdomains/evm-verifier/contracts/EVM
 import {Hashing} from '@eth-optimism/contracts-bedrock/src/libraries/Hashing.sol';
 import {Types} from '@eth-optimism/contracts-bedrock/src/libraries/Types.sol';
 import {DisputeGameLookup, L2OutputOracleLookup, IOptimismPortalOutputRoot, OPWitnessProofType} from '@optidomains/dispute-game-lookup/contracts/OPOutputLookup.sol';
+import {MerkleTrieProofHelper} from '@ensdomains/evm-verifier/contracts/MerkleTrieProofHelper.sol';
 
 struct OPWitnessData {
     OPWitnessProofType proofType;
@@ -83,6 +84,7 @@ contract OPVerifier is IEVMVerifier {
         } else if (opData.proofType == OPWitnessProofType.L2OutputOracle) {
             outputRoot = getL2OracleOutput(opData.index);
         }
+<<<<<<< HEAD
 
         if (outputRoot != expectedRoot) {
             revert OutputRootMismatch(
@@ -100,5 +102,9 @@ contract OPVerifier is IEVMVerifier {
                 opData.outputRootProof.stateRoot,
                 stateProof
             );
+=======
+        bytes32 storageRoot = MerkleTrieProofHelper.getStorageRoot(opData.outputRootProof.stateRoot, target, stateProof.stateTrieWitness);
+        return EVMProofHelper.getStorageValues(target, MerkleTrieProofHelper.getTrieProof, commands, constants, storageRoot, stateProof.storageProofs);
+>>>>>>> c00a9ae1d20fdc168f00f20135d72060b233607c
     }
 }

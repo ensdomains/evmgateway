@@ -5,7 +5,11 @@ import {
   type JsonRpcProvider,
 } from 'ethers';
 
-import { EVMProofHelper, type IProofService } from '@ensdomains/evm-gateway';
+import {
+  EVMProofHelper,
+  convertIntoMerkleTrieProof,
+  type IProofService,
+} from '@ensdomains/evm-gateway';
 import { Block, type JsonRpcBlock } from '@ethereumjs/block';
 
 type RlpObject = Uint8Array | Array<RlpObject>;
@@ -74,9 +78,9 @@ export class L1ProofService implements IProofService<L1ProvableBlock> {
     return AbiCoder.defaultAbiCoder().encode(
       [
         'tuple(uint256 blockNo, bytes blockHeader)',
-        'tuple(bytes[] stateTrieWitness, bytes[][] storageProofs)',
+        'tuple(bytes stateTrieWitness, bytes[] storageProofs)',
       ],
-      [{ blockNo, blockHeader }, proof]
+      [{ blockNo, blockHeader }, convertIntoMerkleTrieProof(proof)]
     );
   }
 }

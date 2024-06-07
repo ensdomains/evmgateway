@@ -1,5 +1,5 @@
 {
-  "name": "@ensdomains/op-gateway",
+  "name": "@ensdomains/scroll-gateway",
   "version": "0.1.0",
   "author": "Nick Johnson",
   "license": "MIT",
@@ -38,13 +38,13 @@
     }
   },
   "scripts": {
-  "start": "bun ./src/server.ts",
+    "start": "bun ./src/server.ts",
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "build:cjs": "tsc --project tsconfig.build.json --module commonjs --outDir ./_cjs --removeComments --verbatimModuleSyntax false && echo > ./_cjs/package.json '{\"type\":\"commonjs\"}'",
     "build:esm": "tsc --project tsconfig.build.json --module es2022 --outDir ./_esm && echo > ./_esm/package.json '{\"type\":\"module\",\"sideEffects\":false}'",
     "build:types": "tsc --project ./tsconfig.build.json --module esnext --declarationDir ./_types --emitDeclarationOnly --declaration --declarationMap",
-    "build": "echo 'building op-gateway...' && bun run clean && bun run build:cjs && bun run build:esm && bun run build:types",
+    "build": "echo 'building scroll-gateway...' && bun run clean && bun run build:cjs && bun run build:esm && bun run build:types",
     "prepublishOnly": "bun ../scripts/prepublishOnly.ts",
     "lint": "eslint . --ext .ts",
     "prepare": "bun run build",
@@ -57,13 +57,14 @@
   },
   "dependencies": {
     "@chainlink/ccip-read-server": "^0.2.1",
-    "@cloudflare/workers-types": "^4.20240423.0",
-    "@commander-js/extra-typings": "^11.0.0",
-    "@ensdomains/evm-gateway": "workspace:*",
-    "@ensdomains/server-analytics": "0.0.1-alpha.5",
+    "@ensdomains/evm-gateway": "0.1.0-beta.3",
     "@ethereumjs/block": "^5.0.0",
     "@nomicfoundation/ethereumjs-block": "^5.0.2",
     "commander": "^11.0.0",
     "ethers": "^6.7.1"
+  },
+  "devDependencies": {
+    "@commander-js/extra-typings": "^11.0.0"
+
   }
 }
