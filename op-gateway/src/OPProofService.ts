@@ -28,7 +28,7 @@ export interface OPProvableBlock {
 
 // OPOutputLookup contract is deployed with deterministic deployment
 // As a result, OPOutputLookup is always deployed to the same address
-const OP_OUTPUT_LOOKUP = "0x2bF2E6da73605759C7E02f34df6682769812d759"
+const OP_OUTPUT_LOOKUP = "0xbe54bE8a815740955364d015ED023f63A86c89d0"
 
 const L2_TO_L1_MESSAGE_PASSER_ADDRESS =
   '0x4200000000000000000000000000000000000016';
