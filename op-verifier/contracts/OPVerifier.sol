@@ -84,7 +84,6 @@ contract OPVerifier is IEVMVerifier {
         } else if (opData.proofType == OPWitnessProofType.L2OutputOracle) {
             outputRoot = getL2OracleOutput(opData.index);
         }
-<<<<<<< HEAD
 
         if (outputRoot != expectedRoot) {
             revert OutputRootMismatch(
@@ -94,17 +93,8 @@ contract OPVerifier is IEVMVerifier {
                 outputRoot
             );
         }
-        return
-            EVMProofHelper.getStorageValues(
-                target,
-                commands,
-                constants,
-                opData.outputRootProof.stateRoot,
-                stateProof
-            );
-=======
+
         bytes32 storageRoot = MerkleTrieProofHelper.getStorageRoot(opData.outputRootProof.stateRoot, target, stateProof.stateTrieWitness);
         return EVMProofHelper.getStorageValues(target, MerkleTrieProofHelper.getTrieProof, commands, constants, storageRoot, stateProof.storageProofs);
->>>>>>> c00a9ae1d20fdc168f00f20135d72060b233607c
     }
 }
