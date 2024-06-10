@@ -11,8 +11,10 @@ import {
 
 import type { IProofService, ProvableBlock } from './IProofService.js';
 
-const OP_CONSTANT = 0x00;
-const OP_BACKREF = 0x20;
+const OP_FOLLOW_CONST = 0 << 5;
+const OP_FOLLOW_REF = 1 << 5;
+const OP_ADD_CONST = 2 << 5;
+const OP_END = 0xff;
 
 export enum StorageLayout {
   /**
@@ -46,6 +48,17 @@ function memoize<T>(fn: () => Promise<T>): () => Promise<T> {
     }
     return promise;
   };
+}
+
+// traverse mapping at slot using key solidity-style
+// https://docs.soliditylang.org/en/latest/internals/layout_in_storage.html#mappings-and-dynamic-arrays
+function followSolidityMapping(slot: bigint, key: string) {
+  return BigInt(solidityPackedKeccak256(['bytes', 'uint256'], [key, slot]));
+}
+
+// see: EVMProofHelper.uint256FromBytes()
+function uint256FromBytes(hex: string): bigint {
+  return hex === '0x' ? 0n : BigInt(hex.slice(0, 66));
 }
 
 export class EVMGateway<T extends ProvableBlock> {
@@ -145,24 +158,6 @@ export class EVMGateway<T extends ProvableBlock> {
     return this.proofService.getProofs(block, address, slots);
   }
 
-  private async executeOperation(
-    operation: number,
-    constants: string[],
-    requests: Promise<StorageElement>[]
-  ): Promise<string> {
-    const opcode = operation & 0xe0;
-    const operand = operation & 0x1f;
-
-    switch (opcode) {
-      case OP_CONSTANT:
-        return constants[operand];
-      case OP_BACKREF:
-        return await (await requests[operand]).value();
-      default:
-        throw new Error('Unrecognized opcode');
-    }
-  }
-
   private async computeFirstSlot(
     command: string,
     constants: string[],
@@ -171,23 +166,30 @@ export class EVMGateway<T extends ProvableBlock> {
     const commandWord = getBytes(command);
     const flags = commandWord[0];
     const isDynamic = (flags & 0x01) != 0;
-
-    let slot = toBigInt(
-      await this.executeOperation(commandWord[1], constants, requests)
-    );
-
-    // If there are multiple path elements, recursively hash them solidity-style to get the final slot.
-    for (let j = 2; j < 32 && commandWord[j] != 0xff; j++) {
-      const index = await this.executeOperation(
-        commandWord[j],
-        constants,
-        requests
-      );
-      slot = toBigInt(
-        solidityPackedKeccak256(['bytes', 'uint256'], [index, slot])
-      );
+    let slot = 0n;
+    for (let j = 1; j < 32; j++) {
+      const op = commandWord[j];
+      if (op === OP_END) break;
+      const opcode = op & 0xe0; // upper 3
+      const operand = op & 0x1f; // lower 5
+      switch (opcode) {
+        case OP_FOLLOW_CONST: {
+          slot = followSolidityMapping(slot, constants[operand]);
+          break;
+        }
+        case OP_FOLLOW_REF: {
+          const storage = await requests[operand];
+          slot = followSolidityMapping(slot, await storage.value());
+          break;
+        }
+        case OP_ADD_CONST: {
+          slot += uint256FromBytes(constants[operand]);
+          break;
+        }
+        default:
+          throw new Error(`Unrecognized opcode: ${opcode}`);
+      }
     }
-
     return { slot, isDynamic };
   }
 
