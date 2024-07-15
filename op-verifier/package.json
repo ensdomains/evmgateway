@@ -40,7 +40,6 @@
   "dependencies": {
     "@ensdomains/evm-verifier": "workspace:*",
     "@eth-optimism/contracts": "^0.6.0",
-    "@optidomains/dispute-game-lookup": "^1.0.1",
     "src": "npm:@eth-optimism/contracts-bedrock@0.17.3"
   }
 }
