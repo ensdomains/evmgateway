@@ -4,15 +4,11 @@ pragma solidity ^0.8.17;
 import { IEVMVerifier } from './IEVMVerifier.sol';
 import { EVMFetchTarget } from './EVMFetchTarget.sol';
 import { Address } from '@openzeppelin/contracts/utils/Address.sol';
+import "./EVMFetcherDefs.sol";
 
 interface IEVMGateway {
     function getStorageSlots(address addr, bytes32[] memory commands, bytes[] memory constants) external pure returns(bytes memory witness);
 }
-
-uint8 constant FLAG_DYNAMIC = 0x01;
-uint8 constant OP_CONSTANT = 0x00;
-uint8 constant OP_BACKREF = 0x20;
-uint8 constant OP_END = 0xff;
 
 /**
  * @dev A library to facilitate requesting storage data proofs from contracts, possibly on a different chain.
@@ -50,7 +46,7 @@ library EVMFetcher {
         assembly {
             mstore(commands, 0) // Set current array length to 0
             mstore(constants, 0)
-        }        
+        }
         return EVMFetchRequest(verifier, target, commands, 0, constants);
     }
 
@@ -77,7 +73,7 @@ library EVMFetcher {
         }
         request.operationIdx = 0;
         _addOperation(request, 0);
-        _addOperation(request, _addConstant(request, abi.encode(baseSlot)));
+        _addOperation(request, OP_ADD_CONST | _addConstant(request, abi.encode(baseSlot)));
         return request;
     }
 
@@ -104,7 +100,7 @@ library EVMFetcher {
         }
         request.operationIdx = 0;
         _addOperation(request, FLAG_DYNAMIC);
-        _addOperation(request, _addConstant(request, abi.encode(baseSlot)));
+        _addOperation(request, OP_ADD_CONST | _addConstant(request, abi.encode(baseSlot)));
         return request;
     }
 
@@ -117,7 +113,7 @@ library EVMFetcher {
         if(request.operationIdx >= 32) {
             revert CommandTooLong();
         }
-        _addOperation(request, _addConstant(request, abi.encode(el)));
+        _addOperation(request, OP_FOLLOW_CONST | _addConstant(request, abi.encode(el)));
         return request;
     }
 
@@ -130,7 +126,7 @@ library EVMFetcher {
         if(request.operationIdx >= 32) {
             revert CommandTooLong();
         }
-        _addOperation(request, _addConstant(request, abi.encode(el)));
+        _addOperation(request, OP_FOLLOW_CONST | _addConstant(request, abi.encode(el)));
         return request;
     }
 
@@ -143,7 +139,7 @@ library EVMFetcher {
         if(request.operationIdx >= 32) {
             revert CommandTooLong();
         }
-        _addOperation(request, _addConstant(request, abi.encode(el)));
+        _addOperation(request, OP_FOLLOW_CONST | _addConstant(request, abi.encode(el)));
         return request;
     }
 
@@ -156,7 +152,7 @@ library EVMFetcher {
         if(request.operationIdx >= 32) {
             revert CommandTooLong();
         }
-        _addOperation(request, _addConstant(request, el));
+        _addOperation(request, OP_FOLLOW_CONST | _addConstant(request, el));
         return request;
     }
 
@@ -169,7 +165,7 @@ library EVMFetcher {
         if(request.operationIdx >= 32) {
             revert CommandTooLong();
         }
-        _addOperation(request, _addConstant(request, bytes(el)));
+        _addOperation(request, OP_FOLLOW_CONST | _addConstant(request, bytes(el)));
         return request;
     }
 
@@ -185,7 +181,20 @@ library EVMFetcher {
         if(idx > request.commands.length || idx > 31) {
             revert InvalidReference(idx, request.commands.length);
         }
-        _addOperation(request, OP_BACKREF | idx);
+        _addOperation(request, OP_FOLLOW_REF | idx);
+        return request;
+    }
+
+    /**
+     * @dev Increment the current slot by offset.
+     * @param request The request object being operated on.
+     * @param off The relative slot offset.
+     */
+    function offset(EVMFetchRequest memory request, uint256 off) internal pure returns (EVMFetchRequest memory) {
+        if(request.operationIdx >= 32) {
+            revert CommandTooLong();
+        }
+        _addOperation(request, OP_ADD_CONST | _addConstant(request, abi.encode(off)));
         return request;
     }
 

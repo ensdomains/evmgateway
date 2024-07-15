@@ -115,4 +115,31 @@ contract TestL1 is EVMFetchTarget {
     function getZeroIndexCallback(bytes[] memory values, bytes memory) public pure returns(uint256) {
         return abi.decode(values[1], (uint256));
     }
+
+    function getStructOffsetValue(uint256 structsKey) public view returns (uint256) {
+        EVMFetcher.newFetchRequest(verifier, target)
+            .getStatic(6)
+                .element(structsKey)
+                .offset(1)
+            .fetch(this.getStructOffsetValueCallback.selector, "");
+    }
+
+    function getStructOffsetValueCallback(bytes[] memory values, bytes memory) public pure returns (uint256) {
+        return abi.decode(values[0], (uint256));
+    }
+
+    function getStructLatestMappedValue(string memory valuesKey) public view returns (string memory) {
+        EVMFetcher.newFetchRequest(verifier, target)
+            .getStatic(0) // #0 => latest
+            .getDynamic(6) // #1 => map[#0].map[k] => string
+                .ref(0)
+                .offset(2)
+                .element(valuesKey)
+            .fetch(this.getStructLatestMappedValueCallback.selector, "");
+    }
+
+    function getStructLatestMappedValueCallback(bytes[] memory values, bytes memory) public pure returns (string memory) {
+        return string(values[1]);
+    }
+
 }

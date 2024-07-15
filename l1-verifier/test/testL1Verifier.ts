@@ -140,5 +140,16 @@ describe('L1Verifier', () => {
   it('will index on uninitialized values', async () => {
     const result = await target.getZeroIndex({ enableCcipRead: true });
     expect(Number(result)).to.equal(1);
-  })
+  });
+
+  it('will read static value from a struct in a map', async () => {
+    const result = await target.getStructOffsetValue(1, { enableCcipRead: true });
+    expect(Number(result)).to.equal(1337);
+  });
+
+  it('will read dynamic value from map in a struct in a map', async () => {
+    const result = await target.getStructLatestMappedValue('Nick', { enableCcipRead: true });
+    expect(result).to.equal('Johnson');
+  });
+
 });

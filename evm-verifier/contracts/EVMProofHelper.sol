@@ -4,21 +4,27 @@ pragma solidity ^0.8.17;
 import {RLPReader} from "@eth-optimism/contracts-bedrock/src/libraries/rlp/RLPReader.sol";
 import {Bytes} from "@eth-optimism/contracts-bedrock/src/libraries/Bytes.sol";
 import {SecureMerkleTrie} from "./SecureMerkleTrie.sol";
+import "./EVMFetcherDefs.sol";
 
 struct StateProof {
     bytes stateTrieWitness;         // Witness proving the `storageRoot` against a state root.
     bytes[] storageProofs;          // An array of proofs of individual storage elements 
 }
 
-uint8 constant OP_CONSTANT = 0x00;
-uint8 constant OP_BACKREF = 0x20;
-uint8 constant FLAG_DYNAMIC = 0x01;
-
 library EVMProofHelper {
     using Bytes for bytes;
 
     error UnknownOpcode(uint8);
-    error InvalidSlotSize(uint256 size);
+    //error InvalidSlotSize(uint256 size);
+
+    /**
+     * @notice Convert bytes to uint256 using value semantics (left-aligned and truncated)
+     */
+    function uint256FromBytes(bytes memory v) internal pure returns (uint256) {
+        // bytes32(abi.encodePacked(hex"42")) = 0x4200..0000
+        // uint256FromBytes(hex"42")          = 0x0000..0042
+        return uint256(v.length < 32 ? bytes32(v) >> ((32 - v.length) << 3) : bytes32(v));
+    }
 
     /**
      * @notice Prove whether the provided storage slot is part of the storageRoot
@@ -56,30 +62,24 @@ library EVMProofHelper {
         return bytes32(value) >> (256 - 8 * value.length);
     }
 
-    function executeOperation(bytes1 operation, bytes[] memory constants, bytes[] memory values) private pure returns(bytes memory) {
-        uint8 opcode = uint8(operation) & 0xe0;
-        uint8 operand = uint8(operation) & 0x1f;
-
-        if(opcode == OP_CONSTANT) {
-            return constants[operand];
-        } else if(opcode == OP_BACKREF) {
-            return values[operand];
-        } else {
-            revert UnknownOpcode(opcode);
-        }
-    }
-
     function computeFirstSlot(bytes32 command, bytes[] memory constants, bytes[] memory values) internal pure returns(bool isDynamic, uint256 slot) {
         uint8 flags = uint8(command[0]);
         isDynamic = (flags & FLAG_DYNAMIC) != 0;
-
-        bytes memory slotData = executeOperation(command[1], constants, values);
-        require(slotData.length == 32, "First path element must be 32 bytes");
-        slot = uint256(bytes32(slotData));
-
-        for(uint256 j = 2; j < 32 && command[j] != 0xff; j++) {
-            bytes memory index = executeOperation(command[j], constants, values);
-            slot = uint256(keccak256(abi.encodePacked(index, slot)));
+        for (uint256 j = 1; j < 32; j += 1) {
+            uint8 op = uint8(command[j]);
+            if (op == OP_END) break;
+            uint8 opcode  = op & 0xE0; // upper 3
+            uint8 operand = op & 0x1F; // lower 5
+            if (opcode == OP_FOLLOW_CONST) { // jump through mapping using provided key
+                slot = uint256(keccak256(abi.encodePacked(constants[operand], slot)));
+            } else if (opcode == OP_FOLLOW_REF) { // jump through mapping using computed key
+                slot = uint256(keccak256(abi.encodePacked(values[operand], slot)));
+            } else if (opcode == OP_ADD_CONST) { // increment slot by provided amount
+                // TODO this could be unchecked to support subtraction (via wrap)
+                slot += uint256FromBytes(constants[operand]);
+            } else {
+                revert UnknownOpcode(op);
+            }
         }
     }
 
@@ -88,27 +88,21 @@ library EVMProofHelper {
         function(address,uint256,bytes memory, bytes32) internal view returns(bytes memory) getter,
         bytes32 storageRoot, uint256 slot, bytes[] memory proof, uint256 proofIdx) private view returns(bytes memory value, uint256 newProofIdx
     ) {
-        uint256 firstValue = uint256(getFixedValue(target, getter,storageRoot, slot, proof[proofIdx++]));
+        uint256 firstValue = uint256(getFixedValue(target, getter, storageRoot, slot, proof[proofIdx++]));
         if(firstValue & 0x01 == 0x01) {
             // Long value: first slot is `length * 2 + 1`, following slots are data.
-            uint256 length = (firstValue - 1) / 2;
-            value = "";
             slot = uint256(keccak256(abi.encodePacked(slot)));
-            // This is horribly inefficient - O(n^2). A better approach would be to build an array of words and concatenate them
-            // all at once, but we're trying to avoid writing new library code.
-            while(length > 0) {
-                if(length < 32) {
-                    value = bytes.concat(value, getSingleStorageProof(target, getter, storageRoot, slot++, proof[proofIdx++]).slice(0, length));
-                    length = 0;
-                } else {
-                    value = bytes.concat(value, getSingleStorageProof(target, getter, storageRoot, slot++, proof[proofIdx++]));
-                    length -= 32;
-                }
-            }
+            value = new bytes(firstValue >> 1);
+			uint256 off;
+			while (off < value.length) {
+				off += 32;
+				bytes32 temp = getFixedValue(target, getter, storageRoot, slot++, proof[proofIdx++]);
+				assembly { mstore(add(value, off), temp) }
+			}
             return (value, proofIdx);
         } else {
             // Short value: least significant byte is `length * 2`, other bytes are data.
-            uint256 length = (firstValue & 0xFF) / 2;
+            uint256 length = (firstValue & 0xFF) >> 1;
             return (abi.encode(firstValue).slice(0, length), proofIdx);
         }
     }
@@ -125,10 +119,7 @@ library EVMProofHelper {
             (bool isDynamic, uint256 slot) = computeFirstSlot(command, constants, values);
             if(!isDynamic) {
                 values[i] = abi.encode(getFixedValue(target, getter, storageRoot, slot, proof[proofIdx++]));
-                if(values[i].length > 32) {
-                    revert InvalidSlotSize(values[i].length);
-                }
-            } else {
+			} else {
                 (values[i], proofIdx) = getDynamicValue(target, getter, storageRoot, slot, proof, proofIdx);
             }
         }
