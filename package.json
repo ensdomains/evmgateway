@@ -53,7 +53,6 @@
   },
   "dependencies": {
     "@ensdomains/ccip-read-cf-worker": "^0.0.3",
-    "@eth-optimism/sdk": "^3.1.4",
-    "@optidomains/dispute-game-lookup": "^1.0.1"
+    "@eth-optimism/sdk": "^3.1.4"
   }
 }

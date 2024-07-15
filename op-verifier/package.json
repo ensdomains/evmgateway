@@ -6,7 +6,8 @@
     "build": "echo 'building op-verifier...' && bun hardhat compile",
     "test": "bun hardhat test",
     "clean": "rm -fr artifacts cache node_modules typechain-types",
-    "lint": "exit 0"
+    "lint": "exit 0",
+    "postinstall": "find node_modules/src/src -mindepth 1 -maxdepth 1 -exec basename {} \\; | xargs -I {} sh -c 'rm -rf node_modules/src/{}; ln -s src/{} node_modules/src/{}'"
   },
   "devDependencies": {
     "@ensdomains/op-gateway": "workspace:*",
@@ -39,6 +40,7 @@
   "dependencies": {
     "@ensdomains/evm-verifier": "workspace:*",
     "@eth-optimism/contracts": "^0.6.0",
-    "@eth-optimism/contracts-bedrock": "^0.16.2"
+    "@optidomains/dispute-game-lookup": "^1.0.1",
+    "src": "npm:@eth-optimism/contracts-bedrock@0.17.3"
   }
 }

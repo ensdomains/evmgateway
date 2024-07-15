@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.17;
+pragma solidity ^0.8.15;
 
 import {IEVMVerifier} from '@ensdomains/evm-verifier/contracts/IEVMVerifier.sol';
-import {RLPReader} from '@eth-optimism/contracts-bedrock/src/libraries/rlp/RLPReader.sol';
 import {StateProof, EVMProofHelper} from '@ensdomains/evm-verifier/contracts/EVMProofHelper.sol';
-import {Hashing} from '@eth-optimism/contracts-bedrock/src/libraries/Hashing.sol';
-import {Types} from '@eth-optimism/contracts-bedrock/src/libraries/Types.sol';
-import {DisputeGameLookup, L2OutputOracleLookup, IOptimismPortalOutputRoot, OPWitnessProofType} from '@optidomains/dispute-game-lookup/contracts/OPOutputLookup.sol';
+import {DisputeGameLookup, L2OutputOracleLookup, IOptimismPortalOutputRoot, OPWitnessProofType} from './lib/OPOutputLookup.sol';
 import {MerkleTrieProofHelper} from '@ensdomains/evm-verifier/contracts/MerkleTrieProofHelper.sol';
+import {Hashing} from 'src/libraries/Hashing.sol';
+import {Types} from 'src/libraries/Types.sol';
 
 struct OPWitnessData {
     OPWitnessProofType proofType;
