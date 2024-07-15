@@ -145,7 +145,13 @@ To assess whether a L2 rollup system can integrate with ENS, please see the foll
 4. Is there a way to verify on L1 contract that the state root returned from L2 is valid?
 5. Is there a way to verify that the `storageProof` is included in the state root? For Optimistic rollups, we can use [`Lib_SecureMerkleTrie`](https://github.com/ethereum-optimism/optimism/blob/develop/packages/contracts/contracts/libraries/trie/Lib\_SecureMerkleTrie.sol) library developed by the optimism team. If the chain doesn't support Patricia Merkle Trie, it needs own library
 
+### Integration examples
+
 Here are some of the PoC examples provided by other chains and the actual integration pull requests describing the basic flow.
 
 - Arbitrum = [PoC](https://gist.github.com/gzeoneth/0a8bac381752e4b4f30650a0d3c76096), [PR](https://github.com/ensdomains/evmgateway/pull/19)
-- Scroll = [Poc](https://github.com/makoto/scrolltest/blob/master/src/index.ts), [PR](https://github.com/ensdomains/evmgateway/pull/42)
+- Scroll = [PoC](https://github.com/makoto/scrolltest/blob/master/src/index.ts), [PR](https://github.com/ensdomains/evmgateway/pull/42)
+- Taiko = [PoC](https://github.com/makoto/taikotest)
+- Starknet = [PoC](https://github.com/NethermindEth/starknet-state-verifier)
+- ZKSync = [PoC](https://github.com/getclave/zksync-storage-proofs)
+ 
