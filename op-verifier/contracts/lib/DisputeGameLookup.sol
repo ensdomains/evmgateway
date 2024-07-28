@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "src/dispute/interfaces/IFaultDisputeGame.sol";
-import {IOptimismPortalOutputRoot, IDisputeGameFactory} from "./IOptimismPortalOutputRoot.sol";
+import 'src/dispute/interfaces/IFaultDisputeGame.sol';
+import {IOptimismPortalOutputRoot, IDisputeGameFactory} from './IOptimismPortalOutputRoot.sol';
 
 /**
  * @title DisputeGameLookup
@@ -200,7 +200,9 @@ library DisputeGameLookup {
             (, Timestamp _timestampHi, ) = disputeGameFactory.gameAtIndex(hi);
 
             // Interpolation search
-            uint256 mid = lo + (maxTimestamp - _timestampLo.raw()) * (hi - lo) / (_timestampHi.raw() - _timestampLo.raw());
+            uint256 mid = lo +
+                ((maxTimestamp - _timestampLo.raw()) * (hi - lo)) /
+                (_timestampHi.raw() - _timestampLo.raw());
 
             (, Timestamp _timestampRaw, ) = disputeGameFactory.gameAtIndex(mid);
 
