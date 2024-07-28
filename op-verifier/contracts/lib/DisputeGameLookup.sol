@@ -183,51 +183,6 @@ library DisputeGameLookup {
     }
 
     /**
-     * @notice Finds the search bound for binary search based on the maximum timestamp.
-     * @param disputeGameFactory The dispute game factory.
-     * @param maxTimestamp The maximum timestamp to search.
-     * @return lo The lower bound index.
-     * @return hi The upper bound index.
-     */
-    function _findSearchBound(
-        IDisputeGameFactory disputeGameFactory,
-        uint256 maxTimestamp
-    ) internal view returns (uint256 lo, uint256 hi) {
-        uint256 gameCount = disputeGameFactory.gameCount();
-
-        // Find binary search bound
-        uint256 window = 1;
-        while (window <= gameCount) {
-            (, Timestamp _timestampRaw, ) = disputeGameFactory.gameAtIndex(
-                gameCount - window
-            );
-
-            // Unwrap gameCreationTime to uint64
-            uint64 _timestamp = _timestampRaw.raw();
-
-            if (_timestamp <= maxTimestamp) {
-                return (gameCount - window, gameCount - (window >> 1) - 1);
-            }
-
-            window <<= 1;
-        }
-
-        // In case search bound has expanded larger than the total dispute game
-        {
-            (, Timestamp _timestampRaw, ) = disputeGameFactory.gameAtIndex(0);
-
-            // Unwrap gameCreationTime to uint64
-            uint64 _timestamp = _timestampRaw.raw();
-
-            if (_timestamp > maxTimestamp) {
-                revert GameNotFound(block.timestamp - maxTimestamp);
-            }
-
-            return (0, gameCount - (window >> 1) - 1);
-        }
-    }
-
-    /**
      * @notice Finds the start index for searching based on the maximum timestamp.
      * @param disputeGameFactory The dispute game factory.
      * @param maxTimestamp The maximum timestamp to search.
@@ -237,13 +192,15 @@ library DisputeGameLookup {
         IDisputeGameFactory disputeGameFactory,
         uint256 maxTimestamp
     ) internal view returns (uint256) {
-        (uint256 lo, uint256 hi) = _findSearchBound(
-            disputeGameFactory,
-            maxTimestamp
-        );
+        uint256 lo = 0;
+        uint256 hi = disputeGameFactory.gameCount() - 1;
 
         while (lo <= hi) {
-            uint256 mid = (lo + hi) / 2;
+            (, Timestamp _timestampLo, ) = disputeGameFactory.gameAtIndex(lo);
+            (, Timestamp _timestampHi, ) = disputeGameFactory.gameAtIndex(hi);
+
+            // Interpolation search
+            uint256 mid = lo + (maxTimestamp - _timestampLo.raw()) * (hi - lo) / (_timestampHi.raw() - _timestampLo.raw());
 
             (, Timestamp _timestampRaw, ) = disputeGameFactory.gameAtIndex(mid);
 
