@@ -19,6 +19,8 @@ interface IChallengingDisputeGame is IFaultDisputeGame {
             Position position,
             Clock clock
         );
+
+    function claimDataLen() external view returns (uint256 len_);
 }
 
 /**
@@ -104,7 +106,7 @@ library DisputeGameLookup {
         if (proxy.status() == GameStatus.DEFENDER_WINS) return false;
 
         // If claimData length is greater than 1, the game is challenging
-        try proxy.claimData(1) {} catch {
+        if (proxy.claimDataLen() > 1) {
             return true;
         }
 
