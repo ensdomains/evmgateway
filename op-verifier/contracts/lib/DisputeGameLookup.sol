@@ -246,7 +246,7 @@ library DisputeGameLookup {
             (, Timestamp _timestampHi, ) = disputeGameFactory.gameAtIndex(hi);
 
             // If lower bound exceed max timestamp, return previous mid (lo - 1)
-            if (_timestampLo.raw() >= maxTimestamp) return lo - 1;
+            if (_timestampLo.raw() > maxTimestamp) return lo - 1;
 
             // Interpolation search
             uint256 mid = lo +
