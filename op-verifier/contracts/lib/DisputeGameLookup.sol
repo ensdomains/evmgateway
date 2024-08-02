@@ -92,6 +92,11 @@ library DisputeGameLookup {
         }
     }
 
+    /**
+     * @notice Internal function to check if the dispute game is challenging.
+     * @param proxy Dispute Game Proxy to check
+     * @return invalid Is the game being challenged?
+     */
     function _isGameChallenging(
         IChallengingDisputeGame proxy
     ) internal view returns (bool) {
