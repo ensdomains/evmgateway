@@ -71,14 +71,13 @@ library L2OutputOracleLookup {
         uint256 length = oracle.latestOutputIndex();
 
         uint256 maxTimestamp = block.timestamp - minAge;
-        uint256 minTimestamp = block.timestamp - maxAge;
 
         // Perform a reverse linear search since we only use recent output most of the time.
         for (uint256 i = length; i >= 0 && i <= length; ) {
             Types.OutputProposal memory output = oracle.getL2Output(i);
 
             if (output.timestamp <= maxTimestamp) {
-                if (maxAge == 0 || output.timestamp >= minTimestamp) {
+                if (maxAge == 0 || output.timestamp + maxAge >= block.timestamp) {
                     return (i, output);
                 } else {
                     revert OutputExpired(

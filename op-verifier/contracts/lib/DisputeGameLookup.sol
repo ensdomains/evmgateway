@@ -339,7 +339,7 @@ library DisputeGameLookup {
         outputRoot = games[0].rootClaim.raw();
         gameCreationTime = games[0].timestamp.raw();
 
-        if (maxAge > 0 && gameCreationTime < block.timestamp - maxAge) {
+        if (maxAge > 0 && gameCreationTime + maxAge < block.timestamp) {
             revert GameExpired(
                 disputeGameIndex,
                 block.timestamp - maxAge,
