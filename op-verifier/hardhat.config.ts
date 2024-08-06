@@ -9,7 +9,19 @@ const L1_ETHERSCAN_API_KEY = process.env.L1_ETHERSCAN_API_KEY;
 const L2_ETHERSCAN_API_KEY = process.env.L2_ETHERSCAN_API_KEY;
 
 const config: HardhatUserConfig = {
-  solidity: '0.8.19',
+  solidity: {
+    compilers: [
+      {
+        version: '0.8.26',
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200
+          }
+        }
+      },
+    ]
+  },
   networks: {
     opDevnetL1: {
       url: "http://localhost:8545/",
