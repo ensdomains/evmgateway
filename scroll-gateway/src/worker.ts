@@ -19,7 +19,7 @@ async function fetch(request: CFWRequest, env: Env) {
 
   // Loading libraries dynamically as a temp work around.
   // Otherwise, deployment thorws "Error: Script startup exceeded CPU time limit." error
-  const tracker = new Tracker(GATEWAY_DOMAIN, {
+  const tracker = new Tracker<CFWRequest>(GATEWAY_DOMAIN, {
     apiEndpoint: ENDPOINT_URL,
     enableLogging: true,
   });

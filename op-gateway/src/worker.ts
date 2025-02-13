@@ -25,7 +25,7 @@ async function fetch(request: CFWRequest, env: Env) {
     ENDPOINT_URL,
   } = env;
 
-  const tracker = new Tracker(GATEWAY_DOMAIN, {
+  const tracker = new Tracker<CFWRequest>(GATEWAY_DOMAIN, {
     apiEndpoint: ENDPOINT_URL,
     enableLogging: true,
   });
