@@ -20,7 +20,16 @@
     "build": "bun run workspace evm-gateway build && bun run workspace -evm-gateway build",
     "test": "bun run workspace l1-verifier test",
     "lint": "bun run workspace all lint",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "dev:setup": "./scripts/dev-setup.sh",
+    "dev:verify": "bun ./scripts/dev-verify.ts",
+    "dev:clean": "bun run workspace all clean && rm -rf node_modules/.cache",
+    "dev:reset": "bun run dev:clean && rm -rf node_modules bun.lockb && bun install",
+    "format": "bun run workspace all format || bun x prettier --write .",
+    "type-check": "bun run workspace all type-check",
+    "build:all": "bun run workspace all build",
+    "test:watch": "bun run workspace l1-verifier test --watch",
+    "test:coverage": "bun run workspace l1-verifier test --coverage"
   },
   "husky": {
     "hooks": {

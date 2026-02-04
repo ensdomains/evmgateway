@@ -38,6 +38,6 @@
   },
   "dependencies": {
     "@ensdomains/evm-verifier": "0.1.0-beta.4",
-    "dotenv": "^16.3.1"
+    "dotenv": "^17.2.2"
   }
 }

@@ -1,0 +1,48 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Current File",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/bun/bin/bun",
+      "args": ["run", "${file}"],
+      "cwd": "${workspaceFolder}",
+      "skipFiles": ["<node_internals>/**"],
+      "envFile": "${workspaceFolder}/.env"
+    },
+    {
+      "name": "Debug Tests",
+      "type": "node",
+      "request": "launch", 
+      "program": "${workspaceFolder}/node_modules/bun/bin/bun",
+      "args": ["test", "${workspaceFolder}/**/*.test.ts"],
+      "cwd": "${workspaceFolder}",
+      "skipFiles": ["<node_internals>/**"],
+      "envFile": "${workspaceFolder}/.env"
+    },
+    {
+      "name": "Debug L1 Verifier Tests",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/bun/bin/bun",
+      "args": ["run", "workspace", "l1-verifier", "test"],
+      "cwd": "${workspaceFolder}",
+      "skipFiles": ["<node_internals>/**"],
+      "envFile": "${workspaceFolder}/.env"
+    },
+    {
+      "name": "Debug Gateway Server",
+      "type": "node", 
+      "request": "launch",
+      "program": "${workspaceFolder}/l1-gateway/src/server.ts",
+      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/bun",
+      "cwd": "${workspaceFolder}/l1-gateway",
+      "skipFiles": ["<node_internals>/**"],
+      "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "NODE_ENV": "development"
+      }
+    }
+  ]
+}

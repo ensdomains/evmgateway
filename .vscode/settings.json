@@ -1,0 +1,62 @@
+{
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "typescript.preferences.includePackageJsonAutoImports": "on",
+  "typescript.suggest.autoImports": true,
+  "typescript.workspaceSymbols.scope": "allOpenProjects",
+  "eslint.workingDirectories": [
+    "evm-gateway",
+    "evm-verifier", 
+    "l1-gateway",
+    "l1-verifier",
+    "op-gateway",
+    "op-verifier",
+    "arb-gateway",
+    "arb-verifier",
+    "scroll-gateway",
+    "scroll-verifier"
+  ],
+  "files.associations": {
+    "*.sol": "solidity"
+  },
+  "solidity.defaultCompiler": "remote",
+  "solidity.compileUsingRemoteVersion": "v0.8.19+commit.7dd6d404",
+  "solidity.formatter": "prettier",
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/_cjs": true,
+    "**/_esm": true,
+    "**/_types": true,
+    "**/dist": true,
+    "**/artifacts": true,
+    "**/cache": true,
+    "**/typechain-types": true,
+    "bun.lockb": true
+  },
+  "files.exclude": {
+    "**/.git": true,
+    "**/node_modules": true,
+    "**/_cjs": true,
+    "**/_esm": true,
+    "**/_types": true,
+    "**/dist": true
+  },
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/_cjs/**": true,
+    "**/_esm/**": true,
+    "**/_types/**": true,
+    "**/dist/**": true,
+    "**/artifacts/**": true,
+    "**/cache/**": true
+  },
+  "git.ignoreLimitWarning": true,
+  "npm.packageManager": "bun",
+  "terminal.integrated.defaultProfile.linux": "bash",
+  "terminal.integrated.defaultProfile.osx": "zsh",
+  "debug.javascript.usePreview": true,
+  "typescript.surveys.enabled": false
+}

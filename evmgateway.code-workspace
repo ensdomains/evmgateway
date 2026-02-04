@@ -1,0 +1,93 @@
+{
+  "folders": [
+    {
+      "name": "evmgateway (root)",
+      "path": "."
+    },
+    {
+      "name": "evm-gateway",
+      "path": "./evm-gateway"
+    },
+    {
+      "name": "evm-verifier", 
+      "path": "./evm-verifier"
+    },
+    {
+      "name": "l1-gateway",
+      "path": "./l1-gateway"
+    },
+    {
+      "name": "l1-verifier",
+      "path": "./l1-verifier"
+    },
+    {
+      "name": "op-gateway",
+      "path": "./op-gateway"
+    },
+    {
+      "name": "op-verifier",
+      "path": "./op-verifier"
+    },
+    {
+      "name": "arb-gateway",
+      "path": "./arb-gateway"
+    },
+    {
+      "name": "arb-verifier",
+      "path": "./arb-verifier"
+    },
+    {
+      "name": "scroll-gateway",
+      "path": "./scroll-gateway"
+    },
+    {
+      "name": "scroll-verifier", 
+      "path": "./scroll-verifier"
+    }
+  ],
+  "settings": {
+    "typescript.preferences.includePackageJsonAutoImports": "on",
+    "typescript.suggest.autoImports": true,
+    "typescript.suggest.includeAutomaticOptionalChainCompletions": true,
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/_cjs": true,
+      "**/_esm": true, 
+      "**/_types": true,
+      "**/dist": true,
+      "**/artifacts": true,
+      "**/cache": true,
+      "**/typechain-types": true
+    },
+    "files.exclude": {
+      "**/.git": true,
+      "**/node_modules": true,
+      "**/_cjs": true,
+      "**/_esm": true,
+      "**/_types": true,
+      "**/dist": true
+    },
+    "files.watcherExclude": {
+      "**/node_modules/**": true,
+      "**/_cjs/**": true,
+      "**/_esm/**": true,
+      "**/_types/**": true,
+      "**/dist/**": true,
+      "**/artifacts/**": true,
+      "**/cache/**": true
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "ms-vscode.vscode-typescript-next",
+      "dbaeumer.vscode-eslint", 
+      "esbenp.prettier-vscode",
+      "JuanBlanco.solidity",
+      "ms-vscode.vscode-json",
+      "eamodio.gitlens",
+      "ms-vscode.test-adapter-converter",
+      "bradlc.vscode-tailwindcss",
+      "ms-vscode.vscode-github-issue-notebooks"
+    ]
+  }
+}

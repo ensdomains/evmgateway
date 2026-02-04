@@ -111,13 +111,30 @@ A complete Solidity library that facilitates sending CCIP-Read requests for Scro
 
 ## How to setup locally
 
-```
+For a comprehensive development environment setup, see **[DEVELOPMENT.md](DEVELOPMENT.md)**.
+
+### Quick Start
+
+```bash
+# Clone and setup
 gh repo clone ensdomains/evmgateway
+cd evmgateway
+./scripts/dev-setup.sh
+
+# Verify setup
+bun run dev:verify
+```
+
+### Manual Setup
+
+```bash
 bun install # `@ensdomains/@ensdomains` not found error will be thrown
 bun run workspace evm-gateway build
 bun install
 bun run test
 ```
+
+For detailed instructions, troubleshooting, and development workflows, see **[DEVELOPMENT.md](DEVELOPMENT.md)**.
 
 ## Troubleshooting
 
